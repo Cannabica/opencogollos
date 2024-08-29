@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('plants_types', function (Blueprint $table) {
+        Schema::create('attention_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->foreignId('tenant_id');
+            $table->softDeletes();
             $table->timestamps();
-            $table->softdeletes();
         });
     }
 
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('plants_types');
+        Schema::dropIfExists('attention_types');
     }
 };

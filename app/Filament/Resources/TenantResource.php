@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\CheckboxColumn;
 
 class TenantResource extends Resource
 {
@@ -23,7 +24,15 @@ class TenantResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('name')
+                    ->label(__('Name'))
+                    ->required(),
+                Forms\Components\TextInput::make('email')
+                    ->label(__('Email'))
+                    ->email()
+                    ->required(),
+                Forms\Components\Checkbox::make('active')
+                    ->label(__('Active')),
             ]);
     }
 
@@ -31,7 +40,9 @@ class TenantResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('email'),
+                CheckboxColumn::make('active'),
             ])
             ->filters([
                 //

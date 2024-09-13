@@ -10,4 +10,10 @@ class Tenant extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'email', 'active'];
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+  
 }

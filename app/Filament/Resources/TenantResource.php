@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\CheckboxColumn;
+use App\Filament\Resources\TenantResource\RelationManagers\UsersRelationManager;
 
 class TenantResource extends Resource
 {
@@ -60,7 +61,7 @@ class TenantResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            UsersRelationManager::class,
         ];
     }
 

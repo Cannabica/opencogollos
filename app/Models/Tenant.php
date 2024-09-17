@@ -16,4 +16,8 @@ class Tenant extends Model
         return $this->hasMany(User::class);
     }
   
+    public function indoors()
+    {
+        return $this->hasMany(Indoor::class);
+    }
 }

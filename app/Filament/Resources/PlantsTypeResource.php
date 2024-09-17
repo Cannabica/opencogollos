@@ -23,7 +23,9 @@ class PlantsTypeResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('name')
+                    ->label(__('Name'))
+                    ->required(),
             ]);
     }
 

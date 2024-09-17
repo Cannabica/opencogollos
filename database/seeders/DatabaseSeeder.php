@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(AttentionTypeSeeder::class);
+        $this->call(ExampleDataSeeder::class);
     }
 }

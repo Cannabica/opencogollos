@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('attention_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('tenant_id');
+            $table->foreignId('tenant_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

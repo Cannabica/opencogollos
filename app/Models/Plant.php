@@ -20,4 +20,9 @@ class Plant extends Model
     {
         return $this->belongsTo(Indoor::class, 'indoor_id');
     }
+
+    public function attentions()
+    {
+        return $this->hasMany(Attention::class);
+    }
 }

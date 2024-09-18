@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('plant_type_id'); 
-            $table->foreignId('table_id'); 
+            $table->foreignId('indoor_id'); 
             $table->softDeletes(); 
             $table->timestamps();
             

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('attentions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('plant_id'); 
-            $table->foreignId('attention_type_id');
+            $table->foreignId('plant_id')->constrained('plants'); 
+            $table->foreignId('attention_type_id')->constrained('attention_types');
             $table->softDeletes(); 
             $table->timestamps(); 
         });

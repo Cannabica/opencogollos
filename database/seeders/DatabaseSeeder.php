@@ -17,10 +17,12 @@ class DatabaseSeeder extends Seeder
         \App\Models\User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'tenant_id' => null,
             'password' => 'password',
         ]);
 
         $this->call(AttentionTypeSeeder::class);
         $this->call(ExampleDataSeeder::class);
+        $this->call(PlantsTypesSeeder::class);
     }
 }

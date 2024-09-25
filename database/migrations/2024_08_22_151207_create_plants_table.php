@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('plants', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('plant_type_id')->constrained('plants_types'); 
+            $table->foreignId('seed_id')->constrained('seeds'); 
             $table->foreignId('indoor_id')->constrained('indoors'); 
             $table->softDeletes(); 
             $table->timestamps();

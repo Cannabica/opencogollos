@@ -1,0 +1,37 @@
+{
+    "Dashboard": "Tablero",
+    "Users": "Usuarios",
+    "Settings": "Configuración",
+    "Logout": "Cerrar sesión",
+    "Profile": "Perfil",
+
+    "Plant": "Planta",
+    "Plants": "Plantas",
+    "Plants Types": "Tipos de Plantas",
+    "Plant Type": "Tipo de Planta",
+
+    "Tenant": "Arrendatario",
+    "Tenants": "Arrendatarios",
+
+    "Indoor": "Interior",
+    "Indoors": "Interiores",
+
+    "Irrigation": "Riego",
+    "Irrigation Date": "Fecha de Riego",
+    "Pruning": "Poda",
+    "Pruning Type": "Tipo de Poda",
+    "Product Application": "Aplicacion de Producto",
+    "Application Type": "Tipo de Aplicacion",
+    "Transplant": "Transplante",
+    "Observation": "Observaciones",
+    "Death": "Muerte",
+
+
+    "Attention":"Cuidado",
+    "attention":"cuidado",
+    "Attentions":"Cuidados",
+    "Attention Type":"Tipo de Cuidado",
+    "Attentions Types":"Tipos de Cuidados",
+
+    "Name": "Nombre"
+}

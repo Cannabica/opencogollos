@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Attention extends Model
 {
     use HasFactory;
+    protected $fillable = ['plant_id', 'attention_type_id', 'data'];
 
-    protected $fillable = ['plant_id', 'attention_type_id'];
+    protected $casts = [
+        'data' => 'array',
+    ];
 
     public function plant()
     {

@@ -45,6 +45,16 @@ class PlantsResource extends Resource
                             ->pluck('name', 'id');
                     })
                     ->required(),
+                Forms\Components\Select::make('etapa')
+                    ->label(__('Etapa'))
+                    ->options([
+                        'Germinación',
+                        'Plántula',
+                        'Vegetativa',
+                        'Floración',
+                        'Cosecha y curado',
+                    ])
+                    ->required(),
             ]);
     }
 

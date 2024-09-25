@@ -7,7 +7,7 @@ use App\Filament\Tenant\Resources\PlantsResource\RelationManagers;
 use App\Filament\Tenant\Resources\PlantsResource\RelationManagers\AttentionsRelationManager;
 use App\Models\Plant;
 use App\Models\Indoor;
-use App\Models\PlantsType;
+use App\Models\Seed;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -39,10 +39,10 @@ class PlantsResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label(__('Name'))
                     ->required(),
-                Forms\Components\Select::make('plant_type_id')
-                    ->label(__('Plant Type'))
+                Forms\Components\Select::make('seed_id')
+                    ->label(__('Seed Type'))
                     ->options(function () {
-                        return PlantsType::pluck('name', 'id');
+                        return Seed::pluck('name', 'id');
                     })
                     ->required(),
                 Forms\Components\Select::make('indoor_id')
@@ -73,8 +73,8 @@ class PlantsResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('Name')),
-                Tables\Columns\TextColumn::make('plantType.name')
-                    ->label(__('Plant Type')),
+                Tables\Columns\TextColumn::make('seedType.name')
+                    ->label(__('Seed Type')),
                 Tables\Columns\TextColumn::make('indoor.name')
                     ->label(__('Indoor')),
             ])

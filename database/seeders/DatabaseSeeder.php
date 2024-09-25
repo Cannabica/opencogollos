@@ -23,6 +23,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call(AttentionTypeSeeder::class);
         $this->call(ExampleDataSeeder::class);
-        $this->call(PlantsTypesSeeder::class);
+        $this->call(SeedsSeeder::class);
     }
 }

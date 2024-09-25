@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PlantsTypeResource\Pages;
-use App\Filament\Resources\PlantsTypeResource\RelationManagers;
-use App\Models\PlantsType;
+use App\Filament\Resources\SeedResource\Pages;
+use App\Filament\Resources\SeedResource\RelationManagers;
+use App\Models\Seed;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,19 +13,19 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class PlantsTypeResource extends Resource
+class SeedResource extends Resource
 {
-    protected static ?string $model = PlantsType::class;
+    protected static ?string $model = Seed::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getPluralLabel(): string
     {
-        return __('Plants Types');
+        return __('Seeds');
     }
     public static function getLabel(): string
     {
-        return __('Plant Type');
+        return __('Seed');
     }
 
     public static function form(Form $form): Form
@@ -68,9 +68,9 @@ class PlantsTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPlantsTypes::route('/'),
-            'create' => Pages\CreatePlantsType::route('/create'),
-            'edit' => Pages\EditPlantsType::route('/{record}/edit'),
+            'index' => Pages\ListSeeds::route('/'),
+            'create' => Pages\CreateSeed::route('/create'),
+            'edit' => Pages\EditSeed::route('/{record}/edit'),
         ];
     }
 }

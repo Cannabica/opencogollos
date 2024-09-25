@@ -9,11 +9,11 @@ class Plant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'plant_type_id', 'indoor_id'];
+    protected $fillable = ['name', 'seed_id', 'indoor_id'];
 
-    public function plantType()
+    public function seedType()
     {
-        return $this->belongsTo(PlantsType::class, 'plant_type_id');
+        return $this->belongsTo(Seed::class, 'seed_id');
     }
 
     public function indoor()

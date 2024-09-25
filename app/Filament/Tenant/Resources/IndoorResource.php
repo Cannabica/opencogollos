@@ -21,6 +21,15 @@ class IndoorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getPluralLabel(): string
+    {
+        return __('Indoors');
+    }
+    public static function getLabel(): string
+    {
+        return __('Indoor');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -37,7 +46,8 @@ class IndoorResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
+                TextColumn::make('name')
+                ->label(__('Name')),
             ])
             ->filters([
                 //

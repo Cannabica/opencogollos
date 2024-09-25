@@ -17,6 +17,15 @@ class AttentionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'attentions';
 
+    public static function getPluralLabel(): string
+    {
+        return __('Attention');
+    }
+    public static function getLabel(): string
+    {
+        return __('Attentions');
+    }
+
     public function form(Form $form): Form
     {
         return $form
@@ -29,7 +38,7 @@ class AttentionsRelationManager extends RelationManager
                     ->reactive()
                     ->required(),
 
-                Forms\Components\Section::make('Irrigation')
+                Forms\Components\Section::make(__('Irrigation'))
                     ->label(__('Irrigation'))
                     ->schema([
                         Forms\Components\DateTimePicker::make('irrigation_date')
@@ -37,7 +46,7 @@ class AttentionsRelationManager extends RelationManager
                     ])
                     ->visible(fn(Get $get) => $get('attention_type_id') == 1),
 
-                Forms\Components\Section::make('Pruning')
+                Forms\Components\Section::make(__('Pruning'))
                     ->label(__('Pruning'))
                     ->schema([
                         Forms\Components\Select::make('pruning_type')
@@ -53,7 +62,7 @@ class AttentionsRelationManager extends RelationManager
                     ])
                     ->visible(fn(Get $get) => $get('attention_type_id') == 2),
 
-                Forms\Components\Section::make('Product Application')
+                Forms\Components\Section::make(__('Product Application'))
                     ->label(__('Product Application'))
                     ->schema([
                         Forms\Components\Select::make('application_type')
@@ -76,7 +85,7 @@ class AttentionsRelationManager extends RelationManager
                     ])
                     ->visible(fn(Get $get) => $get('attention_type_id') == 3),
 
-                Forms\Components\Section::make('Transplant')
+                Forms\Components\Section::make(__('Transplant'))
                     ->label(__('Transplant'))
                     ->schema([
                         Forms\Components\Select::make('new_pot_size')
@@ -100,7 +109,7 @@ class AttentionsRelationManager extends RelationManager
                     ])
                     ->visible(fn(Get $get) => $get('attention_type_id') == 4),
 
-                Forms\Components\Section::make('Death')
+                Forms\Components\Section::make(__('Death'))
                     ->label(__('Death'))
                     ->schema([
                         Forms\Components\Textarea::make('observation')

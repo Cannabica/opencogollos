@@ -37,11 +37,14 @@ class AttentionsRelationManager extends RelationManager
                     )
                     ->reactive()
                     ->required(),
-
+                Forms\Components\Placeholder::make('Attention')
+                    ->label(__('Attention'))
+                    ->content(__('Please select an attention type first'))
+                    ->visible(fn(Get $get) => $get('attention_type_id') == null),
                 Forms\Components\Section::make(__('Irrigation'))
                     ->label(__('Irrigation'))
                     ->schema([
-                        Forms\Components\DateTimePicker::make('irrigation_date')
+                        Forms\Components\DateTimePicker::make('data.irrigation.irrigation_date')
                             ->label(__('Irrigation Date'))
                     ])
                     ->visible(fn(Get $get) => $get('attention_type_id') == 1),
@@ -49,7 +52,7 @@ class AttentionsRelationManager extends RelationManager
                 Forms\Components\Section::make(__('Pruning'))
                     ->label(__('Pruning'))
                     ->schema([
-                        Forms\Components\Select::make('pruning_type')
+                        Forms\Components\Select::make('data.pruning.pruning_type')
                             ->label(__('Pruning Type'))
                             ->options([
                                 'topping' => 'Poda apical /topping',
@@ -65,7 +68,7 @@ class AttentionsRelationManager extends RelationManager
                 Forms\Components\Section::make(__('Product Application'))
                     ->label(__('Product Application'))
                     ->schema([
-                        Forms\Components\Select::make('application_type')
+                        Forms\Components\Select::make('data.product_application.application_type')
                             ->label(__('Application Type'))
                             ->options([
                                 'vege' => 'Aplicación para vege',
@@ -74,9 +77,9 @@ class AttentionsRelationManager extends RelationManager
                                 'plague' => 'Aplicación anti - plaga',
                                 'soap' => 'Lavado de planta con jabon potasico',
                             ]),
-                        Forms\Components\Textarea::make('observation')
+                        Forms\Components\Textarea::make('data.product_application.observation')
                             ->label(__('Observation')),
-                        Forms\Components\Select::make('iterative_process')
+                        Forms\Components\Select::make('data.product_application.iterative_process')
                             ->label(__('¿Es parte de un proceso iterativo?'))
                             ->options([
                                 1 => 'Si',
@@ -88,7 +91,7 @@ class AttentionsRelationManager extends RelationManager
                 Forms\Components\Section::make(__('Transplant'))
                     ->label(__('Transplant'))
                     ->schema([
-                        Forms\Components\Select::make('new_pot_size')
+                        Forms\Components\Select::make('data.transplant.new_pot_size')
                             ->label(__('Tamaño de la nueva maceta'))
                             ->options([
                                 'N10',
@@ -112,11 +115,12 @@ class AttentionsRelationManager extends RelationManager
                 Forms\Components\Section::make(__('Death'))
                     ->label(__('Death'))
                     ->schema([
-                        Forms\Components\Textarea::make('observation')
+                        Forms\Components\Textarea::make('data.death.observation')
                             ->label(__('Observation'))
                     ])
                     ->visible(fn(Get $get) => $get('attention_type_id') == 6),
-                ]);
+                ])
+            ->columns(1);
     }
 
     public function table(Table $table): Table
@@ -126,6 +130,8 @@ class AttentionsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('attention_type.name')
                     ->label(__('Attention Type')),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Register date')),
             ])
             ->filters([
                 //
@@ -134,7 +140,8 @@ class AttentionsRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->modalHeading(__('Edit attention')),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

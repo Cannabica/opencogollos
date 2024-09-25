@@ -42,7 +42,8 @@ class PlantsTypeResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name')
+                    ->label(__('Name'))
             ])
             ->filters([
                 //

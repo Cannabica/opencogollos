@@ -19,6 +19,15 @@ class PlantsTypeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getPluralLabel(): string
+    {
+        return __('Plants Types');
+    }
+    public static function getLabel(): string
+    {
+        return __('Plant Type');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

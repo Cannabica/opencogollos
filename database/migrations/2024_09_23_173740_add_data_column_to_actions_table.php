@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('attentions', function (Blueprint $table) {
-            $table->json('data')->after('attention_type_id')->nullable();
+        Schema::table('actions', function (Blueprint $table) {
+            $table->json('data')->after('action_type_id')->nullable();
         });
     }
 
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('attentions', function (Blueprint $table) {
+        Schema::table('actions', function (Blueprint $table) {
             //
         });
     }

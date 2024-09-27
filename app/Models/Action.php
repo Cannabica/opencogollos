@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Attention extends Model
+class Action extends Model
 {
     use HasFactory;
-    protected $fillable = ['plant_id', 'attention_type_id', 'data'];
+    protected $fillable = ['plant_id', 'action_type_id', 'data'];
 
     protected $casts = [
         'data' => 'array',
@@ -19,9 +19,9 @@ class Attention extends Model
         return $this->belongsTo(Plant::class);
     }
 
-    public function attention_type()
+    public function action_type()
     {
-        return $this->belongsTo(AttentionType::class);
+        return $this->belongsTo(ActionType::class);
     }
 
 }

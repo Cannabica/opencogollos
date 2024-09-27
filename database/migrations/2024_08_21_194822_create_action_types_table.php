@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('attentions', function (Blueprint $table) {
+        Schema::create('action_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('plant_id')->constrained('plants'); 
-            $table->foreignId('attention_type_id')->constrained('attention_types');
-            $table->softDeletes(); 
-            $table->timestamps(); 
+            $table->string('name');
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('attentions');
+        Schema::dropIfExists('action_types');
     }
 };

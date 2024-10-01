@@ -9,7 +9,11 @@ class Indoor extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'tenant_id'];
+    protected $fillable = ['name', 'tenant_id', 'fan_number','lamps'];
+
+    protected $casts = [
+        'lamps' => 'array',
+    ];
 
     public function tenant()
     {

@@ -13,6 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Tables\Columns\TextColumn;
 
 class IndoorResource extends Resource
@@ -37,8 +40,34 @@ class IndoorResource extends Resource
                 TextInput::make('name')
                     ->label(__('Name'))
                     ->required(),
-                Forms\Components\Hidden::make('tenant_id')
+                Hidden::make('tenant_id')
                     ->default(fn () => auth()->user()->tenant_id),
+                TextInput::make('fan_number')
+                    ->label(__('Number of Fans'))
+                    ->numeric()
+                    ->integer()
+                    ->minValue(0)
+                    ->required(),
+                Repeater::make('lamps')
+                    ->label(__('Lamps'))
+                    ->schema([
+                        Select::make('light_type')
+                            ->label(__('Light Type'))
+                            ->options([
+                                'cold' => 'Fría',
+                                'hot' => 'Cálida',
+                            ])
+                            ->required(),
+                            
+                        TextInput::make('power')
+                            ->label(__('Power in Watts'))
+                            ->numeric()
+                            ->required(),
+                    ])
+                    //->collapsible()  
+                    ->minItems(1)   
+                    ->columns(2),     
+                
             ]);
     }
 

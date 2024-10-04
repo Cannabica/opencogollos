@@ -4,7 +4,7 @@ namespace App\Filament\Tenant\Resources;
 
 use App\Filament\Tenant\Resources\PlantsResource\Pages;
 use App\Filament\Tenant\Resources\PlantsResource\RelationManagers;
-use App\Filament\Tenant\Resources\PlantsResource\RelationManagers\AttentionsRelationManager;
+use App\Filament\Tenant\Resources\PlantsResource\RelationManagers\ActionsRelationManager;
 use App\Models\Plant;
 use App\Models\Indoor;
 use App\Models\Seed;
@@ -94,7 +94,7 @@ class PlantsResource extends Resource
     public static function getRelations(): array
     {
         return [
-            AttentionsRelationManager::class,
+            ActionsRelationManager::class,
         ];
     }
 

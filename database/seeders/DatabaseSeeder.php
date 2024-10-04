@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'password',
         ]);
 
-        $this->call(AttentionTypeSeeder::class);
+        $this->call(ActionTypesSeeder::class);
         $this->call(ExampleDataSeeder::class);
         $this->call(SeedsSeeder::class);
     }

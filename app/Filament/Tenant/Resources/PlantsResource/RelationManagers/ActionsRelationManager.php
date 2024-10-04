@@ -9,45 +9,45 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Models\Attention;
-use App\Models\AttentionType;
+use App\Models\Action;
+use App\Models\ActionType;
 use Filament\Forms\Get;
 
-class AttentionsRelationManager extends RelationManager
+class ActionsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'attentions';
+    protected static string $relationship = 'actions';
 
     public static function getPluralLabel(): string
     {
-        return __('Attention');
+        return __('Action');
     }
     public static function getLabel(): string
     {
-        return __('Attentions');
+        return __('Actions');
     }
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('attention_type_id')
-                    ->label(__('Attention Type'))
+                Forms\Components\Select::make('action_type_id')
+                    ->label(__('Action Type'))
                     ->options(
-                        AttentionType::pluck('name', 'id')->toArray()
+                        ActionType::pluck('name', 'id')->toArray()
                     )
                     ->reactive()
                     ->required(),
-                Forms\Components\Placeholder::make('Attention')
-                    ->label(__('Attention'))
-                    ->content(__('Please select an attention type first'))
-                    ->visible(fn(Get $get) => $get('attention_type_id') == null),
+                Forms\Components\Placeholder::make('Action')
+                    ->label(__('Action'))
+                    ->content(__('Please select an action type first'))
+                    ->visible(fn(Get $get) => $get('action_type_id') == null),
                 Forms\Components\Section::make(__('Irrigation'))
                     ->label(__('Irrigation'))
                     ->schema([
                         Forms\Components\DateTimePicker::make('data.irrigation.irrigation_date')
                             ->label(__('Irrigation Date'))
                     ])
-                    ->visible(fn(Get $get) => $get('attention_type_id') == 1),
+                    ->visible(fn(Get $get) => $get('action_type_id') == 1),
 
                 Forms\Components\Section::make(__('Pruning'))
                     ->label(__('Pruning'))
@@ -63,7 +63,7 @@ class AttentionsRelationManager extends RelationManager
                                 'supercropping' => 'Realizado supercropping',
                             ]),
                     ])
-                    ->visible(fn(Get $get) => $get('attention_type_id') == 2),
+                    ->visible(fn(Get $get) => $get('action_type_id') == 2),
 
                 Forms\Components\Section::make(__('Product Application'))
                     ->label(__('Product Application'))
@@ -86,7 +86,7 @@ class AttentionsRelationManager extends RelationManager
                                 0 => 'No',
                             ]),
                     ])
-                    ->visible(fn(Get $get) => $get('attention_type_id') == 3),
+                    ->visible(fn(Get $get) => $get('action_type_id') == 3),
 
                 Forms\Components\Section::make(__('Transplant'))
                     ->label(__('Transplant'))
@@ -110,7 +110,7 @@ class AttentionsRelationManager extends RelationManager
                                 '75L',
                             ])
                     ])
-                    ->visible(fn(Get $get) => $get('attention_type_id') == 4),
+                    ->visible(fn(Get $get) => $get('action_type_id') == 4),
 
                 Forms\Components\Section::make(__('Death'))
                     ->label(__('Death'))
@@ -118,7 +118,7 @@ class AttentionsRelationManager extends RelationManager
                         Forms\Components\Textarea::make('data.death.observation')
                             ->label(__('Observation'))
                     ])
-                    ->visible(fn(Get $get) => $get('attention_type_id') == 6),
+                    ->visible(fn(Get $get) => $get('action_type_id') == 6),
                 ])
             ->columns(1);
     }
@@ -126,10 +126,10 @@ class AttentionsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('attention_type_id')
+            ->recordTitleAttribute('action_type_id')
             ->columns([
-                Tables\Columns\TextColumn::make('attention_type.name')
-                    ->label(__('Attention Type')),
+                Tables\Columns\TextColumn::make('action_type.name')
+                    ->label(__('Action Type')),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Register date')),
             ])
@@ -141,7 +141,7 @@ class AttentionsRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->modalHeading(__('Edit attention')),
+                    ->modalHeading(__('Edit action')),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

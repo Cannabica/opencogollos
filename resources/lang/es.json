@@ -29,12 +29,12 @@
     "Observation": "Observaciones",
     "Death": "Muerte",
 
-
-    "Attention":"Cuidado",
-    "attention":"cuidado",
-    "Attentions":"Cuidados",
-    "Attention Type":"Tipo de Cuidado",
-    "Attentions Types":"Tipos de Cuidados",
+    "action": "acción",
+    "actions": "acciones",
+    "Action": "Acción",
+    "Actions": "Acciones",
+    "Action Type": "Tipo de Acción",
+    "Actons Types": "Tipos de Acciones",
 
     "Name": "Nombre"
 }

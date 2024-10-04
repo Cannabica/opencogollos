@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('tenant_id')->constrained('tenants');
+            $table->integer('fan_number')->default(0);
+            $table->json('lamps')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

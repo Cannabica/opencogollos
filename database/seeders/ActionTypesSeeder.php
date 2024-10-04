@@ -5,14 +5,14 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class AttentionTypeSeeder extends Seeder
+class ActionTypesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $attentionTypes = [
+        $actionsTypes = [
             'Registrar riego',
             'Registrar poda',
             'Registrar aplique producto',
@@ -21,8 +21,8 @@ class AttentionTypeSeeder extends Seeder
             'Muerte de la planta'
         ];
 
-        foreach ($attentionTypes as $type) {
-            DB::table('attention_types')->insert([
+        foreach ($actionsTypes as $type) {
+            DB::table('action_types')->insert([
                 'name' => $type,
                 'created_at' => now(),
                 'updated_at' => now(),

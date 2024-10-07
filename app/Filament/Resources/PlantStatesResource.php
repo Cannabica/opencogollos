@@ -15,66 +15,88 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use App\Models\ActionType;
 
 class PlantStatesResource extends Resource
 {
     protected static ?string $model = PlantState::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+
+    public static function getPluralLabel(): string
+    {
+        return __('Plant States');
+    }
+    public static function getLabel(): string
+    {
+        return __('Plant State');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('days_since')
-                ->label(__('Days Since'))
-                ->numeric()
-                ->integer()
-                ->minValue(0)
-                ->required(),
+                    Section::make('Etapa Comprendida')
+                        ->schema([
+                            TextInput::make('days_since')
+                                ->label(__('Days Since'))
+                                ->numeric()
+                                ->integer()
+                                ->minValue(0)
+                                ->required(),
+        
+                            TextInput::make('days_until')
+                                ->label(__('Days Until'))
+                                ->numeric()
+                                ->integer()
+                                ->minValue(0)
+                                ->required(),
+                        ]),
 
-            TextInput::make('days_until')
-                ->label(__('Days Until'))
-                ->numeric()
-                ->integer()
-                ->minValue(0)
-                ->required(),
+                    Section::make('Horas de luz')
+                        ->schema([
+                            TextInput::make('min_daylight_hours')
+                                ->label(__('Minimum daylight hours'))
+                                ->numeric()
+                                ->required(),
 
-            TextInput::make('min_daylight_hours')
-                ->label(__('Minimum daylight hours'))
-                ->numeric()
-                ->required(),
+                            TextInput::make('max_daylight_hours')
+                                ->label(__('Maximum daylight hours'))
+                                ->numeric()
+                                ->required(),
+                        ]),
 
-            TextInput::make('max_daylight_hours')
-                ->label(__('Maximum daylight hours'))
-                ->numeric()
-                ->required(),
+                    Section::make('Humedad')
+                        ->schema([
+                            TextInput::make('min_humidity')
+                                ->label(__('Minimum humidity'))
+                                ->numeric()
+                                ->required(),
 
-            TextInput::make('min_humidity')
-                ->label(__('Minimum humidity'))
-                ->numeric()
-                ->required(),
+                            TextInput::make('max_humidity')
+                                ->label(__('Maximum humidity'))
+                                ->numeric()
+                                ->required(),
+                        ]),
 
-            TextInput::make('max_humidity')
-                ->label(__('Maximum humidity'))
-                ->numeric()
-                ->required(),
-
-            Repeater::make('actions')
-                ->label(__('Actions'))
-                  // Si tienes relación con otro modelo de Acciones
-                ->schema([
-                    Select::make('action_type_id')
-                        ->label('Tipo de Acción')
-                        ->options(ActionType::all()->pluck('name', 'id')) // Obtén todas las acciones disponibles
-                        //->searchable()
-                        ->required(),
-                ])
-                ->minItems(1)
-                ->maxItems(10)
-                ->columns(1)
-            ]);
+                Repeater::make('actions')
+                    ->label(__('Actions'))
+                      // Si tienes relación con otro modelo de Acciones
+                    ->schema([
+                        Select::make('action_type_id')
+                            ->label('Tipo de Acción')
+                            ->options(ActionType::all()->pluck('name', 'id')) // Obtén todas las acciones disponibles
+                            //->searchable()
+                            ->required(),
+                        TextInput::make('add_information')
+                            ->label(__('Additional Information'))
+                            ->required(),
+                    ])
+                    ->minItems(1)
+                    ->maxItems(10)
+                    ->columns(1)
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table

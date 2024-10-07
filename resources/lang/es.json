@@ -43,5 +43,10 @@
     "Light Type": "Tipo de Luz",
     "Power in Watts": "Poder en Watts",
 
+    "Batch": "Lote",
+    "batch": "lote",
+    "Batches": "Lotes",
+    "batches": "lotes",
+
     "Name": "Nombre"
 }

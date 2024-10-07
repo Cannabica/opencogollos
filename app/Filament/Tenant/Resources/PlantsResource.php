@@ -8,6 +8,7 @@ use App\Filament\Tenant\Resources\PlantsResource\RelationManagers\ActionsRelatio
 use App\Models\Plant;
 use App\Models\Indoor;
 use App\Models\Seed;
+use App\Models\Batch;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -64,6 +65,11 @@ class PlantsResource extends Resource
                         'Cosecha y curado',
                     ])
                     ->required(),
+                Forms\Components\Select::make('batches')
+                    ->label(__('Batch'))
+                    ->options(function () {
+                        return Batch::pluck('name', 'id');
+                    })
             ]);
     }
 

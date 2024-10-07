@@ -28,8 +28,9 @@ class SuperadminPanelProvider extends PanelProvider
             ->path('superadmin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#006400'),
             ])
+            ->font(family: 'Nunito')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

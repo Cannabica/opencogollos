@@ -8,6 +8,7 @@ use App\Filament\Tenant\Resources\PlantsResource\RelationManagers\ActionsRelatio
 use App\Models\Plant;
 use App\Models\Indoor;
 use App\Models\Seed;
+use App\Models\Batch;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,7 +22,7 @@ class PlantsResource extends Resource
 {
     protected static ?string $model = Plant::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-sun';
 
     public static function getPluralLabel(): string
     {
@@ -89,6 +90,11 @@ class PlantsResource extends Resource
                 Forms\Components\DateTimePicker::make('planting_date')
                     ->label(__('Planting Date'))
                     ->required(),
+                Forms\Components\Select::make('batches')
+                    ->label(__('Batch'))
+                    ->options(function () {
+                        return Batch::pluck('name', 'id');
+                    })
             ]);
     }
 

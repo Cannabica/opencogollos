@@ -22,7 +22,7 @@ class IndoorResource extends Resource
 {
     protected static ?string $model = Indoor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-home-modern';
 
     public static function getPluralLabel(): string
     {
@@ -43,7 +43,7 @@ class IndoorResource extends Resource
                 Hidden::make('tenant_id')
                     ->default(fn () => auth()->user()->tenant_id),
                 TextInput::make('fan_number')
-                    ->label(__('Number of Fans'))
+                    ->label(__('Fans Quantity'))
                     ->numeric()
                     ->integer()
                     ->minValue(0)

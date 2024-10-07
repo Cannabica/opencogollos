@@ -21,7 +21,7 @@ class PlantsResource extends Resource
 {
     protected static ?string $model = Plant::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-sun';
 
     public static function getPluralLabel(): string
     {

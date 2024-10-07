@@ -26,8 +26,9 @@ class TenantPanelProvider extends PanelProvider
             ->id('tenant')
             ->path('tenant')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#3eff38'),
             ])
+            ->font(family: 'Nunito')
             ->login()
             ->discoverResources(in: app_path('Filament/Tenant/Resources'), for: 'App\\Filament\\Tenant\\Resources')
             ->discoverPages(in: app_path('Filament/Tenant/Pages'), for: 'App\\Filament\\Tenant\\Pages')

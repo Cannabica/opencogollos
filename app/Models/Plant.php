@@ -9,7 +9,7 @@ class Plant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'seed_id', 'indoor_id'];
+    protected $fillable = ['name', 'seed_id', 'indoor_id', 'batches'];
 
     public function seedType()
     {
@@ -24,5 +24,10 @@ class Plant extends Model
     public function Actions()
     {
         return $this->hasMany(Action::class);
+    }
+
+    public function batches()
+    {
+        return $this->hasMany(Batch::class, 'batches');
     }
 }

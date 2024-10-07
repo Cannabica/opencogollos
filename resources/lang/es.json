@@ -36,5 +36,10 @@
     "Action Type": "Tipo de Acción",
     "Actons Types": "Tipos de Acciones",
 
+    "Batch": "Lote",
+    "batch": "lote",
+    "Batches": "Lotes",
+    "batches": "lotes",
+
     "Name": "Nombre"
 }

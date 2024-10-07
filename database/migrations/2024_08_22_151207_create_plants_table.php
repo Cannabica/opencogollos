@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('seed_id')->constrained('seeds'); 
-            $table->foreignId('indoor_id')->constrained('indoors');
+            $table->foreignId('indoor_id')->constrained('indoors'); 
+            $table->string('etapa'); 
+            $table->string('pot_type'); 
+            $table->date('germination_date')->nullable(); 
+            $table->date('planting_date')->nullable(); 
             $table->foreignId('batches')->constrained('batches');
             $table->softDeletes(); 
             $table->timestamps();

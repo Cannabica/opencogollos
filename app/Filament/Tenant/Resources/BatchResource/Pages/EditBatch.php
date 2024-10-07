@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\PlantResource\Pages;
+namespace App\Filament\Tenant\Resources\BatchResource\Pages;
 
-use App\Filament\Resources\PlantResource;
+use App\Filament\Tenant\Resources\BatchResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
-class EditPlant extends EditRecord
+class EditBatch extends EditRecord
 {
-    protected static string $resource = PlantResource::class;
+    protected static string $resource = BatchResource::class;
 
     protected function getHeaderActions(): array
     {

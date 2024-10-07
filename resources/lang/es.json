@@ -16,9 +16,6 @@
     "Tenant": "Arrendatario",
     "Tenants": "Arrendatarios",
 
-    "Indoor": "Interior",
-    "Indoors": "Interiores",
-
     "Irrigation": "Riego",
     "Irrigation Date": "Fecha de Riego",
     "Pruning": "Poda",
@@ -34,7 +31,22 @@
     "Action": "Acción",
     "Actions": "Acciones",
     "Action Type": "Tipo de Acción",
-    "Actons Types": "Tipos de Acciones",
+    "Actions Types": "Tipos de Acciones",
+
+    "Plant States": "Estados de Plantas",
+    "Plant State": "Estado de Planta",
+    "plant state": "estado de planta",
+    "plant states": "estados de plantas",
+
+    "Fans Quantity": "Cantidad de Ventiladores",
+    "Lamps": "Lamparas",
+    "Light Type": "Tipo de Luz",
+    "Power in Watts": "Poder en Watts",
+
+    "Batch": "Lote",
+    "batch": "lote",
+    "Batches": "Lotes",
+    "batches": "lotes",
 
     "Pot Type": "Tipo de Plantación",
     "Germination Date": "Fecha de Germinación",

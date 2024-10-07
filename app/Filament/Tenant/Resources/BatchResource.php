@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Tenant\Resources;
 
-use App\Filament\Resources\PlantResource\Pages;
-use App\Filament\Resources\PlantResource\RelationManagers;
-use App\Models\Plant;
+use App\Filament\Tenant\Resources\BatchResource\Pages;
+use App\Filament\Tenant\Resources\BatchResource\RelationManagers;
+use App\Models\Batch;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,18 +12,34 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Tables\Columns\TextColumn;
 
-class PlantResource extends Resource
+class BatchResource extends Resource
 {
-    protected static ?string $model = Plant::class;
+    protected static ?string $model = Batch::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getPluralLabel(): string
+    {
+        return __('Batches');
+    }
+    public static function getLabel(): string
+    {
+        return __('Batch');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->label(__('Name'))
+                    ->required(),
             ]);
     }
 
@@ -31,7 +47,8 @@ class PlantResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name')
+                    ->label(__('Name')),
             ])
             ->filters([
                 //
@@ -56,9 +73,9 @@ class PlantResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPlants::route('/'),
-            'create' => Pages\CreatePlant::route('/create'),
-            'edit' => Pages\EditPlant::route('/{record}/edit'),
+            'index' => Pages\ListBatches::route('/'),
+            'create' => Pages\CreateBatch::route('/create'),
+            'edit' => Pages\EditBatch::route('/{record}/edit'),
         ];
     }
 }

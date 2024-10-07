@@ -9,7 +9,7 @@ class Plant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'seed_id', 'indoor_id', 'batches'];
+    protected $fillable = ['name', 'seed_id', 'indoor_id', 'germination_date', 'planting_date', 'pot_type', 'etapa'];
 
     public function seedType()
     {

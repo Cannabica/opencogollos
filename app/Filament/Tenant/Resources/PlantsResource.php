@@ -65,6 +65,31 @@ class PlantsResource extends Resource
                         'Cosecha y curado',
                     ])
                     ->required(),
+                Forms\Components\Select::make('pot_type')
+                    ->label(__('Pot Type'))
+                    ->options([
+                        'N10',
+                        'N12',
+                        'N14',
+                        '3L',
+                       ' 5L',
+                       ' 7L',
+                        '10L',
+                        '12L',
+                        '15L',
+                        '20L',
+                        '30L',
+                        '40L',
+                        '50L',
+                        '75L',
+                    ])
+                    ->required(),
+                Forms\Components\DateTimePicker::make('germination_date')
+                    ->label(__('Germination Date'))
+                    ->required(),
+                Forms\Components\DateTimePicker::make('planting_date')
+                    ->label(__('Planting Date'))
+                    ->required(),
                 Forms\Components\Select::make('batches')
                     ->label(__('Batch'))
                     ->options(function () {

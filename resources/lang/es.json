@@ -37,6 +37,13 @@
     "Plant State": "Estado de Planta",
     "plant state": "estado de planta",
     "plant states": "estados de plantas",
+    "Days Since": "Días desde",
+    "Days Until": "Días hasta",
+    "Minimum daylight hours": "Horas mínimas de luz",
+    "Maximum daylight hours": "Horas máximas de luz",
+    "Minimum humidity": "Humedad Mínima",
+    "Maximum humidity": "Humedad Máxima",
+    "Additional Information": "Información Adicional",
 
     "Fans Quantity": "Cantidad de Ventiladores",
     "Lamps": "Lamparas",
@@ -52,5 +59,6 @@
     "Germination Date": "Fecha de Germinación",
     "Planting Date": "Fecha de Plantación",
 
-    "Name": "Nombre"
+    "Name": "Nombre",
+    "Active": "Activo"
 }

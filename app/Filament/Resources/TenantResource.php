@@ -50,9 +50,11 @@ class TenantResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('name')
+                ->label(__('Name')),
                 Tables\Columns\TextColumn::make('email'),
-                CheckboxColumn::make('active'),
+                CheckboxColumn::make('active')
+                ->label(__('Active')),
             ])
             ->filters([
                 //

@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('pot_type'); 
             $table->date('germination_date')->nullable(); 
             $table->date('planting_date')->nullable(); 
-            $table->foreignId('batches')->constrained('batches');
             $table->softDeletes(); 
             $table->timestamps();
             

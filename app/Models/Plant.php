@@ -25,9 +25,4 @@ class Plant extends Model
     {
         return $this->belongsToMany(Action::class, 'action_plant');
     }
-
-    public function batches()
-    {
-        return $this->hasMany(Batch::class, 'batches');
-    }
 }

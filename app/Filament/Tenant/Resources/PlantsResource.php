@@ -90,11 +90,6 @@ class PlantsResource extends Resource
                 Forms\Components\DateTimePicker::make('planting_date')
                     ->label(__('Planting Date'))
                     ->required(),
-                Forms\Components\Select::make('batches')
-                    ->label(__('Batch'))
-                    ->options(function () {
-                        return Batch::pluck('name', 'id');
-                    })
             ]);
     }
 

@@ -16,7 +16,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Fieldset;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\CheckboxList;
 
 class IndoorResource extends Resource
 {
@@ -40,33 +43,125 @@ class IndoorResource extends Resource
                 TextInput::make('name')
                     ->label(__('Name'))
                     ->required(),
+
+                Fieldset::make(__('Dimensions'))
+                    ->schema([
+                       
+                        TextInput::make('large')
+                            ->label(__('Large'))
+                            ->numeric()
+                            ->required(),
+
+                        TextInput::make('width')
+                            ->label(__('Width'))
+                            ->numeric()
+                            ->required(),
+                        
+                        TextInput::make('height')
+                            ->label(__('Height'))
+                            ->numeric()
+                            ->required(),
+
+                    ]),
+
                 Hidden::make('tenant_id')
                     ->default(fn () => auth()->user()->tenant_id),
-                TextInput::make('fan_number')
-                    ->label(__('Fans Quantity'))
-                    ->numeric()
-                    ->integer()
-                    ->minValue(0)
-                    ->required(),
+
+                Repeater::make('fans')
+                    ->label(__('Fans'))
+                    ->schema([
+
+                        TextInput::make('inches')
+                            ->label(__('Inches'))
+                            ->numeric()
+                            ->required(),
+
+                    ]),
+
                 Repeater::make('lamps')
                     ->label(__('Lamps'))
                     ->schema([
-                        Select::make('light_type')
-                            ->label(__('Light Type'))
+
+                        TextInput::make('power')
+                            ->label(__('Power in Watts'))
+                            ->numeric()
+                            ->required(),
+
+                        Select::make('technology')
+                            ->label(__('Technology'))
                             ->options([
-                                'cold' => 'Fría',
-                                'hot' => 'Cálida',
+                                'led' => 'Led',
+                                'sodio' => 'Sodio',
                             ])
                             ->required(),
                             
-                        TextInput::make('power')
-                            ->label(__('Power in Watts'))
+                        TextInput::make('coverage_area')
+                            ->label(__('Coverage area'))
                             ->numeric()
                             ->required(),
                     ])
                     //->collapsible()  
                     ->minItems(1)   
-                    ->columns(2),     
+                    ->columns(3),   
+ 
+                Section::make(__('Additional equipment'))
+                        ->description('')
+                        ->schema([
+                        
+                            CheckboxList::make('hygometer')
+                                ->label(__('Tengo higometro para medir temperatura y humedad'))
+                                ->options([
+                                    'tailwind' => 'Tailwind CSS',
+                                    'alpine' => 'Alpine.js',
+                                    'laravel' => 'Laravel',
+                                    'livewire' => 'Laravel Livewire',
+                                ]),
+
+                            CheckboxList::make('Humidifier')
+                                ->label(__('Tengo algún humidificador'))
+                                ->options([
+                                    'tailwind' => 'Tailwind CSS',
+                                    'alpine' => 'Alpine.js',
+                                    'laravel' => 'Laravel',
+                                    'livewire' => 'Laravel Livewire',
+                                ])
+                                
+                                ]),
+
+                Section::make(__('Automatic irrigation equipment'))
+                        ->description('')
+                        ->schema([
+                        
+                            TextInput::make('peak_quantity')
+                                ->label('Peak Quantity')
+                                ->numeric()
+                                ->required(),
+            
+                            TextInput::make('scheduled_time')
+                                ->label('Scheduled Time')
+                                ->numeric()
+                                ->required(),
+            
+                            TextInput::make('times_a_day')
+                                ->label('Times a day')
+                                ->numeric()
+                                ->required(),
+            
+                            CheckboxList::make('scheduled_days')
+                                ->label('Scheduled days')
+                                ->options([
+                                    'lunes' => 'Lunes',
+                                    'martes' => 'Martes',
+                                    'miércoles' => 'Miércoles',
+                                    'jueves' => 'Jueves',
+                                    'viernes' => 'Viernes',
+                                    'sábado' => 'Sábado',
+                                    'domingo' => 'Domingo',
+                                ])
+                                ->columns(3)
+                                ->required(),
+                                
+                        ])
                 
             ]);
     }

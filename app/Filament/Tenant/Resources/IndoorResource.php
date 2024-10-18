@@ -20,6 +20,7 @@ use Filament\Forms\Components\Fieldset;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Checkbox;
 
 class IndoorResource extends Resource
 {
@@ -107,24 +108,12 @@ class IndoorResource extends Resource
                 Section::make(__('Additional equipment'))
                         ->description('')
                         ->schema([
-                        
-                            CheckboxList::make('hygometer')
-                                ->label(__('Tengo higometro para medir temperatura y humedad'))
-                                ->options([
-                                    'tailwind' => 'Tailwind CSS',
-                                    'alpine' => 'Alpine.js',
-                                    'laravel' => 'Laravel',
-                                    'livewire' => 'Laravel Livewire',
-                                ]),
+ 
+                            Checkbox::make('hygometer')
+                                ->label(__('Tengo higometro para medir temperatura y humedad')),
 
-                            CheckboxList::make('Humidifier')
-                                ->label(__('Tengo algún humidificador'))
-                                ->options([
-                                    'tailwind' => 'Tailwind CSS',
-                                    'alpine' => 'Alpine.js',
-                                    'laravel' => 'Laravel',
-                                    'livewire' => 'Laravel Livewire',
-                                ])
+                            Checkbox::make('humidifier')
+                                ->label(__('Tengo algún humidificador')),
                                 
                                 ]),
 

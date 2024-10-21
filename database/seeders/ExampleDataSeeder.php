@@ -35,11 +35,11 @@ class ExampleDataSeeder extends Seeder
         ]);
 
         // Insertar en la tabla Indoors
-        DB::table('indoors')->insert([
-            'name' => 'Indoor Example',
-            'tenant_id' => 1,
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-        ]);
+        // DB::table('indoors')->insert([
+        //     'name' => 'Indoor Example',
+        //     'tenant_id' => 1,
+        //     'created_at' => Carbon::now(),
+        //     'updated_at' => Carbon::now(),
+        // ]);
     }
 }

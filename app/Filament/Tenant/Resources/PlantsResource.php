@@ -17,6 +17,15 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\TextColumn;
 
 class PlantsResource extends Resource
 {
@@ -37,59 +46,82 @@ class PlantsResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label(__('Name'))
-                    ->required(),
-                Forms\Components\Select::make('seed_id')
-                    ->label(__('Seed Type'))
-                    ->options(function () {
-                        return Seed::pluck('name', 'id');
-                    })
-                    ->required(),
-                Forms\Components\Select::make('indoor_id')
-                    ->label(__('Indoor'))
-                    ->options(function () {
-                        // Filtrar las opciones por el tenant_id del usuario autenticado
-                        $tenantId = Auth::user()->tenant_id;
-                        return Indoor::where('tenant_id', $tenantId)
-                            ->pluck('name', 'id');
-                    })
-                    ->required(),
-                Forms\Components\Select::make('etapa')
-                    ->label(__('Etapa'))
-                    ->options([
-                        'Germinación',
-                        'Plántula',
-                        'Vegetativa',
-                        'Floración',
-                        'Cosecha y curado',
-                    ])
-                    ->required(),
-                Forms\Components\Select::make('pot_type')
-                    ->label(__('Pot Type'))
-                    ->options([
-                        'N10',
-                        'N12',
-                        'N14',
-                        '3L',
-                       ' 5L',
-                       ' 7L',
-                        '10L',
-                        '12L',
-                        '15L',
-                        '20L',
-                        '30L',
-                        '40L',
-                        '50L',
-                        '75L',
-                    ])
-                    ->required(),
-                Forms\Components\DateTimePicker::make('germination_date')
-                    ->label(__('Germination Date'))
-                    ->required(),
-                Forms\Components\DateTimePicker::make('planting_date')
-                    ->label(__('Planting Date'))
-                    ->required(),
+
+                Section::make(__('Basic Data'))
+                    ->schema([
+                        
+                        Select::make('seed_id')
+                            ->label(__('Seed Type'))
+                            ->options(function () {
+                                return Seed::pluck('name', 'id');
+                            })
+                            ->required(),
+
+                        DatePicker::make('germination_date')
+                            ->label(__('Germination Date'))
+                            ->required(),
+
+                    ]),
+
+                Section::make(__('Pot and Substrate'))
+                    ->schema([
+                        
+                        Select::make('pot_type')
+                            ->label(__('Pot Type'))
+                            ->options([
+                                'Geotextiles',
+                                'Plásticas',
+                                'Bolsones'
+                            ])
+                            ->required(),
+
+                        TextInput::make('capacity')
+                            ->label(__('Capacity'))
+                            ->numeric()
+                            ->required(),
+                    ]),
+
+                Section::make(__('Base Floor'))
+                    ->schema([
+                        
+                        CheckboxList::make('base_floor')
+                            ->options([
+                                'Turba',
+                                'Guano',
+                                'Estiércol',
+                                'Polvo de roca',
+                                'Arena',
+                                'Fibra de coco',
+                                'Abono naturales',
+                                'Corteza de pino',
+                                'Perlita',
+                                'Vermiculita'
+                            ]),
+
+                    ]),
+
+                Section::make(__('Soil Enrichment'))
+                    ->schema([
+                        
+                        CheckboxList::make('soil_enrichment')
+                            ->options([
+                                'Posos de café y/o te',
+                                'Cascaras de huevo',
+                                'Humus de lombriz',
+                                'Pieles de frutas y verd',
+                                'Abono',
+                                'Fibra de coco',
+                                'Perlita',
+                                'Vermiculita',
+                                'Arena',
+                                'Harina de huesos',
+                                'Harina de sangre',
+                                'Roca fosfórica',
+                                'Cal'
+                            ])
+
+                    ]),
+
             ]);
     }
 
@@ -97,12 +129,10 @@ class PlantsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label(__('Name')),
-                Tables\Columns\TextColumn::make('seedType.name')
+                TextColumn::make('seedType.name')
                     ->label(__('Seed Type')),
-                Tables\Columns\TextColumn::make('indoor.name')
-                    ->label(__('Indoor')),
+                TextColumn::make('germination_date')
+                    ->label(__('Germination Date')),
             ])
             ->filters([
                 //

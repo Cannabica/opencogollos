@@ -14,6 +14,11 @@ return new class extends Migration
         Schema::create('seeds', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->foreignId('tenant_id')->nullable()->constrained('tenants');
+            $table->string('seed_type');
+            $table->integer('flowering_time');
+            $table->integer('ratio_ths');
+            $table->integer('ratio_cbd');
             $table->timestamps();
             $table->softdeletes();
         });

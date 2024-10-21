@@ -27,11 +27,20 @@ class SeedResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getPluralLabel(): string
+    {
+        return __('Seeds');
+    }
+    public static function getLabel(): string
+    {
+        return __('Seed');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                
+
                 TextInput::make('name')
                     ->label(__('Name'))
                     ->required(),

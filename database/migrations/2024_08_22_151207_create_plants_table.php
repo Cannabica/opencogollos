@@ -13,15 +13,17 @@ return new class extends Migration
     {
         Schema::create('plants', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->foreignId('seed_id')->constrained('seeds');
-            $table->date('germination_date')->nullable();   
+            $table->foreignId('indoor_id')->constrained('indoors');
+            $table->date('germination_date')->nullable();
             $table->string('pot_type');
             $table->integer('capacity');
-            $table->json('base_floor')->nullable(); 
+            $table->json('base_floor')->nullable();
             $table->json('soil_enrichment')->nullable();
-            $table->softDeletes(); 
+            $table->softDeletes();
             $table->timestamps();
-            
+
         });
     }
 

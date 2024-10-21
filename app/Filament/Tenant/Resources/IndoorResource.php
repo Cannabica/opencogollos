@@ -47,7 +47,7 @@ class IndoorResource extends Resource
 
                 Fieldset::make(__('Dimensions'))
                     ->schema([
-                       
+
                         TextInput::make('large')
                             ->label(__('Large'))
                             ->numeric()
@@ -57,7 +57,7 @@ class IndoorResource extends Resource
                             ->label(__('Width'))
                             ->numeric()
                             ->required(),
-                        
+
                         TextInput::make('height')
                             ->label(__('Height'))
                             ->numeric()
@@ -95,47 +95,44 @@ class IndoorResource extends Resource
                                 'sodio' => 'Sodio',
                             ])
                             ->required(),
-                            
+
                         TextInput::make('coverage_area')
                             ->label(__('Coverage area'))
                             ->numeric()
                             ->required(),
                     ])
-                    //->collapsible()  
-                    ->minItems(1)   
-                    ->columns(3),   
- 
+                    //->collapsible()
+                    ->minItems(1)
+                    ->columns(3),
+
                 Section::make(__('Additional equipment'))
                         ->description('')
                         ->schema([
- 
+
                             Checkbox::make('hygometer')
                                 ->label(__('Tengo higometro para medir temperatura y humedad')),
 
                             Checkbox::make('humidifier')
                                 ->label(__('Tengo algún humidificador')),
-                                
+
                                 ]),
 
                 Section::make(__('Automatic irrigation equipment'))
                         ->description('')
                         ->schema([
-                        
+
                             TextInput::make('peak_quantity')
                                 ->label('Peak Quantity')
-                                ->numeric()
-                                ->required(),
-            
+                                ->numeric(),
+
                             TextInput::make('scheduled_time')
                                 ->label('Scheduled Time')
-                                ->numeric()
-                                ->required(),
-            
+                                ->numeric(),
+
                             TextInput::make('times_a_day')
                                 ->label('Times a day')
-                                ->numeric()
-                                ->required(),
-            
+                                ->numeric(),
+
                             CheckboxList::make('scheduled_days')
                                 ->label('Scheduled days')
                                 ->options([
@@ -147,11 +144,10 @@ class IndoorResource extends Resource
                                     'sábado' => 'Sábado',
                                     'domingo' => 'Domingo',
                                 ])
-                                ->columns(3)
-                                ->required(),
-                                
+                                ->columns(3),
+
                         ])
-                
+
             ]);
     }
 

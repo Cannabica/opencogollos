@@ -49,7 +49,22 @@ class PlantsResource extends Resource
 
                 Section::make(__('Basic Data'))
                     ->schema([
-                        
+
+                        Select::make('indoor_id')
+                            ->label(__('Indoor'))
+                            ->options(function () {
+                                return Indoor::pluck('name', 'id'); //TODO Scope Tenant
+                            })
+                            ->default(function() {
+                                if(Indoor::count() == 1) return Indoor::first()->id;
+                                return null;
+                            })
+                            ->required(),
+
+                        TextInput::make('name')
+                            ->label(__('Name'))
+                            ->required(),
+
                         Select::make('seed_id')
                             ->label(__('Seed Type'))
                             ->options(function () {
@@ -65,7 +80,7 @@ class PlantsResource extends Resource
 
                 Section::make(__('Pot and Substrate'))
                     ->schema([
-                        
+
                         Select::make('pot_type')
                             ->label(__('Pot Type'))
                             ->options([
@@ -83,7 +98,7 @@ class PlantsResource extends Resource
 
                 Section::make(__('Base Floor'))
                     ->schema([
-                        
+
                         CheckboxList::make('base_floor')
                             ->options([
                                 'Turba',
@@ -102,7 +117,7 @@ class PlantsResource extends Resource
 
                 Section::make(__('Soil Enrichment'))
                     ->schema([
-                        
+
                         CheckboxList::make('soil_enrichment')
                             ->options([
                                 'Posos de café y/o te',

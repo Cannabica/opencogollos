@@ -34,11 +34,11 @@ class ActionsResource extends Resource
 
     public static function getPluralLabel(): string
     {
-        return __('Action');
+        return __('Actions');
     }
     public static function getLabel(): string
     {
-        return __('Actions');
+        return __('Action');
     }
 
     public static function form(Form $form): Form
@@ -68,7 +68,7 @@ class ActionsResource extends Resource
                                     ->pluck('name', 'id')
                                     ->toArray())
                                 ->reactive()
-                                ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1 
+                                ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
                                     ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
                                     : null)
                                 ->required(),
@@ -109,7 +109,7 @@ class ActionsResource extends Resource
                                    ->pluck('name', 'id')
                                    ->toArray())
                                ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1 
+                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
                                    ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
                                    : null)
                                ->required(),
@@ -142,7 +142,7 @@ class ActionsResource extends Resource
                                    ->pluck('name', 'id')
                                    ->toArray())
                                ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1 
+                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
                                    ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
                                    : null)
                                ->required(),
@@ -180,7 +180,7 @@ class ActionsResource extends Resource
                                    ->pluck('name', 'id')
                                    ->toArray())
                                ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1 
+                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
                                    ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
                                    : null)
                                ->required(),
@@ -222,7 +222,7 @@ class ActionsResource extends Resource
                                    ->pluck('name', 'id')
                                    ->toArray())
                                ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1 
+                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
                                    ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
                                    : null)
                                ->required(),
@@ -253,7 +253,7 @@ class ActionsResource extends Resource
                                ->pluck('name', 'id')
                                ->toArray())
                            ->reactive()
-                           ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1 
+                           ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
                                ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
                                : null)
                            ->required(),

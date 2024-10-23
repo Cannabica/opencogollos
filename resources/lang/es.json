@@ -59,6 +59,10 @@
     "Germination Date": "Fecha de Germinación",
     "Planting Date": "Fecha de Plantación",
 
+    "Crop Plan": "Plan de Cultivo",
+    "crop plan": "plan de cultivo",
+    "Crop Plans": "Planes de Cultivo",
+
     "Name": "Nombre",
     "Active": "Activo"
 }

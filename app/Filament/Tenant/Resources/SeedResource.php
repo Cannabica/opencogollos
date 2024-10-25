@@ -59,8 +59,8 @@ class SeedResource extends Resource
                     ->numeric()
                     ->required(),
 
-                TextInput::make('ratio_ths')
-                    ->label(__('Ratio THS (en %)'))
+                TextInput::make('ratio_thc')
+                    ->label(__('Ratio THC (en %)'))
                     ->numeric()
                     ->required(),
 

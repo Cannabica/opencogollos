@@ -37,6 +37,11 @@ class PlantStatesResource extends Resource
     {
         return $form
             ->schema([
+
+                    TextInput::make('name')
+                        ->label(__('Name'))
+                        ->required(),
+
                     Section::make('Etapa Comprendida')
                         ->schema([
                             TextInput::make('days_since')

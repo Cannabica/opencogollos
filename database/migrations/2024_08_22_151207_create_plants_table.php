@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('seed_id')->constrained('seeds');
             $table->foreignId('indoor_id')->constrained('indoors');
-            $table->foreignId('plant_state_id')->nullable()->constrained('plant_states');
+            //$table->foreignId('plant_state_id')->nullable()->constrained('plant_states');
+            $table->string('state');
             $table->date('germination_date')->nullable();
             $table->string('flowerpot');
             $table->integer('capacity');

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
             $table->string('seed_type');
             $table->integer('flowering_time');
-            $table->integer('ratio_ths');
+            $table->integer('ratio_thc');
             $table->integer('ratio_cbd');
             $table->timestamps();
             $table->softdeletes();

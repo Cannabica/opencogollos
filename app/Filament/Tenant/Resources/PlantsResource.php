@@ -8,7 +8,7 @@ use App\Filament\Tenant\Resources\PlantsResource\RelationManagers\ActionsRelatio
 use App\Models\Plant;
 use App\Models\Indoor;
 use App\Models\Seed;
-use App\Models\Batch;
+use App\Models\PlantState;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -26,6 +26,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 
 class PlantsResource extends Resource
 {
@@ -72,6 +73,13 @@ class PlantsResource extends Resource
                             })
                             ->required(),
 
+                        Select::make('plant_state_id')
+                            ->label(__('Plant State'))
+                            ->options(function () {
+                                return PlantState::pluck('name', 'id'); 
+                            })
+                            ->required(),
+
                         DatePicker::make('germination_date')
                             ->label(__('Germination Date'))
                             ->required(),
@@ -81,12 +89,26 @@ class PlantsResource extends Resource
                 Section::make(__('Pot and Substrate'))
                     ->schema([
 
-                        Select::make('pot_type')
-                            ->label(__('Pot Type'))
+                        Select::make('flowerpot')
+                            ->label(__('Flowerpot'))
                             ->options([
                                 'Geotextiles',
                                 'Plásticas',
-                                'Bolsones'
+                                'Bolsones',
+                                'N10',
+                                'N12',
+                                'N14',
+                                '3L',
+                                '5L',
+                                '7L',
+                                '10L',
+                                '12L',
+                                '15L',
+                                '20L',
+                                '30L',
+                                '40L',
+                                '50L',
+                                '75L',
                             ])
                             ->required(),
 
@@ -144,13 +166,24 @@ class PlantsResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('name')
+                    ->label(__('Name')),  
                 TextColumn::make('seedType.name')
-                    ->label(__('Seed Type')),
+                    ->label(__('Seed Type')),   
                 TextColumn::make('germination_date')
                     ->label(__('Germination Date')),
             ])
             ->filters([
-                //
+                SelectFilter::make('seed_id')
+                    ->label(__('Seed Type'))
+                    ->options(function () {
+                        return Seed::pluck('name', 'id');
+                    }),
+                SelectFilter::make('plant_state_id')
+                    ->label(__('Plant State'))
+                    ->options(function () {
+                        return PlantState::pluck('name', 'id'); 
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

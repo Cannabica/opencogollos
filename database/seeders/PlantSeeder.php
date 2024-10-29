@@ -23,7 +23,7 @@ class PlantSeeder extends Seeder
                 'seed_id' => 1, 
                 'indoor_id' => $indoors[array_rand($indoors)], // Seleccionar un indoor aleatorio
                 'germination_date' => now()->subDays(rand(1, 30)), // Fecha de germinación aleatoria
-                'pot_type' => ['Geotextiles', 'Plásticas', 'Bolsones'][array_rand(['Geotextiles', 'Plásticas', 'Bolsones'])],
+                'flowerpot' => ['Geotextiles', 'Plásticas', 'Bolsones'][array_rand(['Geotextiles', 'Plásticas', 'Bolsones'])],
                 'capacity' => rand(1, 20), // Capacidad aleatoria entre 1 y 20
                 'base_floor' => json_encode(array_rand(['Turba', 'Guano', 'Estiércol', 'Polvo de roca', 'Arena', 'Fibra de coco', 'Abono naturales', 'Corteza de pino', 'Perlita', 'Vermiculita'], 3)), // Seleccionar 3 elementos aleatorios
                 'soil_enrichment' => json_encode(array_rand(['Posos de café y/o te', 'Cascaras de huevo', 'Humus de lombriz', 'Pieles de frutas y verd', 'Abono', 'Fibra de coco', 'Perlita', 'Vermiculita', 'Arena', 'Harina de huesos', 'Harina de sangre', 'Roca fosfórica', 'Cal'], 3)), // Seleccionar 3 elementos aleatorios

@@ -37,6 +37,11 @@ class PlantStatesResource extends Resource
     {
         return $form
             ->schema([
+
+                    TextInput::make('name')
+                        ->label(__('Name'))
+                        ->required(),
+
                     Section::make('Etapa Comprendida')
                         ->schema([
                             TextInput::make('days_since')
@@ -103,6 +108,7 @@ class PlantStatesResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')->label('Nombre'),
                 Tables\Columns\TextColumn::make('days_since')->label('Días desde'),
                 Tables\Columns\TextColumn::make('days_until')->label('Días hasta'),
                 Tables\Columns\TextColumn::make('min_daylight_hours')->label('Horas de luz mínimo'),

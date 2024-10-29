@@ -18,7 +18,8 @@ class ActionTypesSeeder extends Seeder
             'Registrar aplique producto',
             'Registrar transplante',
             'Observación con foto',
-            'Muerte de la planta'
+            'Muerte de la planta',
+            'Cambio de Estado'
         ];
 
         foreach ($actionsTypes as $type) {

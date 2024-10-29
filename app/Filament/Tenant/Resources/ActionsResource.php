@@ -8,11 +8,17 @@ use App\Models\Action;
 use App\Models\ActionType;
 use App\Models\Indoor;
 use App\Models\Plant;
+use App\Models\PlantState;
+use App\Models\Post;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\DateFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\DatePicker;
@@ -23,6 +29,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Carbon\Carbon;
 use Filament\Forms\Get;
 
@@ -78,6 +85,7 @@ class ActionsResource extends Resource
                                 ->label(__('Plants'))
                                 ->relationship('plants', 'name')
                                 ->columns(2)
+                                ->bulkToggleable()
                                 ->required(),
 
                             Select::make('data.irrigation.irrigation_type')
@@ -119,6 +127,7 @@ class ActionsResource extends Resource
                                ->label(__('Plants'))
                                ->relationship('plants', 'name')
                                ->columns(2)
+                               ->bulkToggleable()
                                ->required(),
 
                             CheckboxList::make('data.pruning.pruning_type')
@@ -152,6 +161,7 @@ class ActionsResource extends Resource
                                ->label(__('Plants'))
                                ->relationship('plants', 'name')
                                ->columns(2)
+                               ->bulkToggleable()
                                ->required(),
 
                             Select::make('data.product_application.application_type')
@@ -165,6 +175,9 @@ class ActionsResource extends Resource
                                     'other' => 'Otro'
                                 ])
                                 ->required(),
+                            
+                            Textarea::make('data.product_application.observation')
+                                ->label(__('Observations')),
 
                             Textarea::make('data.product_application.comments')
                                 ->label(__('Comments')),
@@ -190,25 +203,30 @@ class ActionsResource extends Resource
                                ->label(__('Plants'))
                                ->relationship('plants', 'name')
                                ->columns(2)
+                               ->bulkToggleable()
                                ->required(),
-
+                                
+                            Placeholder::make('current_pot_size')
+                               ->label(__('Current Pot Size'))
+                               ->content(fn ($record) => $record->data['transplant']['new_pot_size'] ?? __('No pot size available')),
+                               
                             Select::make('data.transplant.new_pot_size')
                                 ->label(__('Tamaño de la nueva maceta'))
                                 ->options([
-                                    'N10',
-                                    'N12',
-                                    'N14',
-                                    '3L',
-                                    '5L',
-                                    '7L',
-                                    '10L',
-                                    '12L',
-                                    '15L',
-                                    '20L',
-                                    '30L',
-                                    '40L',
-                                    '50L',
-                                    '75L',
+                                    'N10' => 'N10',
+                                    'N12' => 'N12',
+                                    'N14' => 'N14',
+                                    '3L'  => '3L',
+                                    '5L'  => '5L',
+                                    '7L'  => '7L',
+                                    '10L' => '10L',
+                                    '12L' => '12L',
+                                    '15L' => '15L',
+                                    '20L' => '20L',
+                                    '30L' => '30L',
+                                    '40L' => '40L',
+                                    '50L' => '50L',
+                                    '75L' => '75L',
                                 ])
                         ])
                         ->visible(fn(Get $get) => $get('action_type_id') == 4),
@@ -232,6 +250,7 @@ class ActionsResource extends Resource
                                ->label(__('Plants'))
                                ->relationship('plants', 'name')
                                ->columns(2)
+                               ->bulkToggleable()
                                ->required(),
 
                             FileUpload::make('data.observation.image')
@@ -258,14 +277,48 @@ class ActionsResource extends Resource
                                : null)
                            ->required(),
 
-                       // Select Plants based on Indoor
-                       CheckboxList::make('plant_id')
-                           ->label(__('Plants'))
-                           ->relationship('plants', 'name')
-                           ->columns(2)
-                           ->required(),
+                            // Select Plants based on Indoor
+                            CheckboxList::make('plant_id')
+                                ->label(__('Plants'))
+                                ->relationship('plants', 'name')
+                                ->columns(2)
+                                ->bulkToggleable()
+                                ->required(),
+
+                                ])
+                                ->visible(fn(Get $get) => $get('action_type_id') == 6),
+
+                    Section::make(__('Change of State'))
+                        ->schema([
+                            
+                            // Select Indoor
+                            Select::make('indoor_id')
+                            ->label(__('Indoor'))
+                            ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
+                                ->pluck('name', 'id')
+                                ->toArray())
+                            ->reactive()
+                            ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
+                                ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
+                                : null)
+                            ->required(),
+
+                            // Select Plants based on Indoor
+                            CheckboxList::make('plant_id')
+                                ->label(__('Plants'))
+                                ->relationship('plants', 'name')
+                                ->columns(2)
+                                ->bulkToggleable()
+                                ->required(),
+
+                            Select::make('data.change_state.state')
+                                ->label(__('Change State'))
+                                ->options(PlantState::pluck('name', 'id')->toArray())
+                                ->required(),
+
                         ])
-                        ->visible(fn(Get $get) => $get('action_type_id') == 6),
+                        ->visible(fn(Get $get) => $get('action_type_id') == 7),
+
             ])->columns(1);
     }
 
@@ -273,26 +326,65 @@ class ActionsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('action_date')
-                ->label(__('Action Date'))
-                ->dateTime('d/m/Y') // formato de la fecha
-                ->sortable(), // Permite ordenar por esta columna
+                // Columna para mostrar la fecha de la acción
+                TextColumn::make('created_at')
+                    ->label(__('Fecha'))
+                    ->dateTime('d/m/Y')
+                    ->sortable(), // Permite ordenar por fecha
 
-                Tables\Columns\TextColumn::make('action_type.name')
-                    ->label(__('Action Type'))
-                    ->sortable(),
+                // Columna para mostrar el tipo de acción
+                TextColumn::make('action_type.name')
+                    ->label(__('Tipo de acción'))
+                    ->sortable() // Permite ordenar por tipo de acción
+                    ->searchable(), // Permite buscar por tipo de acción
 
-                Tables\Columns\TextColumn::make('indoor.name')
-                    ->label(__('Indoor Name'))
-                    ->sortable(),
+                // Columna para mostrar la cantidad de plantas afectadas
+                TextColumn::make('plants_count')
+                    ->label(__('Cantidad de plantas afectadas'))
+                    ->counts('plants')
+                    ->sortable() // Permite ordenar por cantidad de plantas afectadas
+                    ->searchable(),
 
-                Tables\Columns\TextColumn::make('plants') // Cambiar 'plants.name' a 'plants'
-                    ->label(__('Plant Names'))
-                    ->sortable() // Sigue siendo sortable
-                    ->getStateUsing(fn ($record) => $record->plants->pluck('name')->join(', '))
+                // Columna para mostrar el detalle de la acción
+                TextColumn::make('detalle_accion')
+                ->label(__('Detalle de acción'))
+                ->getStateUsing(fn ($record) => $record->detalle_accion)
+                ->sortable(),
+                   
+
             ])
             ->filters([
-                //
+                
+                Filter::make('created_at')
+                ->form([
+                    DatePicker::make('created_from'),
+                    DatePicker::make('created_until'),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    return $query
+                        ->when(
+                            $data['created_from'],
+                            fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                        )
+                        ->when(
+                            $data['created_until'],
+                            fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                        );
+                }),
+        
+                    SelectFilter::make('action_type_id')
+                        ->label(__('Tipo de acción'))
+                        ->options([
+                            1 => __('Irrigación'),
+                            2 => __('Poda'),
+                            3 => __('Aplicación de Producto'),
+                            4 => __('Transplante'),
+                            5 => __('Observación'),
+                            6 => __('Muerte'),
+                            7 => __('Cambio de Estado'),
+                            // Agrega más opciones según los tipos de acción que tengas
+                        ])
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

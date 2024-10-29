@@ -29,4 +29,51 @@ class Action extends Model
         return $this->belongsTo(ActionType::class);
     }
 
+    public function getDetalleAccionAttribute()
+    {
+        $data = $this->data;
+
+        if (!$data) {
+            return __('No details available');
+        }
+
+        switch ($this->action_type_id) {
+            case 1: // Irrigation
+                $irrigationType = $data['irrigation']['irrigation_type'] ?? null;
+                if ($irrigationType === 'liters') {
+                    return __('Irrigation:') . ' ' . ($data['irrigation']['liters'] ?? 0) . ' liters';
+                } elseif ($irrigationType === 'timer') {
+                    return __('Irrigation:') . ' ' . ($data['irrigation']['timer'] ?? 0) . ' min timer';
+                }
+                return __('Irrigation: No details');
+            
+            case 2: // Pruning
+                $pruningTypes = $data['pruning']['pruning_type'] ?? [];
+                return __('Pruning Types:') . ' ' . implode(', ', $pruningTypes);
+            
+            case 3: // Product Application
+                return __('Application Type:') . ' ' . ($data['product_application']['application_type'] ?? __('No details'));
+            
+            case 4: // Transplant
+                return __('New Pot Size:') . ' ' . ($data['transplant']['new_pot_size'] ?? __('No details'));
+            
+            case 5: // Observation with photo
+                return __('Observation:') . ' ' . ($data['observation']['comments'] ?? __('No comments'));
+            
+            case 6: // Death
+                return __('Death action');
+            
+            case 7: // Change of State
+                $stateId = $data['change_state']['state'] ?? null;
+                if ($stateId) {
+                    $stateName = PlantState::find($stateId)->name ?? __('Unknown state');
+                    return __('New State:') . ' ' . $stateName;
+                }
+                return __('Change State: No details');
+            
+            default:
+                return __('No details available');
+        }
+    }
+
 }

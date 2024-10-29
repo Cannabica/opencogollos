@@ -59,8 +59,8 @@ class SeedResource extends Resource
                     ->numeric()
                     ->required(),
 
-                TextInput::make('ratio_ths')
-                    ->label(__('Ratio THS (en %)'))
+                TextInput::make('ratio_thc')
+                    ->label(__('Ratio THC (en %)'))
                     ->numeric()
                     ->required(),
 
@@ -78,8 +78,14 @@ class SeedResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->label(__('Name')),
-                TextColumn::make('tenant.name')
-                    ->label(__('Tenant')),
+                TextColumn::make('seed_type')
+                    ->label(__('Seed Type')),
+                TextColumn::make('flowering_time')
+                    ->label(__('Flowering Time')),
+                TextColumn::make('ratio_thc')
+                    ->label(__('Ratio THC')),
+                TextColumn::make('ratio_cbd')
+                    ->label(__('Ratio CBD')),
             ])
             ->filters([
                 //

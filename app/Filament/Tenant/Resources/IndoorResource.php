@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Textarea;
 
 class IndoorResource extends Resource
 {
@@ -77,7 +78,8 @@ class IndoorResource extends Resource
                             ->numeric()
                             ->required(),
 
-                    ]),
+                    ])
+                    ->cloneable(),
 
                 Repeater::make('lamps')
                     ->label(__('Lamps'))
@@ -100,6 +102,10 @@ class IndoorResource extends Resource
                             ->label(__('Coverage area'))
                             ->numeric()
                             ->required(),
+
+                        Textarea::make('observations')
+                            ->label(__('Observaciones')),
+
                     ])
                     //->collapsible()
                     ->minItems(1)

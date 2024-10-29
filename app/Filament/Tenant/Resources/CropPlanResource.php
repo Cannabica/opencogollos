@@ -40,8 +40,7 @@ class CropPlanResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                
+            ->schema([                
                 Section::make('Datos Generales')
                     ->schema([
                         
@@ -246,7 +245,6 @@ class CropPlanResource extends Resource
                             ->required(),
 
                     ]),
-
             ]);
     }
 

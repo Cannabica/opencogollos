@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('plant_states', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->integer('days_since');
             $table->integer('days_until');
             $table->float('min_daylight_hours');

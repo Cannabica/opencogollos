@@ -9,7 +9,7 @@ class PlantState extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['days_since', 'days_until', 'min_daylight_hours', 'max_daylight_hours', 'min_humidity', 'max_humidity', 'actions'];
+    protected $fillable = ['name', 'days_since', 'days_until', 'min_daylight_hours', 'max_daylight_hours', 'min_humidity', 'max_humidity', 'actions'];
 
     protected $casts = [
         'actions' => 'array',  // Para manejar acciones como un array de datos

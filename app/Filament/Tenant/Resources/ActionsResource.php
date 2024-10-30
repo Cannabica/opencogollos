@@ -313,7 +313,12 @@ class ActionsResource extends Resource
 
                             Select::make('data.change_state.state')
                                 ->label(__('Change State'))
-                                ->options(PlantState::pluck('name', 'id')->toArray())
+                                ->options([ 
+                                    'Etapa de Germinación' => 'Etapa de Germinación',
+                                    'Etapa de Plantula' => 'Etapa de Plantula',
+                                    'Etapa Vegetativa' => 'Etapa Vegetativa',
+                                    'Etapa Floracion' => 'Etapa Floracion',
+                                ])
                                 ->required(),
 
                         ])

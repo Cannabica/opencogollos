@@ -73,11 +73,15 @@ class PlantsResource extends Resource
                             })
                             ->required(),
 
-                        Select::make('plant_state_id')
+                        Select::make('state')
                             ->label(__('Plant State'))
-                            ->options(function () {
-                                return PlantState::pluck('name', 'id'); 
-                            })
+                            ->options([
+                                'Etapa de Germinación' => 'Etapa de Germinación',
+                                'Etapa de Plantula' => 'Etapa de Plantula',
+                                'Etapa Vegetativa' => 'Etapa Vegetativa',
+                                'Etapa Floracion' => 'Etapa Floracion',
+
+                            ])
                             ->required(),
 
                         DatePicker::make('germination_date')
@@ -179,11 +183,15 @@ class PlantsResource extends Resource
                     ->options(function () {
                         return Seed::pluck('name', 'id');
                     }),
-                SelectFilter::make('plant_state_id')
+                SelectFilter::make('state')
                     ->label(__('Plant State'))
-                    ->options(function () {
-                        return PlantState::pluck('name', 'id'); 
-                    }),
+                    ->options([
+                        'Etapa de Germinación' => 'Etapa de Germinación',
+                        'Etapa de Plantula' => 'Etapa de Plantula',
+                        'Etapa Vegetativa' => 'Etapa Vegetativa',
+                        'Etapa Floracion' => 'Etapa Floracion',
+
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -9,7 +9,7 @@ class Plant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'indoor_id', 'seed_id', 'plant_state_id', 'germination_date', 'flowerpot', 'capacity', 'base_floor', 'soil_enrichment'];
+    protected $fillable = ['name', 'indoor_id', 'seed_id', 'state', 'germination_date', 'flowerpot', 'capacity', 'base_floor', 'soil_enrichment'];
 
     protected $casts = [
         'base_floor' => 'array',
@@ -26,10 +26,10 @@ class Plant extends Model
         return $this->belongsTo(Indoor::class, 'indoor_id');
     }
 
-    public function plant_state()
-    {
-        return $this->belongsTo(PlantState::class, 'plant_state_id');
-    }
+    // public function plant_state()
+    // {
+    //     return $this->belongsTo(PlantState::class, 'plant_state_id');
+    // }
 
     public function actions()
     {

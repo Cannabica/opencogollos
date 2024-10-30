@@ -104,7 +104,8 @@ class IndoorResource extends Resource
                             ->required(),
 
                         Textarea::make('observations')
-                            ->label(__('Observaciones')),
+                            ->label(__('Observaciones'))
+                            ->columnSpanFull(),
 
                     ])
                     //->collapsible()

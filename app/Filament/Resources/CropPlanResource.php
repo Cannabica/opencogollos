@@ -48,16 +48,19 @@ class CropPlanResource extends Resource
                         TextInput::make('rest_pruning')
                             ->label('Descanso sugerido entre podas (en días)')
                             ->numeric()
+                            ->step(1)
                             ->required(),
 
                         TextInput::make('rest_fert')
                             ->label('Descanso entre fertilizaciones (en días)')
                             ->numeric()
+                            ->step(1)
                             ->required(),
 
                         TextInput::make('stop_fert')
                             ->label('Dejar de fertilizar antes de fecha de corte (en días)')
                             ->numeric()
+                            ->step(1)
                             ->required(),
 
                         TextInput::make('irrigation')
@@ -69,181 +72,269 @@ class CropPlanResource extends Resource
                 
                 Section::make('Etapa de germinación')
                     ->schema([
-                        
-                        TextInput::make('germination_since')
-                            ->label('Período comprendido desde')
-                            ->numeric()
-                            ->required(),
+ 
+                        Fieldset::make('Período comprendido')
+                            ->schema([
+                                
+                            TextInput::make('germination_since')
+                                ->label('Desde')
+                                ->numeric()
+                                ->step(1)
+                                ->required(),
+    
+                            TextInput::make('germination_until')
+                                ->label('Hasta')
+                                ->numeric()
+                                ->step(1)
+                                ->required(),
 
-                        TextInput::make('germination_until')
-                            ->label('Período comprendido hasta')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('germination_light')
-                            ->label('Horas de luz')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Iluminación')
+                            ->schema([
+                                
+                            TextInput::make('germination_light')
+                                ->label('Horas de luz')
+                                ->numeric()
+                                ->required(),
 
-                        TextInput::make('germination_darkness')
-                            ->label('Horas de oscuridad')
-                            ->numeric()
-                            ->required(),
+                            TextInput::make('germination_darkness')
+                                ->label('Horas de oscuridad')
+                                ->numeric()
+                                ->required(),
 
-                        TextInput::make('germination_humidity_since')
-                            ->label('Humedad recomendada desde')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('germination_humidity_until')
-                            ->label('Humedad recomendada hasta')
-                            ->numeric()
-                            ->required(),
+                            Fieldset::make('Humedad')
+                                ->schema([
+                                    
+                                TextInput::make('germination_humidity_since')
+                                    ->label('Humedad recomendada desde')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('germination_temp_since')
-                            ->label('Temperatura recomendada desde')
-                            ->numeric()
-                            ->required(),
+                                TextInput::make('germination_humidity_until')
+                                    ->label('Humedad recomendada hasta')
+                                    ->numeric()
+                                    ->required(), 
 
-                        TextInput::make('germination_temp_until')
-                            ->label('Temperatura recomendada hasta')
-                            ->numeric()
-                            ->required(),
+                                ]),
+
+                            Fieldset::make('Temperatura')
+                                ->schema([
+                                    
+                                TextInput::make('germination_temp_since')
+                                    ->label('Temperatura recomendada desde')
+                                    ->numeric()
+                                    ->required(),
+
+                                TextInput::make('germination_temp_until')
+                                    ->label('Temperatura recomendada hasta')
+                                    ->numeric()
+                                    ->required(),
+    
+                                ]),
 
                     ]),
 
                 Section::make('Etapa Plantula')
                     ->schema([
-                        
-                        TextInput::make('plantula_since')
-                            ->label('Período comprendido desde')
-                            ->numeric()
-                            ->required(),
 
-                        TextInput::make('plantula_until')
-                            ->label('Período comprendido hasta')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Período comprendido')
+                            ->schema([
+                                
+                                TextInput::make('plantula_since')
+                                    ->label('Desde')
+                                    ->numeric()
+                                    ->step(1)
+                                    ->required(),
+        
+                                TextInput::make('plantula_until')
+                                    ->label('Hasta')
+                                    ->numeric()
+                                    ->step(1)
+                                    ->required(),
 
-                        TextInput::make('plantula_light')
-                            ->label('Horas de luz')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('plantula_darkness')
-                            ->label('Horas de oscuridad')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Iluminación')
+                            ->schema([
+                                
+                                TextInput::make('plantula_light')
+                                    ->label('Horas de luz')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('plantula_humidity_since')
-                            ->label('Humedad recomendada desde')
-                            ->numeric()
-                            ->required(),
+                                TextInput::make('plantula_darkness')
+                                    ->label('Horas de oscuridad')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('plantula_humidity_until')
-                            ->label('Humedad recomendada hasta')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('plantula_temp_since')
-                            ->label('Temperatura recomendada desde')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Humedad')
+                            ->schema([
+                                
+                                TextInput::make('plantula_humidity_since')
+                                    ->label('Humedad recomendada desde')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('plantula_temp_until')
-                            ->label('Temperatura recomendada hasta')
-                            ->numeric()
-                            ->required(),                 
+                                TextInput::make('plantula_humidity_until')
+                                    ->label('Humedad recomendada hasta')
+                                    ->numeric()
+                                    ->required(),
+
+                            ]),
+
+                        Fieldset::make('Temperatura')
+                            ->schema([
+                                
+                                TextInput::make('plantula_temp_since')
+                                    ->label('Temperatura recomendada desde')
+                                    ->numeric()
+                                    ->required(),
+
+                                TextInput::make('plantula_temp_until')
+                                    ->label('Temperatura recomendada hasta')
+                                    ->numeric()
+                                    ->required(), 
+
+                            ]),
 
                     ]),
 
                 Section::make('Etapa Vegetativa')
                     ->schema([
-                        
-                        TextInput::make('vegetative_since')
-                            ->label('Período comprendido desde')
-                            ->numeric()
-                            ->required(),
 
-                        TextInput::make('vegetative_until')
-                            ->label('Período comprendido hasta')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Período comprendido')
+                            ->schema([
+                                
+                                TextInput::make('vegetative_since')
+                                    ->label('Desde')
+                                    ->numeric()
+                                    ->step(1)
+                                    ->required(),
+        
+                                TextInput::make('vegetative_until')
+                                    ->label('Hasta')
+                                    ->numeric()
+                                    ->step(1)
+                                    ->required(),
 
-                        TextInput::make('vegetative_light')
-                            ->label('Horas de luz')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('vegetative_darkness')
-                            ->label('Horas de oscuridad')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Iluminación')
+                            ->schema([
+                                
+                                TextInput::make('vegetative_light')
+                                    ->label('Horas de luz')
+                                    ->numeric()
+                                    ->required(),
+        
+                                TextInput::make('vegetative_darkness')
+                                    ->label('Horas de oscuridad')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('vegetative_humidity_since')
-                            ->label('Humedad recomendada desde')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('vegetative_humidity_until')
-                            ->label('Humedad recomendada hasta')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Humedad')
+                            ->schema([
+                                
+                                TextInput::make('vegetative_humidity_since')
+                                    ->label('Humedad recomendada desde')
+                                    ->numeric()
+                                    ->required(),
+        
+                                TextInput::make('vegetative_humidity_until')
+                                    ->label('Humedad recomendada hasta')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('vegetative_temp_since')
-                            ->label('Temperatura recomendada desde')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('vegetative_temp_until')
-                            ->label('Temperatura recomendada hasta')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Temperatura')
+                            ->schema([
+                                
+                                TextInput::make('vegetative_temp_since')
+                                    ->label('Temperatura recomendada desde')
+                                    ->numeric()
+                                    ->required(),
+        
+                                TextInput::make('vegetative_temp_until')
+                                    ->label('Temperatura recomendada hasta')
+                                    ->numeric()
+                                    ->required(),
+
+                            ]),
 
                     ]),
 
                 Section::make('Etapa Floracion')
                     ->schema([
+
+                        Fieldset::make('Período comprendido')
+                            ->schema([
+                                
+                                TextInput::make('flowering_since')
+                                    ->label('Desde')
+                                    ->numeric()
+                                    ->step(1)
+                                    ->required(),
+        
+                                TextInput::make('flowering_until')
+                                    ->label('Hasta')
+                                    ->numeric()
+                                    ->step(1)
+                                    ->required(),
+
+                            ]),
                         
-                        TextInput::make('flowering_since')
-                            ->label('Período comprendido desde')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Iluminación')
+                            ->schema([
+                                
+                                TextInput::make('flowering_light')
+                                    ->label('Horas de luz')
+                                    ->numeric()
+                                    ->required(),
+        
+                                TextInput::make('flowering_darkness')
+                                    ->label('Horas de oscuridad')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('flowering_until')
-                            ->label('Período comprendido hasta')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('flowering_light')
-                            ->label('Horas de luz')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Humedad')
+                            ->schema([
+                                
+                                TextInput::make('flowering_humidity_since')
+                                    ->label('Humedad recomendada desde')
+                                    ->numeric()
+                                    ->required(),
+        
+                                TextInput::make('flowering_humidity_until')
+                                    ->label('Humedad recomendada hasta')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('flowering_darkness')
-                            ->label('Horas de oscuridad')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
-                        TextInput::make('flowering_humidity_since')
-                            ->label('Humedad recomendada desde')
-                            ->numeric()
-                            ->required(),
+                        Fieldset::make('Temperatura')
+                            ->schema([
+                                
+                                TextInput::make('flowering_temp_since')
+                                    ->label('Temperatura recomendada desde')
+                                    ->numeric()
+                                    ->required(),
+        
+                                TextInput::make('flowering_temp_until')
+                                    ->label('Temperatura recomendada hasta')
+                                    ->numeric()
+                                    ->required(),
 
-                        TextInput::make('flowering_humidity_until')
-                            ->label('Humedad recomendada hasta')
-                            ->numeric()
-                            ->required(),
-
-                        TextInput::make('flowering_temp_since')
-                            ->label('Temperatura recomendada desde')
-                            ->numeric()
-                            ->required(),
-
-                        TextInput::make('flowering_temp_until')
-                            ->label('Temperatura recomendada hasta')
-                            ->numeric()
-                            ->required(),
+                            ]),
 
                     ]),
 

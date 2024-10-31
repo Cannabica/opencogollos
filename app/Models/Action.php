@@ -64,12 +64,7 @@ class Action extends Model
                 return __('Death action');
             
             case 7: // Change of State
-                $stateId = $data['change_state']['state'] ?? null;
-                if ($stateId) {
-                    $stateName = PlantState::find($stateId)->name ?? __('Unknown state');
-                    return __('New State:') . ' ' . $stateName;
-                }
-                return __('Change State: No details');
+                return __('Estado:') . ' ' . $data['change_state']['state'];
             
             default:
                 return __('No details available');

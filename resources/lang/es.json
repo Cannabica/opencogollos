@@ -63,6 +63,37 @@
     "crop plan": "plan de cultivo",
     "Crop Plans": "Planes de Cultivo",
 
+    "Indoor Data": "Datos de Indoor",
+    "Plant List": "Listado de Plantas",
+
+    "Irrigation Type": "Tipo de Riego",
+    "Observations": "Observaciones",
+    "Comments": "Comentarios",
+    "Image": "Imagen",
+    "Observation with photo": "Observación con Foto",
+    "Change of State": "Cambio de Estado",  
+    "Change State": "Cambiar Estado",
+
+    "Large": "Largo",
+    "Width": "Ancho",
+    "Height": "Alto",
+    "Fans": "Ventiladores",
+    "Inches": "Pulgadas",
+    "Technology": "Tecnología",
+    "Coverage area": "Área de Cobertura",
+    "Additional equipment": "Equipo Adicional",
+    "Automatic irrigation equipment": "Equipo de Riego Automático",
+    "Scheduled Time": "Tiempo Programado",
+    "Times a day": "Veces al día",
+    "Peak Quantity": "Cantidad de Picos por planta",
+    "Scheduled days": "Días Programados",
+
+    "Pot and Substrate": "Maceta y sustrato",
+    "Flowerpot": "Tipo de Maceta",
+    "Capacity": "Capacidad",
+    "Base Floor": "Suelo base",
+    "Soil Enrichment":"Enriquecimiento del suelo",
+
     "Name": "Nombre",
     "Active": "Activo"
 }

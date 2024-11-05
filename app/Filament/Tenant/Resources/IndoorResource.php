@@ -129,19 +129,19 @@ class IndoorResource extends Resource
                         ->schema([
 
                             TextInput::make('peak_quantity')
-                                ->label('Peak Quantity')
+                                ->label(__('Peak Quantity'))
                                 ->numeric(),
 
                             TextInput::make('scheduled_time')
-                                ->label('Scheduled Time')
+                                ->label(__('Scheduled Time'))
                                 ->numeric(),
 
                             TextInput::make('times_a_day')
-                                ->label('Times a day')
+                                ->label(__('Times a day'))
                                 ->numeric(),
 
                             CheckboxList::make('scheduled_days')
-                                ->label('Scheduled days')
+                                ->label(__('Scheduled days'))
                                 ->options([
                                     'lunes' => 'Lunes',
                                     'martes' => 'Martes',

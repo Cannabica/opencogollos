@@ -126,6 +126,7 @@ class PlantsResource extends Resource
                     ->schema([
 
                         CheckboxList::make('base_floor')
+                            ->label(__('Base Floor'))
                             ->options([
                                 'Turba',
                                 'Guano',
@@ -145,6 +146,7 @@ class PlantsResource extends Resource
                     ->schema([
 
                         CheckboxList::make('soil_enrichment')
+                            ->label(__('Soil Enrichment'))
                             ->options([
                                 'Posos de café y/o te',
                                 'Cascaras de huevo',

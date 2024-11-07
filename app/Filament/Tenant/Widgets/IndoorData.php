@@ -9,6 +9,12 @@ use App\Models\Indoor;
 
 class IndoorData extends BaseWidget
 {
+
+    protected function getTableHeading(): string
+    {
+        return __('Indoor Data'); // Título traducido
+    }
+
     public function table(Table $table): Table
     {
         return $table

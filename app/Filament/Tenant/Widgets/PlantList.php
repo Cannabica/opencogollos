@@ -9,6 +9,12 @@ use App\Models\Plant;
 
 class PlantList extends BaseWidget
 {
+
+    protected function getTableHeading(): string
+    {
+        return __('Plant List'); // Título traducido
+    }
+
     public function table(Table $table): Table
     {
         return $table

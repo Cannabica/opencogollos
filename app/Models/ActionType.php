@@ -9,7 +9,7 @@ class ActionType extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'tenant_id'];
+    protected $fillable = ['name', 'tenant_id', 'action_class'];
 
     public function tenant()
     {

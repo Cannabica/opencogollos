@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('tenant_id')->nullable()->constrained('tenants');
+            $table->string('action_class');
             $table->softDeletes();
             $table->timestamps();
         });

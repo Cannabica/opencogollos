@@ -66,27 +66,35 @@ class ActionsResource extends Resource
                     ->inline()
                     ->required(),
 
+                     // Select Indoor
+                     Select::make('indoor_id')
+                     ->label(__('Indoor'))
+                     ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
+                         ->pluck('name', 'id')
+                         ->toArray())
+                  ->reactive()
+                  ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
+                      ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
+                      : null)
+                  ->required(),
+
+                 // Select Plants based on Indoor
+                 CheckboxList::make('data.plants')
+                     ->label(__('Plants'))
+                     ->options(function (callable $get) {
+                         $indoorId = $get('indoor_id'); // Obtener el valor seleccionado de indoor_id
+                         return $indoorId
+                             ? Plant::where('indoor_id', $indoorId)->pluck('name', 'id')->toArray()
+                             : []; // Retorna las plantas correspondientes o un arreglo vacío si no hay indoor seleccionado
+                     })
+                     ->columns(2)
+                     ->bulkToggleable()
+                     ->required(),
+
                     Section::make(__('Irrigation'))
                         ->schema([
-                            // Select Indoor
-                            Select::make('indoor_id')
-                                ->label(__('Indoor'))
-                                ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                                    ->pluck('name', 'id')
-                                    ->toArray())
-                                ->reactive()
-                                ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                                    ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                                    : null)
-                                ->required(),
-
-                            // Select Plants based on Indoor
-                            CheckboxList::make('plants')
-                                ->label(__('Plants'))
-                                ->relationship('plants', 'name')
-                                ->columns(2)
-                                ->bulkToggleable()
-                                ->required(),
+                            Placeholder::make('Disclaimer')
+                                ->content('Disclaimer de acción Riego'),
 
                             Select::make('data.irrigation.irrigation_type')
                                 ->label(__('Irrigation Type'))
@@ -110,25 +118,9 @@ class ActionsResource extends Resource
 
                     Section::make(__('Pruning'))
                         ->schema([
-                               // Select Indoor
-                            Select::make('indoor_id')
-                               ->label(__('Indoor'))
-                               ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                                   ->pluck('name', 'id')
-                                   ->toArray())
-                               ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                                   ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                                   : null)
-                               ->required(),
 
-                           // Select Plants based on Indoor
-                           CheckboxList::make('plant_id')
-                               ->label(__('Plants'))
-                               ->relationship('plants', 'name')
-                               ->columns(2)
-                               ->bulkToggleable()
-                               ->required(),
+                            Placeholder::make('Disclaimer')
+                                ->content('Disclaimer de acción Poda'),
 
                             CheckboxList::make('data.pruning.pruning_type')
                                 ->label(__('Pruning Type'))
@@ -144,25 +136,9 @@ class ActionsResource extends Resource
 
                     Section::make(__('Product Application'))
                         ->schema([
-                               // Select Indoor
-                               Select::make('indoor_id')
-                               ->label(__('Indoor'))
-                               ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                                   ->pluck('name', 'id')
-                                   ->toArray())
-                               ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                                   ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                                   : null)
-                               ->required(),
 
-                           // Select Plants based on Indoor
-                           CheckboxList::make('plant_id')
-                               ->label(__('Plants'))
-                               ->relationship('plants', 'name')
-                               ->columns(2)
-                               ->bulkToggleable()
-                               ->required(),
+                            Placeholder::make('Disclaimer')
+                                ->content('Disclaimer de acción Aplicación de Producto'),
 
                             Select::make('data.product_application.application_type')
                                 ->label(__('Application Type'))
@@ -186,25 +162,9 @@ class ActionsResource extends Resource
 
                     Section::make(__('Transplant'))
                         ->schema([
-                               // Select Indoor
-                               Select::make('indoor_id')
-                               ->label(__('Indoor'))
-                               ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                                   ->pluck('name', 'id')
-                                   ->toArray())
-                               ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                                   ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                                   : null)
-                               ->required(),
 
-                           // Select Plants based on Indoor
-                           CheckboxList::make('plant_id')
-                               ->label(__('Plants'))
-                               ->relationship('plants', 'name')
-                               ->columns(2)
-                               ->bulkToggleable()
-                               ->required(),
+                            Placeholder::make('Disclaimer')
+                                ->content('Disclaimer de acción Transplante'),
                                 
                             Placeholder::make('current_pot_size')
                                ->label(__('Current Pot Size'))
@@ -233,25 +193,9 @@ class ActionsResource extends Resource
 
                     Section::make(__('Observation with photo'))
                         ->schema([
-                               // Select Indoor
-                               Select::make('indoor_id')
-                               ->label(__('Indoor'))
-                               ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                                   ->pluck('name', 'id')
-                                   ->toArray())
-                               ->reactive()
-                               ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                                   ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                                   : null)
-                               ->required(),
 
-                           // Select Plants based on Indoor
-                           CheckboxList::make('plant_id')
-                               ->label(__('Plants'))
-                               ->relationship('plants', 'name')
-                               ->columns(2)
-                               ->bulkToggleable()
-                               ->required(),
+                            Placeholder::make('Disclaimer')
+                                ->content('Disclaimer de acción Observación con Foto'), 
 
                             FileUpload::make('data.observation.image')
                                 ->image()
@@ -265,51 +209,18 @@ class ActionsResource extends Resource
                     Section::make(__('Death'))
                         ->label(__('Death'))
                         ->schema([
-                           // Select Indoor
-                           Select::make('indoor_id')
-                           ->label(__('Indoor'))
-                           ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                               ->pluck('name', 'id')
-                               ->toArray())
-                           ->reactive()
-                           ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                               ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                               : null)
-                           ->required(),
 
-                            // Select Plants based on Indoor
-                            CheckboxList::make('plant_id')
-                                ->label(__('Plants'))
-                                ->relationship('plants', 'name')
-                                ->columns(2)
-                                ->bulkToggleable()
-                                ->required(),
+                            Placeholder::make('Disclaimer')
+                                ->content('Disclaimer de acción Muerte'),
 
                                 ])
                                 ->visible(fn(Get $get) => $get('action_type_id') == 6),
 
                     Section::make(__('Change of State'))
                         ->schema([
-                            
-                            // Select Indoor
-                            Select::make('indoor_id')
-                            ->label(__('Indoor'))
-                            ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                                ->pluck('name', 'id')
-                                ->toArray())
-                            ->reactive()
-                            ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                                ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                                : null)
-                            ->required(),
 
-                            // Select Plants based on Indoor
-                            CheckboxList::make('plant_id')
-                                ->label(__('Plants'))
-                                ->relationship('plants', 'name')
-                                ->columns(2)
-                                ->bulkToggleable()
-                                ->required(),
+                            Placeholder::make('Disclaimer')
+                                ->content('Disclaimer de acción Cambio de Estado'),
 
                             Select::make('data.change_state.state')
                                 ->label(__('Change State'))
@@ -325,6 +236,25 @@ class ActionsResource extends Resource
                         ->visible(fn(Get $get) => $get('action_type_id') == 7),
 
             ])->columns(1);
+    }
+
+    public function afterCreate($record)
+    {
+        $this->executeActionTrigger($record);
+    }
+
+    protected function executeActionTrigger(Action $action)
+    {
+        $plant = Plant::find($action->plant_id); // Asumiendo que tienes una referencia a la planta
+
+        // Obtener la clase de acción desde el registro de `action_class`
+        $actionClass = $action->action_type->action_class;
+        
+        // Instanciar la clase de acción y ejecutar su método trigger
+        if (class_exists($actionClass)) {
+            $actionInstance = new $actionClass(/* pasa aquí parámetros adicionales si es necesario */);
+            $actionInstance->trigger($plant);
+        }
     }
 
     public static function table(Table $table): Table
@@ -344,9 +274,9 @@ class ActionsResource extends Resource
                     ->searchable(), // Permite buscar por tipo de acción
 
                 // Columna para mostrar la cantidad de plantas afectadas
-                TextColumn::make('plants_count')
+                TextColumn::make('plants_count') 
                     ->label(__('Cantidad de plantas afectadas'))
-                    ->counts('plants')
+                    ->getStateUsing(fn ($record) => $record->plants_count) 
                     ->sortable() // Permite ordenar por cantidad de plantas afectadas
                     ->searchable(),
 

@@ -30,18 +30,20 @@ class CreateActions extends CreateRecord
     protected function executeActionTrigger($action)
     {
         $plants = $action->plants()->get();
-        $actionClass = $action->action_type->action_class;
 
-        if (class_exists($actionClass)) {
-            foreach($plants as $plant) {
+        foreach($plants as $plant){
+
+            $actionClass = $action->action_type->action_class;
+
+            if (class_exists($actionClass)) {
                 // Obtener los argumentos de forma estática
                 $constructorArgs = $actionClass::getConstructorArguments($action);
 
                 // Crear la instancia real con los argumentos del constructor
-                $actionInstance = new $actionClass();
+                $actionInstance = new $actionClass(...$constructorArgs);
 
                 // Llamar al método trigger con la planta como argumento
-                $actionInstance->trigger($plant, $constructorArgs);
+                $actionInstance->trigger($plant);
             }
         }
     }

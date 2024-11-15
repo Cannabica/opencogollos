@@ -11,6 +11,7 @@ class CropPlan extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'tenant_id',
         'rest_pruning',
         'rest_fert',

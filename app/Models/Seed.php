@@ -10,7 +10,7 @@ class Seed extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'tenant_id', 'seed_type', 'flowering_time', 'ratio_ths', 'ratio_cbd'];
+    protected $fillable = ['name', 'tenant_id', 'seed_type', 'flowering_time', 'ratio_thc', 'ratio_cbd'];
 
     public function tenant()
     {

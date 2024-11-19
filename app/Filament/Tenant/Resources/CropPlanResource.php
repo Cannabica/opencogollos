@@ -40,7 +40,12 @@ class CropPlanResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([                
+            ->schema([     
+                
+                TextInput::make('name')
+                    ->label('Name')
+                    ->required(),
+                
                 Section::make('Datos Generales')
                     ->schema([
                         

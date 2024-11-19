@@ -24,6 +24,12 @@ class Action extends Model
         return $this->belongsToMany(Plant::class, 'action_plant');
     }
 
+    // Atributo dinámico para contar las plantas
+    public function getPlantsCountAttribute()
+    {
+        return $this->plants()->count();
+    }
+
     public function action_type()
     {
         return $this->belongsTo(ActionType::class);

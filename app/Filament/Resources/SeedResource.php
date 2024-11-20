@@ -12,12 +12,20 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Fieldset;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\CheckboxList;
 
 class SeedResource extends Resource
 {
     protected static ?string $model = Seed::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-sun';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getPluralLabel(): string
     {
@@ -32,9 +40,36 @@ class SeedResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+
+                TextInput::make('name')
                     ->label(__('Name'))
                     ->required(),
+
+                Select::make('seed_type')
+                    ->label(__('Tipo de semilla'))
+                    ->options([
+
+                        'Fotoperiodica feminizada' => 'Fotoperiodica feminizada',
+                        'Fotoperiodica regular' => 'Fotoperiodica regular',
+                        'Automatica' => 'Automatica'
+                    ])
+                    ->required(),
+
+                TextInput::make('flowering_time')
+                    ->label(__('Tiempo de floración en semanas'))
+                    ->numeric()
+                    ->required(),
+
+                TextInput::make('ratio_thc')
+                    ->label(__('Ratio THC (en %)'))
+                    ->numeric()
+                    ->required(),
+
+                TextInput::make('ratio_cbd')
+                    ->label(__('Ratio CBD (en %)'))
+                    ->numeric()
+                    ->required(),
+
             ]);
     }
 
@@ -42,8 +77,16 @@ class SeedResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label(__('Name'))
+                TextColumn::make('name')
+                    ->label(__('Name')),
+                TextColumn::make('seed_type')
+                    ->label(__('Seed Type')),
+                TextColumn::make('flowering_time')
+                    ->label(__('Flowering Time')),
+                TextColumn::make('ratio_thc')
+                    ->label(__('Ratio THC')),
+                TextColumn::make('ratio_cbd')
+                    ->label(__('Ratio CBD')),
             ])
             ->filters([
                 //

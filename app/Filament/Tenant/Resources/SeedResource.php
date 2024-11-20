@@ -45,12 +45,14 @@ class SeedResource extends Resource
                     ->label(__('Name'))
                     ->required(),
 
-                    Select::make('seed_type')
+                Select::make('seed_type')
                     ->label(__('Tipo de semilla'))
                     ->options([
-                        'Fotoperiodica feminizada',
-                        'Fotoperiodica regular',
-                        'Automatica'
+
+                        'Fotoperiodica feminizada' => 'Fotoperiodica feminizada',
+                        'Fotoperiodica regular' => 'Fotoperiodica regular',
+                        'Automatica' => 'Automatica'
+
                     ])
                     ->required(),
 

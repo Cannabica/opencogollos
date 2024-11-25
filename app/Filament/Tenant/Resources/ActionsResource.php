@@ -224,18 +224,16 @@ class ActionsResource extends Resource
                 Section::make(__('Change of State'))
                     ->schema([
 
-                        Select::make('data.change_state.state')
-                            ->label(__('Change State'))
-                            ->options([
-                                'Etapa de Germinación' => 'Etapa de Germinación',
-                                'Etapa de Plantula' => 'Etapa de Plantula',
-                                'Etapa Vegetativa' => 'Etapa Vegetativa',
-                                'Etapa Floracion' => 'Etapa Floracion',
-                            ])
-                            ->required(),
+                            Select::make('data.change_state.state')
+                                ->label(__('Change State'))
+                                ->options([ 
+                                    'Etapa de Germinación' => 'Etapa de Germinación',
+                                    'Etapa de Plantula' => 'Etapa de Plantula',
+                                    'Etapa Vegetativa' => 'Etapa Vegetativa',
+                                    'Etapa Floracion' => 'Etapa Floracion',
+                                ])
+                                ->required(),
 
-                    ])
-                    ->visible(fn(Get $get) => $get('action_type_id') == 7),
                     ])
                     ->visible(fn(Get $get) => $get('action_type_id') == 7),
 
@@ -290,44 +288,11 @@ class ActionsResource extends Resource
                     ->getStateUsing(fn ($record) => $record->detalle_accion)
                     ->sortable(),
 
-                    ->label(__('Detalle de acción'))
-                    ->getStateUsing(fn ($record) => $record->detalle_accion)
-                    ->sortable(),
-
 
             ])
             ->filters([
 
-
                 Filter::make('created_at')
-                    ->form([
-                        DatePicker::make('created_from'),
-                        DatePicker::make('created_until'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
-                            );
-                    }),
-
-                SelectFilter::make('action_type_id')
-                    ->label(__('Tipo de acción'))
-                    ->options([
-                        1 => __('Irrigación'),
-                        2 => __('Poda'),
-                        3 => __('Aplicación de Producto'),
-                        4 => __('Transplante'),
-                        5 => __('Observación'),
-                        6 => __('Muerte'),
-                        7 => __('Cambio de Estado'),
-                        // Agrega más opciones según los tipos de acción que tengas
-                    ])
                     ->form([
                         DatePicker::make('created_from'),
                         DatePicker::make('created_until'),

@@ -54,12 +54,21 @@ class UsersRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Action::make('Blanquear contraseña')
-                    ->action(function ($record) {
-                        $record->update(['password' => bcrypt('12345678')]); // Contraseña por defecto
-                    })
-                    ->requiresConfirmation()
-                    ->color('danger')
-                    ->icon('heroicon-o-lock-open'),
+                ->form([
+                    Forms\Components\TextInput::make('password')
+                        ->label(__('New Password'))
+                        ->password()
+                        ->required()
+                        ->minLength(8)
+                        ->maxLength(255),
+                ])
+                ->action(function ($record, array $data) {
+                    // Actualiza la contraseña del usuario
+                    $record->update(['password' => bcrypt($data['password'])]);
+                })
+                ->requiresConfirmation()
+                ->color('danger')
+                ->icon('heroicon-o-lock-open'),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

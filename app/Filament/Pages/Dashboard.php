@@ -8,7 +8,9 @@ use Filament\Forms\Form;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use App\Models\Indoor;
+use App\Models\Plant;
 use App\Filament\Tenant\Widgets\PlantList;
+use App\Filament\Tenant\Widgets\IndoorWidget;
 use Illuminate\Database\Eloquent\Builder;
  
 class Dashboard extends BaseDashboard
@@ -29,7 +31,8 @@ class Dashboard extends BaseDashboard
                     Indoor::pluck('name', 'id')->toArray() // Opciones del modelo Indoor.
                 )
                 ->searchable()
-                ->placeholder('Selecciona un Indoor'),
+                ->placeholder('Selecciona un Indoor')
+                ->reactive(),
             ]);
     }
 
@@ -37,7 +40,8 @@ class Dashboard extends BaseDashboard
     {
         // Asegúrate de agregar widgets correctamente
         return [
-            PlantList::class, // O cualquier widget personalizado
+            PlantList::class,
+            // IndoorWidget::class, // O cualquier widget personalizado
         ];
     }
 
@@ -47,6 +51,16 @@ class Dashboard extends BaseDashboard
             ->when(
                 $this->filters['indoor'] ?? null, // Verifica si hay un filtro de indoor seleccionado.
                 fn (Builder $query, $indoorId) => $query->where('id', $indoorId) // Filtra por el ID del indoor.
+            )
+            ->get();
+    }
+
+    public function getPlants(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Plant::query()
+            ->when(
+                $this->filters['indoor'] ?? null, // Verifica si hay un filtro de indoor seleccionado.
+                fn (Builder $query, $indoorId) => $query->where('indoor_id', $indoorId) // Filtra por el ID del indoor.
             )
             ->get();
     }

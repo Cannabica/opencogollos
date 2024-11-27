@@ -6,8 +6,9 @@ use App\Models\Plant;
 
 class RegisterDeath extends BasePlantAction
 {
-    public function trigger(Plant $plant){
-        
+    public function trigger(Plant $plant, ?array $data = null)
+    {
+
         $plant->update(['state' => 'muerta']);
 
     }

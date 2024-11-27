@@ -33,6 +33,7 @@ use Filament\Forms\Components\Placeholder;
 use Carbon\Carbon;
 use Filament\Forms\Get;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\HtmlString;
 
 class ActionsResource extends Resource
 {
@@ -67,35 +68,37 @@ class ActionsResource extends Resource
                     ->inline()
                     ->required(),
 
-                     // Select Indoor
-                     Select::make('indoor_id')
-                     ->label(__('Indoor'))
-                     ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
-                         ->pluck('name', 'id')
-                         ->toArray())
-                  ->reactive()
-                  ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                      ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                      : null)
-                  ->required(),
+                Placeholder::make('Disclaimer')
+                    ->content(function(Get $get) {
+                        if($get('action_type_id') != null) {
+                            $actionClass = new (ActionType::find($get('action_type_id'))->action_class);
+                            return $actionClass->disclaimer() ? new HtmlString(
+                                '<div style="width: 100%;padding:15px;background: #caca00; color: #5a5a00;border: 1px solid #5a5a00;border-radius: 10px;">' .
+                                $actionClass->disclaimer() .
+                                '</div>'
+                            ) : '';
+                        }
+                        return '';
+                    })
+                    ->visible(function(Get $get) {
+                        if($get('action_type_id') != null) {
+                            $actionClass = new (ActionType::find($get('action_type_id'))->action_class);
+                            return $actionClass->disclaimer();
+                        }
+                        return false;
+                    }),
 
-                 // Select Plants based on Indoor
-                 CheckboxList::make('data.plants')
-                     ->label(__('Plants'))
-                     ->options(function (callable $get) {
-                         $indoorId = $get('indoor_id'); // Obtener el valor seleccionado de indoor_id
-                         return $indoorId
-                             ? Plant::where('indoor_id', $indoorId)->pluck('name', 'id')->toArray()
-                             : []; // Retorna las plantas correspondientes o un arreglo vacío si no hay indoor seleccionado
-                     })
-                     ->columns(2)
-                     ->bulkToggleable()
-                     ->required(),
-
-                    Section::make(__('Irrigation'))
-                        ->schema([
-                            Placeholder::make('Disclaimer')
-                                ->content('Disclaimer de acción Riego'),
+                // Select Indoor
+                Select::make('indoor_id')
+                    ->label(__('Indoor'))
+                    ->options(Indoor::where('tenant_id', auth()->user()->tenant_id)
+                        ->pluck('name', 'id')
+                        ->toArray())
+                    ->reactive()
+                    ->default(fn () => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
+                        ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
+                        : null)
+                    ->required(),
 
                 // Select Plants based on Indoor
                 CheckboxList::make('data.plants')
@@ -121,102 +124,50 @@ class ActionsResource extends Resource
                             ])
                             ->reactive(),
 
-                    Section::make(__('Pruning'))
-                        ->schema([
+                        TextInput::make('data.irrigation.liters')
+                            ->label(__('Fixed liters of water'))
+                            ->numeric()
+                            ->visible(fn ($get) => $get('data.irrigation.irrigation_type') === 'liters'),
 
-                            Placeholder::make('Disclaimer')
-                                ->content('Disclaimer de acción Poda'),
+                        TextInput::make('data.irrigation.timer')
+                            ->label(__('Timer time'))
+                            ->numeric()
+                            ->visible(fn ($get) => $get('data.irrigation.irrigation_type') === 'timer'),
+                    ])
+                    ->visible(fn(Get $get) => $get('action_type_id') == 1),
 
                 Section::make(__('Pruning'))
                     ->schema([
 
-                    Section::make(__('Product Application'))
-                        ->schema([
+                        CheckboxList::make('data.pruning.pruning_type')
+                            ->label(__('Pruning Type'))
+                            ->options([
+                                'excess' => 'Quite excedente de hojas',
+                                'dry' => 'Quite hojas amarillentas o secas',
+                                'apical' => 'Apical',
+                                'topping' => 'Topping',
+                                'scrog' => 'Scrog'
+                            ]),
+                    ])
+                    ->visible(fn(Get $get) => $get('action_type_id') == 2),
 
-                            Placeholder::make('Disclaimer')
-                                ->content('Disclaimer de acción Aplicación de Producto'),
+                Section::make(__('Product Application'))
+                    ->schema([
 
-                            Select::make('data.product_application.application_type')
-                                ->label(__('Application Type'))
-                                ->options([
-                                    'vege' => 'Aplicacion para vege',
-                                    'flora' => 'Flora',
-                                    'plantula' => 'Plantula',
-                                    'plague' => 'Anti-plaga',
-                                    'soap' => 'Lavado con jabon potasico',
-                                    'other' => 'Otro'
-                                ])
-                                ->required(),
-                            
-                            Textarea::make('data.product_application.observation')
-                                ->label(__('Observations')),
+                        Select::make('data.product_application.application_type')
+                            ->label(__('Application Type'))
+                            ->options([
+                                'vege' => 'Aplicacion para vege',
+                                'flora' => 'Flora',
+                                'plantula' => 'Plantula',
+                                'plague' => 'Anti-plaga',
+                                'soap' => 'Lavado con jabon potasico',
+                                'other' => 'Otro'
+                            ])
+                            ->required(),
 
-                            Textarea::make('data.product_application.comments')
-                                ->label(__('Comments')),
-                        ])
-                        ->visible(fn(Get $get) => $get('action_type_id') == 3),
-
-                    Section::make(__('Transplant'))
-                        ->schema([
-
-                            Placeholder::make('Disclaimer')
-                                ->content('Disclaimer de acción Transplante'),
-                                
-                            Placeholder::make('current_pot_size')
-                               ->label(__('Current Pot Size'))
-                               ->content(fn ($record) => $record->data['transplant']['new_pot_size'] ?? __('No pot size available')),
-                               
-                            Select::make('data.transplant.new_pot_size')
-                                ->label(__('Tamaño de la nueva maceta'))
-                                ->options([
-                                    'N10' => 'N10',
-                                    'N12' => 'N12',
-                                    'N14' => 'N14',
-                                    '3L'  => '3L',
-                                    '5L'  => '5L',
-                                    '7L'  => '7L',
-                                    '10L' => '10L',
-                                    '12L' => '12L',
-                                    '15L' => '15L',
-                                    '20L' => '20L',
-                                    '30L' => '30L',
-                                    '40L' => '40L',
-                                    '50L' => '50L',
-                                    '75L' => '75L',
-                                ])
-                        ])
-                        ->visible(fn(Get $get) => $get('action_type_id') == 4),
-
-                    Section::make(__('Observation with photo'))
-                        ->schema([
-
-                            Placeholder::make('Disclaimer')
-                                ->content('Disclaimer de acción Observación con Foto'), 
-
-                            FileUpload::make('data.observation.image')
-                                ->image()
-                                ->imageEditor(),
-
-                            Textarea::make('data.observation.comments')
-                                ->label(__('Comments')),
-                        ])
-                        ->visible(fn(Get $get) => $get('action_type_id') == 5),
-
-                    Section::make(__('Death'))
-                        ->label(__('Death'))
-                        ->schema([
-
-                            Placeholder::make('Disclaimer')
-                                ->content('Disclaimer de acción Muerte'),
-
-                                ])
-                                ->visible(fn(Get $get) => $get('action_type_id') == 6),
-
-                    Section::make(__('Change of State'))
-                        ->schema([
-
-                            Placeholder::make('Disclaimer')
-                                ->content('Disclaimer de acción Cambio de Estado'),
+                        Textarea::make('data.product_application.observation')
+                            ->label(__('Observations')),
 
                         Textarea::make('data.product_application.comments')
                             ->label(__('Comments')),
@@ -285,6 +236,8 @@ class ActionsResource extends Resource
 
                     ])
                     ->visible(fn(Get $get) => $get('action_type_id') == 7),
+                    ])
+                    ->visible(fn(Get $get) => $get('action_type_id') == 7),
 
             ])->columns(1);
     }
@@ -300,7 +253,7 @@ class ActionsResource extends Resource
 
         // Obtener la clase de acción desde el registro de `action_class`
         $actionClass = $action->action_type->action_class;
-        
+
         // Instanciar la clase de acción y ejecutar su método trigger
         if (class_exists($actionClass)) {
             $actionInstance = new $actionClass(/* pasa aquí parámetros adicionales si es necesario */);
@@ -325,9 +278,9 @@ class ActionsResource extends Resource
                     ->searchable(), // Permite buscar por tipo de acción
 
                 // Columna para mostrar la cantidad de plantas afectadas
-                TextColumn::make('plants_count') 
+                TextColumn::make('plants_count')
                     ->label(__('Cantidad de plantas afectadas'))
-                    ->getStateUsing(fn ($record) => $record->plants_count) 
+                    ->getStateUsing(fn ($record) => $record->plants_count)
                     ->sortable() // Permite ordenar por cantidad de plantas afectadas
                     ->searchable(),
 
@@ -337,11 +290,44 @@ class ActionsResource extends Resource
                     ->getStateUsing(fn ($record) => $record->detalle_accion)
                     ->sortable(),
 
+                    ->label(__('Detalle de acción'))
+                    ->getStateUsing(fn ($record) => $record->detalle_accion)
+                    ->sortable(),
+
 
             ])
             ->filters([
 
+
                 Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from'),
+                        DatePicker::make('created_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
+
+                SelectFilter::make('action_type_id')
+                    ->label(__('Tipo de acción'))
+                    ->options([
+                        1 => __('Irrigación'),
+                        2 => __('Poda'),
+                        3 => __('Aplicación de Producto'),
+                        4 => __('Transplante'),
+                        5 => __('Observación'),
+                        6 => __('Muerte'),
+                        7 => __('Cambio de Estado'),
+                        // Agrega más opciones según los tipos de acción que tengas
+                    ])
                     ->form([
                         DatePicker::make('created_from'),
                         DatePicker::make('created_until'),

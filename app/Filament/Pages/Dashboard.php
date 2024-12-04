@@ -28,7 +28,9 @@ class Dashboard extends BaseDashboard
                 Select::make('indoor')
                 ->label('Seleccionar Indoor')
                 ->options(
-                    Indoor::pluck('name', 'id')->toArray() // Opciones del modelo Indoor.
+                    Indoor::where('tenant_id', auth()->user()->tenant_id) 
+                    ->pluck('name', 'id') 
+                    ->toArray()                 
                 )
                 ->searchable()
                 ->placeholder('Selecciona un Indoor')
@@ -49,8 +51,12 @@ class Dashboard extends BaseDashboard
     {
         return Indoor::query()
             ->when(
-                $this->filters['indoor'] ?? null, // Verifica si hay un filtro de indoor seleccionado.
-                fn (Builder $query, $indoorId) => $query->where('id', $indoorId) // Filtra por el ID del indoor.
+                auth()->check() && auth()->user()->tenant_id, // Verifica que el usuario esté autenticado y tenga un tenant_id
+                fn (Builder $query) => $query->where('tenant_id', auth()->user()->tenant_id) // Filtra por tenant_id
+            )
+            ->when(
+                $this->filters['indoor'] ?? null, // Verifica si hay un filtro de indoor seleccionado
+                fn (Builder $query, $indoorId) => $query->where('id', $indoorId) // Filtra por el ID del indoor
             )
             ->get();
     }

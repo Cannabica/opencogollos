@@ -9,4 +9,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePlantStates extends CreateRecord
 {
     protected static string $resource = PlantStatesResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

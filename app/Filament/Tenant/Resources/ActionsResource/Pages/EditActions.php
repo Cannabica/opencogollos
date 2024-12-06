@@ -35,22 +35,22 @@ class EditActions extends EditRecord
     {
         $plants = $action->plants()->get();
 
-        foreach($plants as $plant){
-
+        foreach ($plants as $plant) {
             $actionClass = $action->action_type->action_class;
 
             if (class_exists($actionClass)) {
-               // Obtener los argumentos de forma estática
-               $constructorArgs = $actionClass::getConstructorArguments($action);
+                // Obtener los datos necesarios para la acción
+                $data = $actionClass::getConstructorArguments($action);
 
-               // Crear la instancia real con los argumentos del constructor
-               $actionInstance = new $actionClass(...$constructorArgs);
+                // Crear una instancia de la acción
+                $actionInstance = new $actionClass();
 
-               // Llamar al método trigger con la planta como argumento
-               $actionInstance->trigger($plant);
+                // Llamar al método trigger con la planta y los datos
+                $actionInstance->trigger($plant, $data);
             }
         }
     }
+
 
 
     protected function getHeaderActions(): array

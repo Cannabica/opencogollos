@@ -8,12 +8,24 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasTenants;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Filament\Panel;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasTenants
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public function canAccessTenant(Model $tenant): bool
+    {
+        return true; // TODO: Implement canAccessTenant() method.
+    }
+    
+    public function getTenants(Panel $panel): array|Collection
+    {
+        return $this->tenant_id == null ? Tenant::all() : [$this->tenant];
+    }
     
     public function tenant()
     {

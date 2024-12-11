@@ -34,6 +34,8 @@ class PlantsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-sun';
 
+    protected static ?string $tenantOwnershipRelationshipName = 'indoor';
+
     public static function getPluralLabel(): string
     {
         return __('Plants');

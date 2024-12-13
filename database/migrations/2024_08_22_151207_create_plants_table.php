@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('seed_id')->constrained('seeds');
-            $table->foreignId('indoor_id')->constrained('indoors');
+            $table->foreignId('indoor_id')->constrained('indoors')->onDelete('cascade');;
             //$table->foreignId('plant_state_id')->nullable()->constrained('plant_states');
             $table->string('state');
             $table->date('germination_date')->nullable();

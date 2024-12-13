@@ -65,7 +65,9 @@ class ActionsResource extends Resource
                     )
                     ->reactive()
                     ->inline()
-                    ->required(),
+                    ->required()
+                    ->disabled(fn ($record) => $record !== null) // Desactiva el campo si el registro ya existe
+                    ->visible(fn ($record) => $record === null || $record->exists), // Opcional: oculta el campo si no quieres que sea visible después de creado
 
                 Placeholder::make('Disclaimer')
                     ->content(function(Get $get) {

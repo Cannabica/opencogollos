@@ -27,6 +27,11 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\ViewColumn;
+
+
 
 class PlantsResource extends Resource
 {
@@ -56,8 +61,9 @@ class PlantsResource extends Resource
                             ->options(function () {
                                 return Indoor::pluck('name', 'id'); //TODO Scope Tenant
                             })
-                            ->default(function() {
-                                if(Indoor::count() == 1) return Indoor::first()->id;
+                            ->default(function () {
+                                if (Indoor::count() == 1)
+                                    return Indoor::first()->id;
                                 return null;
                             })
                             ->required(),
@@ -171,13 +177,108 @@ class PlantsResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
+            // ->columns([
+            //     Stack::make([
+            //         // Columns
+            //     ]),
+            // ])
+            // ->contentGrid([
+            //     'md' => 2,
+            //     'xl' => 3,
+            // ]);
+
+
             ->columns([
-                TextColumn::make('name')
-                    ->label(__('Name')),  
-                TextColumn::make('seedType.name')
-                    ->label(__('Seed Type')),   
-                TextColumn::make('germination_date')
-                    ->label(__('Germination Date')),
+                // opcion 1 custom view, muy artesanal todo
+                // ViewColumn::make('view')->view('filament.tables.columns.status-plant'),
+
+                //opcion 2, le metemos chimi a la customización de la tabla
+
+                Stack::make([
+
+                    TextColumn::make('name')
+                        ->formatStateUsing(function ($state, $record) {
+                            return  "{$record->name}";
+                        })
+                        ->alignCenter()
+                        ->size(size: TextColumn\TextColumnSize::Large)
+                        ->weight(FontWeight::Bold),
+
+                    TextColumn::make('seedType.name')
+                        ->formatStateUsing(
+                            fn($state, $record) =>
+                            $record->seedType?->name
+                            ? "Semilla: {$record->seedType->name} ( {$record->seedType->seed_type} ) "
+                            : 'No disponible'
+                        ),
+
+                    TextColumn::make('germination_date')
+                        ->formatStateUsing(
+                            fn($state, $record) =>
+                            $record->germination_date
+                            ? __('days_of_life') . ' ' . now()->diffInDays($record->germination_date)
+                            : 'Fecha no disponible'
+                        ),
+
+                    TextColumn::make('indoor_id')
+                        ->size(TextColumn\TextColumnSize::ExtraSmall)
+                        ->color('success')
+                        ->weight(FontWeight::ExtraLight)
+                        ->formatStateUsing(function ($state, $record) {
+                            $lastChangeStateAction = $record->actions()
+                                ->where('type', 'change_state')
+                                ->orderByDesc('created_at')
+                                ->first();
+
+                            $baseDate = $lastChangeStateAction?->created_at ?? $record->germination_date;
+
+                            return $baseDate
+                                ? 'Esta planta está hace ' . now()->diffInDays($baseDate) . ' días en la misma etapa'
+                                : 'No disponible';
+                        }),
+
+
+
+                    // ViewColumn::make('view')->view('filament.tables.columns.status-plant')
+                    // ->searchable(),
+
+                    TextColumn::make('seedType.ratio_thc')
+                    ->searchable()    
+                    ->formatStateUsing(
+                            fn($state, $record) =>
+
+                            ($record->seedType?->ratio_thc !== null) && ($record->seedType?->ratio_cbd !== null)
+                            ? 'THC: ' . $record->seedType->ratio_thc . '% - CBD: ' . $record->seedType->ratio_cbd . '%'
+                            : 'No disponible'
+                        ),
+
+
+                    TextColumn::make('state')
+                        ->badge()
+                        ->alignCenter()
+                        ->color(fn(string $state): string => match ($state) {
+                            'Etapa de Germinación' => 'gray',
+                            'Etapa de Plantula' => 'info',
+                            'Etapa Vegetativa' => 'success',
+                            'Etapa Floracion' => 'danger',
+                        }),
+
+                ])
+                ->space(2),
+
+
+                // por defecto la tabla fiera
+                // TextColumn::make('name')
+                //     ->label(__('Name')),  
+                // TextColumn::make('seedType.name')
+                //     ->label(__('Seed Type')),   
+                // TextColumn::make('germination_date')
+                //     ->label(__('Germination Date')),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->filters([
                 SelectFilter::make('seed_id')
@@ -196,6 +297,7 @@ class PlantsResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

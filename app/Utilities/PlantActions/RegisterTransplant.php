@@ -14,7 +14,7 @@ class RegisterTransplant extends BasePlantAction
 
     public function trigger(Plant $plant, ?array $data = null){
         // Cambiar el dato de la maceta de la planta
-        $plant->update(['flowerpot' => $data['pot']]);
+        $plant->update(['capacity' => $data['pot']]);
     }
 
     public static function getConstructorArguments($action)

@@ -30,44 +30,6 @@ class Plant extends Model
     // {
     //     return $this->belongsTo(PlantState::class, 'plant_state_id');
     // }
-
-    // #FRANKIE 16/12
-//     public function getDaysInCurrentStage($plant)
-// {
-//     $lastAction = $plant->actions()
-//         ->orderBy('action_date', 'desc')
-//         ->first();
-
-//     if ($lastAction) {
-//         $currentStateStartDate = $lastAction->action_date;
-//         return \Carbon\Carbon::now()->diffInDays($currentStateStartDate);
-//     }
-
-//     return \Carbon\Carbon::now()->diffInDays(date: $plant->germination_date);
-// }
-
-// public function getCurrentStateAction()
-// {
-//     return $this->actions()
-//         ->orderBy('action_date', 'desc')
-//         ->first();
-// }
-
-// public function getDaysInCurrentState()
-// {
-//     $currentStateAction = $this->getCurrentStateAction();
-
-//     if ($currentStateAction) {
-//         return $currentStateAction;
-//     }
-
-//     return null;
-// }
-
-// public function getDaysSinceGermination()
-// {
-//     return \Carbon\Carbon::now()->diffInDays($this->germination_date);
-// }
     
 public function actions()
     {

@@ -100,25 +100,11 @@ class PlantsResource extends Resource
                     ->schema([
 
                         Select::make('flowerpot')
-                            ->label(__('Flowerpot'))
+                            ->label(label: __('Flowerpot'))
                             ->options([
                                 'Geotextiles',
                                 'Plásticas',
-                                'Bolsones',
-                                'N10',
-                                'N12',
-                                'N14',
-                                '3L',
-                                '5L',
-                                '7L',
-                                '10L',
-                                '12L',
-                                '15L',
-                                '20L',
-                                '30L',
-                                '40L',
-                                '50L',
-                                '75L',
+                                'Bolsones'
                             ])
                             ->required(),
 
@@ -199,7 +185,7 @@ class PlantsResource extends Resource
 
                     TextColumn::make('name')
                         ->formatStateUsing(function ($state, $record) {
-                            return  "{$record->name}";
+                            return "{$record->name}";
                         })
                         ->alignCenter()
                         ->size(size: TextColumn\TextColumnSize::Large)
@@ -221,6 +207,30 @@ class PlantsResource extends Resource
                             : 'Fecha no disponible'
                         ),
 
+                    // ViewColumn::make('view')->view('filament.tables.columns.status-plant')
+                    // ->searchable(),
+
+                    TextColumn::make('seedType.ratio_thc')
+                        ->searchable()
+                        ->formatStateUsing(
+                            fn($state, $record) =>
+
+                            ($record->seedType?->ratio_thc !== null) && ($record->seedType?->ratio_cbd !== null)
+                            ? 'THC: ' . $record->seedType->ratio_thc . '% - CBD: ' . $record->seedType->ratio_cbd . '%'
+                            : 'No disponible'
+                        ),
+
+
+                    TextColumn::make('state')
+                        ->badge()
+                        ->color(fn(string $state): string => match ($state) {
+                            'Etapa de Germinación' => 'gray',
+                            'Etapa de Plantula' => 'info',
+                            'Etapa Vegetativa' => 'success',
+                            'Etapa Floracion' => 'danger',
+                        }),
+
+
                     TextColumn::make('indoor_id')
                         ->size(TextColumn\TextColumnSize::ExtraSmall)
                         ->color('success')
@@ -239,33 +249,22 @@ class PlantsResource extends Resource
                         }),
 
 
-
-                    // ViewColumn::make('view')->view('filament.tables.columns.status-plant')
-                    // ->searchable(),
-
-                    TextColumn::make('seedType.ratio_thc')
-                    ->searchable()    
-                    ->formatStateUsing(
-                            fn($state, $record) =>
-
-                            ($record->seedType?->ratio_thc !== null) && ($record->seedType?->ratio_cbd !== null)
-                            ? 'THC: ' . $record->seedType->ratio_thc . '% - CBD: ' . $record->seedType->ratio_cbd . '%'
-                            : 'No disponible'
-                        ),
-
-
-                    TextColumn::make('state')
-                        ->badge()
-                        ->alignCenter()
-                        ->color(fn(string $state): string => match ($state) {
-                            'Etapa de Germinación' => 'gray',
-                            'Etapa de Plantula' => 'info',
-                            'Etapa Vegetativa' => 'success',
-                            'Etapa Floracion' => 'danger',
+                    TextColumn::make('flowerpot')
+                        ->formatStateUsing(function ($record) {
+                            $flowerpots = ['Geotextiles', 'Plásticas', 'Bolsones'];
+                            return __('recipient') . ': ' . $flowerpots[$record->flowerpot] . ' ' . $record->capacity ?? 'Desconocido';
                         }),
 
+                    TextColumn::make('actions_count')
+                        ->label('Total de Acciones')
+                        ->getStateUsing(fn($record) => __('actions_registered_for_plant').': '.$record->actions()->count()),
+
+                    TextColumn::make('prunings_count')
+                        ->label('Podas Realizadas')
+                        ->getStateUsing(fn($record) => __('prunes_count_for_plant').': '.$record->actions()->where('action_type_id', 2)->count()),
+
                 ])
-                ->space(2),
+                    ->space(2),
 
 
                 // por defecto la tabla fiera

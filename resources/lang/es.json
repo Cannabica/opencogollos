@@ -99,6 +99,7 @@
     "Name": "Nombre",
     "Active": "Activo",
     "days_of_life" : "Días de vida",
+    "recipient" : "Recipiente",
     "days_before_flowering_date": "días antes de corte",
     "cropPlan_stages_tooltip": "Dias de vida de la planta en los que se considera dentro del periodo",
     "irrigation_suggest_tooltip" : "Porcentaje de irrigación sugerido para el contenedor de la planta",
@@ -114,5 +115,7 @@
     "helper_irrigation" : "se recomienda 10% del tamaño del recipiente. Por ejemplo: recipiente 10lts -> 1lts de agua",
     "helper_max_days_stage" : "Notificar de plantas al llegar a estos dias de vida dentro de la etapa",
     "helper_ambience_parameters" : "Indicadores minimos y maximos para el control del indoor",
-    "alert_in_cant_days" : "con alerta a los"
+    "alert_in_cant_days" : "con alerta a los",
+    "actions_registered_for_plant" : "Acciones registradas en total",
+    "prunes_count_for_plant" : "Total de podas registradas"
 }

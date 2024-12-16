@@ -37,6 +37,8 @@
     "Plant State": "Estado de Planta",
     "plant state": "estado de planta",
     "plant states": "estados de plantas",
+    "days": "días",
+    "weeks": "semanas",
     "Days Since": "Días desde",
     "Days Until": "Días hasta",
     "Minimum daylight hours": "Horas mínimas de luz",
@@ -95,5 +97,22 @@
     "Soil Enrichment":"Enriquecimiento del suelo",
 
     "Name": "Nombre",
-    "Active": "Activo"
+    "Active": "Activo",
+    "days_of_life" : "Días de vida",
+    "days_before_flowering_date": "días antes de corte",
+    "cropPlan_stages_tooltip": "Dias de vida de la planta en los que se considera dentro del periodo",
+    "irrigation_suggest_tooltip" : "Porcentaje de irrigación sugerido para el contenedor de la planta",
+    "rest_pruning_tooltip" : "Se avisará las plantas que hayan recibido podas en periodos menores a este valor",
+    "rest_fert_tooltip": "Se avisará las plantas que hayan recibido aplicaciones de productos/fertilizantes en periodos menos a este valor",
+    "stop_fert_tooltip" : "Se sugerirá dejar de fertilizar plantas proximas a fecha de corte estimado",
+
+    "subheading_cropplan": "Los planes de cultivo están pensados para guiar el ciclo de tu indoor, se utilizan para determinar alertas y comportamientos sugeridos en la plataforma",
+
+    "helper_rest_pruning" : "Identificar plantas podadas en un intervalo de tiempo menor al establecido aquí en días. Esta función previene podas frecuentes que podrían dañar las plantas",
+    "helper_rest_fert" : "Identificar apliques de productos en un intervalo de tiempo menor al establecido aquí en días",
+    "helper_stop_fert" : "Estando cerca de la fecha de corte se informan dichas plantas para evitar fertilizaciones nuevas",
+    "helper_irrigation" : "se recomienda 10% del tamaño del recipiente. Por ejemplo: recipiente 10lts -> 1lts de agua",
+    "helper_max_days_stage" : "Notificar de plantas al llegar a estos dias de vida dentro de la etapa",
+    "helper_ambience_parameters" : "Indicadores minimos y maximos para el control del indoor",
+    "alert_in_cant_days" : "con alerta a los"
 }

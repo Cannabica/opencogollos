@@ -100,8 +100,7 @@ class IndoorResource extends Resource
 
                         TextInput::make('coverage_area')
                             ->label(__('Coverage area'))
-                            ->numeric()
-                            ->required(),
+                            ->numeric(),
 
                         Textarea::make('observations')
                             ->label(__('Observaciones'))

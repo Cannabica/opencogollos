@@ -27,6 +27,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
@@ -164,6 +165,10 @@ class ActionsResource extends Resource
                                 'other' => 'Otro'
                             ])
                             ->required(),
+
+                        Checkbox::make('data.remember_reapply')
+                            ->label('Recordar repetir aplicación en una semana')
+                            ->default(false),
 
                         Textarea::make('data.product_application.observation')
                             ->label(__('Observations')),

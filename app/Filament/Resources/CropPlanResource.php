@@ -350,6 +350,11 @@ class CropPlanResource extends Resource
         return $table
             ->columns([
                 // Resumen del ciclo de cultivo
+                TextColumn::make('name')
+                    ->label('Nombre')
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('germination_since')
                     ->label('Germinación Desde')
                     ->sortable()

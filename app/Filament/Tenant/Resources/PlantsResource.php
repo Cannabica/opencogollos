@@ -27,6 +27,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Carbon\Carbon;
 
 class PlantsResource extends Resource
 {
@@ -174,10 +175,22 @@ class PlantsResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->label(__('Name')),  
+
                 TextColumn::make('seedType.name')
                     ->label(__('Seed Type')),   
-                TextColumn::make('germination_date')
-                    ->label(__('Germination Date')),
+
+                TextColumn::make('dias_transcurridos')
+                    ->label('Días de vida')
+                    ->getStateUsing(function ($record) {
+                        $fecha = $record->germination_date; // Reemplaza con el nombre de tu columna
+                        if ($fecha) {
+                            return Carbon::parse($fecha)->diffInDays(now()) . ' días';
+                        }
+                        return 'N/A';
+                    }),
+
+                TextColumn::make('state')
+                    ->label(__('Etapa')), 
             ])
             ->filters([
                 SelectFilter::make('seed_id')
@@ -194,6 +207,11 @@ class PlantsResource extends Resource
                         'Etapa Floracion' => 'Etapa Floracion',
 
                     ]),
+                SelectFilter::make('indoor_id')
+                    ->label(__('Indoor'))
+                    ->options(function () {
+                        return Indoor::pluck('name', 'id');
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

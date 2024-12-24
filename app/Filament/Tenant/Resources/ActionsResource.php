@@ -230,6 +230,7 @@ class ActionsResource extends Resource
                                 'Etapa de Plantula' => 'Etapa de Plantula',
                                 'Etapa Vegetativa' => 'Etapa Vegetativa',
                                 'Etapa Floracion' => 'Etapa Floracion',
+                                'Muerta' => 'Muerta'
                             ])
                             ->required(),
 

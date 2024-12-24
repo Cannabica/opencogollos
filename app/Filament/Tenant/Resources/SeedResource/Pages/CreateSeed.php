@@ -10,6 +10,11 @@ class CreateSeed extends CreateRecord
 {
     protected static string $resource = SeedResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Verifica si el usuario está autenticado y tiene un tenant_id

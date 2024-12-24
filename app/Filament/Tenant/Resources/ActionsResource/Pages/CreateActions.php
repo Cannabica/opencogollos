@@ -12,6 +12,11 @@ class CreateActions extends CreateRecord
 {
     protected static string $resource = ActionsResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
     protected function handleRecordCreation(array $data): Action
     {
         return Action::create($data);

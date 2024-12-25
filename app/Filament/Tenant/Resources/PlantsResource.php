@@ -54,10 +54,15 @@ class PlantsResource extends Resource
             ->schema([
 
                 Section::make(__('Basic Data'))
+                    ->columns([
+                        'sm'=> 1,
+                        'xl'=> 3,
+                    ])
                     ->schema([
 
                         Select::make('indoor_id')
                             ->label(__('Indoor'))
+                            
                             ->options(function () {
                                 return Indoor::pluck('name', 'id'); //TODO Scope Tenant
                             })
@@ -97,8 +102,11 @@ class PlantsResource extends Resource
                     ]),
 
                 Section::make(__('Pot and Substrate'))
+                    ->columns([
+                        'sm'=> 1,
+                        'xl'=> 3,
+                    ])
                     ->schema([
-
                         Select::make('flowerpot')
                             ->label(label: __('Flowerpot'))
                             ->options([
@@ -108,17 +116,39 @@ class PlantsResource extends Resource
                             ])
                             ->required(),
 
-                        TextInput::make('capacity')
+                        // TextInput::make('capacity')
+                        //     ->label(__('Capacity'))
+                        //     ->numeric()
+                        //     ->required(),
+                        
+                        Select::make('capacity')
                             ->label(__('Capacity'))
-                            ->numeric()
-                            ->required(),
+                            ->required()
+                            ->options([
+                                'N10' => 'N10',
+                                'N12' => 'N12',
+                                'N14' => 'N14',
+                                '3L'  => '3L',
+                                '5L'  => '5L',
+                                '7L'  => '7L',
+                                '10L' => '10L',
+                                '12L' => '12L',
+                                '15L' => '15L',
+                                '20L' => '20L',
+                                '30L' => '30L',
+                                '40L' => '40L',
+                                '50L' => '50L',
+                                '75L' => '75L',
+                            ]),
                     ]),
 
                 Section::make(__('Base Floor'))
                     ->schema([
 
                         CheckboxList::make('base_floor')
-                            ->label(__('Base Floor'))
+                            ->label(__('base_floor_description'))
+                            ->columns(3)
+                            ->bulkToggleable()
                             ->options([
                                 'Turba',
                                 'Guano',
@@ -136,9 +166,10 @@ class PlantsResource extends Resource
 
                 Section::make(__('Soil Enrichment'))
                     ->schema([
-
                         CheckboxList::make('soil_enrichment')
-                            ->label(__('Soil Enrichment'))
+                            ->label(__('Soil_Enrichment_description'))
+                            ->columns(3)
+                            ->bulkToggleable()
                             ->options([
                                 'Posos de café y/o te',
                                 'Cascaras de huevo',
@@ -229,6 +260,17 @@ class PlantsResource extends Resource
                             'Etapa Vegetativa' => 'success',
                             'Etapa Floracion' => 'danger',
                         }),
+
+
+                        // TextColumn::make('indoor_id')
+                        // ->getStateUsing(fn($record) => __('indoor_id').': '.$record->indoor()->where('indoor_id', $record->indoor_id)),
+                        // ->formatStateUsing(
+                        //     fn($state, $record) =>
+                        //     $record->indoor_id
+                        //     $record->actions()->where('action_type_id', 2)->count()
+                        //     ? "Indoor: {$record->indoor_id}"
+                        //     : 'No disponible'
+                        // ),
 
 
                     TextColumn::make('indoor_id')

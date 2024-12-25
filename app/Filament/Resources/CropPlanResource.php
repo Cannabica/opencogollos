@@ -440,10 +440,10 @@ class CropPlanResource extends Resource
                     ->markdown()
                     ->listWithLineBreaks()
                     ->formatStateUsing(function ($state, $record) {
-                        $weeksSince = round($record->germination_since / 7, 1); 
+                        $weeksSince = round($record->germination_since / 7, 1);
                         return "{$record->germination_since} " . __('days') .
-                               "  __({$weeksSince} ".__('weeks').")__ <br>" .
-                               "*". __('alert_in_cant_days') . " {$record->germination_until} ". __('days')."*";
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->germination_until} " . __('days') . "*";
                     })
                     ->sortable(),
 
@@ -454,12 +454,12 @@ class CropPlanResource extends Resource
                     ->markdown()
                     ->listWithLineBreaks()
                     ->formatStateUsing(function ($state, $record) {
-                        $weeksSince = round($record->plantula_since / 7, 1); 
+                        $weeksSince = round($record->plantula_since / 7, 1);
                         return "{$record->plantula_since} " . __('days') .
-                               "  __({$weeksSince} ".__('weeks').")__ <br>" .
-                               "*". __('alert_in_cant_days') . " {$record->plantula_until} ". __('days')."*";
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->plantula_until} " . __('days') . "*";
                     })
-                    
+
                     ->sortable(),
 
                 TextColumn::make('vegetative_since')
@@ -469,12 +469,12 @@ class CropPlanResource extends Resource
                     ->markdown()
                     ->listWithLineBreaks()
                     ->formatStateUsing(function ($state, $record) {
-                        $weeksSince = round($record->vegetative_since / 7, 1); 
+                        $weeksSince = round($record->vegetative_since / 7, 1);
                         return "{$record->vegetative_since} " . __('days') .
-                               "  __({$weeksSince} ".__('weeks').")__ <br>" .
-                               "*". __('alert_in_cant_days') . " {$record->vegetative_until} ". __('days')."*";
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->vegetative_until} " . __('days') . "*";
                     })
-                    
+
 
                     ->sortable(),
 
@@ -485,10 +485,10 @@ class CropPlanResource extends Resource
                     ->markdown()
                     ->listWithLineBreaks()
                     ->formatStateUsing(function ($state, $record) {
-                        $weeksSince = round($record->flowering_since / 7, 1); 
+                        $weeksSince = round($record->flowering_since / 7, 1);
                         return "{$record->flowering_since} " . __('days') .
-                               "  __({$weeksSince} ".__('weeks').")__ <br>" .
-                               "*". __('alert_in_cant_days') . " {$record->flowering_until} ". __('days')."*";
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->flowering_until} " . __('days') . "*";
                     })
                     ->sortable(),
 

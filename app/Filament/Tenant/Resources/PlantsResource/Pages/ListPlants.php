@@ -5,6 +5,8 @@ namespace App\Filament\Tenant\Resources\PlantsResource\Pages;
 use App\Filament\Tenant\Resources\PlantsResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 
 class ListPlants extends ListRecords
 {
@@ -15,5 +17,34 @@ class ListPlants extends ListRecords
         return [
             Actions\CreateAction::make(),
         ];
+    }
+
+    public function getSubheading(): string|Htmlable|null 
+    {
+        // Obtener el conteo de plantas por estado
+        $germinationCount = $this->getModel()::where('state', 'Etapa de Germinación')->count();
+        $seedlingCount = $this->getModel()::where('state', 'Etapa de Plantula')->count();
+        $vegetativeCount = $this->getModel()::where('state', 'Etapa Vegetativa')->count();
+        $floweringCount = $this->getModel()::where('state', 'Etapa Floracion')->count();
+        $totalPlants = $this->getModel()::count();
+
+        return new HtmlString("
+            <div class='space-y-2'>
+                <p class='text-gray-500'>
+                    " .__('subheading_plant') ."
+                </p>
+                <div class='text-sm text-gray-600 flex gap-4 flex-wrap'>
+                    <span class='font-medium'>Total de plantas: {$totalPlants}</span>
+                    <span class='text-gray-300'>|</span>
+                    <span>En germinación: {$germinationCount}</span>
+                    <span class='text-gray-300'>|</span>
+                    <span>En plantula: {$seedlingCount}</span>
+                    <span class='text-gray-300'>|</span>
+                    <span>En vegetativo: {$vegetativeCount}</span>
+                    <span class='text-gray-300'>|</span>
+                    <span>En floración: {$floweringCount}</span>
+                </div>
+            </div>
+        ");
     }
 }

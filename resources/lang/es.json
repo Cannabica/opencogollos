@@ -115,7 +115,29 @@
     "helper_irrigation" : "se recomienda 10% del tamaño del recipiente. Por ejemplo: recipiente 10lts -> 1lts de agua",
     "helper_max_days_stage" : "Notificar de plantas al llegar a estos dias de vida dentro de la etapa",
     "helper_ambience_parameters" : "Indicadores minimos y maximos para el control del indoor",
-    "alert_in_cant_days" : "con alerta a los",
-    "actions_registered_for_plant" : "Acciones registradas en total",
-    "prunes_count_for_plant" : "Total de podas registradas"
+    "alert_in_cant_days" : "con alerta a los", 
+    "actions_registered_for_plant" : "Acciones registradas",
+    "prunes_count_for_plant" : "Podas registradas",
+    "base_floor_description": "Esta sección sirve como la base de tu mezcla, aportando estructura y retención de agua",
+    "Soil_Enrichment_description" : "Esta sección agrega nutrientes esenciales y mejora la vida microbiana del suelo",
+    
+    "actions_Subheading": "Aquí puedes registrar y gestionar acciones relacionadas con tus plantas. Usa la barra de búsqueda o los filtros para encontrar registros específicos.",
+    "actions_searchable_placeholder": "Buscar por tipo de acción, fecha o detalle",
+    "fixed_liters":"Cantidad de agua entregada al recipiente",
+    "timer_irrigation":"Tiempo de apertura de riego",
+    "Observations_product_application":"Ej: BioFizz 1ml por litro de agua",
+    "Death_message":"La planta seleccionada se marcará como muerta y no se mostrará en la lista de plantas",
+    "Irrigation_type_description":"Selecciona el método utilizado para regar la planta, como riego directo o a traves de un sistema de riego automático",
+    "fixed_liters_helper":"Litros de agua que le entregaste a la planta.",
+    "timed_irrigation_helper":"Tiempo que se dejó el riego abierto en minutos.",
+    "indoor_helper":"Al seleccionar un indoor, se mostrarán las plantas que se encuentran en él.",
+    "action_basic_data":"Primer paso",
+    "action_basic_description":"Selecciona la fecha y las plantas a las que deseas crear un registro",
+    "action_action_type_data":"Segundo paso",
+    "action_action_type_description":"Selecciona el tipo de acción que vas a registrar en la planta",
+    "action_data":"Tercer paso",
+    "action_data_description":"Luego de seleccionar el tipo de acción completa los campos necesarios para terminar el registro",
+    "Action Date":"Fecha",
+    "subheading_plant":"Gestiona y haz seguimiento de todas tus plantas. Utiliza la barra de búsqueda para encontrar plantas específicas o filtra por su etapa actual."
+
 }

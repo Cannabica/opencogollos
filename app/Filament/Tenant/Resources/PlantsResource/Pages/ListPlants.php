@@ -30,11 +30,11 @@ class ListPlants extends ListRecords
 
         return new HtmlString("
             <div class='space-y-2'>
-                <p class='text-gray-500'>
+                <p class='fi-header-subheading mt-2 text-lg text-gray-600 dark:text-gray-400'>
                     " .__('subheading_plant') ."
                 </p>
-                <div class='text-sm text-gray-600 flex gap-4 flex-wrap'>
-                    <span class='font-medium'>Total de plantas: {$totalPlants}</span>
+                <div class='fi-header-subheading mt-2 text-lg text-gray-600 dark:text-gray-400'>
+                    <span class='font-medium'><strong>Total de plantas: {$totalPlants}</strong></span>
                     <span class='text-gray-300'>|</span>
                     <span>En germinación: {$germinationCount}</span>
                     <span class='text-gray-300'>|</span>

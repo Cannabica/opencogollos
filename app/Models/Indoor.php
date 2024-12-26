@@ -22,4 +22,10 @@ class Indoor extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function plants()
+{
+    return $this->hasMany(Plant::class);
+}
+
+
 }

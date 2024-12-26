@@ -55,14 +55,14 @@ class PlantsResource extends Resource
 
                 Section::make(__('Basic Data'))
                     ->columns([
-                        'sm'=> 1,
-                        'xl'=> 3,
+                        'sm' => 1,
+                        'xl' => 3,
                     ])
                     ->schema([
 
                         Select::make('indoor_id')
                             ->label(__('Indoor'))
-                            
+
                             ->options(function () {
                                 return Indoor::pluck('name', 'id'); //TODO Scope Tenant
                             })
@@ -103,8 +103,8 @@ class PlantsResource extends Resource
 
                 Section::make(__('Pot and Substrate'))
                     ->columns([
-                        'sm'=> 1,
-                        'xl'=> 3,
+                        'sm' => 1,
+                        'xl' => 3,
                     ])
                     ->schema([
                         Select::make('flowerpot')
@@ -120,7 +120,7 @@ class PlantsResource extends Resource
                         //     ->label(__('Capacity'))
                         //     ->numeric()
                         //     ->required(),
-                        
+
                         Select::make('capacity')
                             ->label(__('Capacity'))
                             ->required()
@@ -128,9 +128,9 @@ class PlantsResource extends Resource
                                 'N10' => 'N10',
                                 'N12' => 'N12',
                                 'N14' => 'N14',
-                                '3L'  => '3L',
-                                '5L'  => '5L',
-                                '7L'  => '7L',
+                                '3L' => '3L',
+                                '5L' => '5L',
+                                '7L' => '7L',
                                 '10L' => '10L',
                                 '12L' => '12L',
                                 '15L' => '15L',
@@ -262,15 +262,15 @@ class PlantsResource extends Resource
                         }),
 
 
-                        // TextColumn::make('indoor_id')
-                        // ->getStateUsing(fn($record) => __('indoor_id').': '.$record->indoor()->where('indoor_id', $record->indoor_id)),
-                        // ->formatStateUsing(
-                        //     fn($state, $record) =>
-                        //     $record->indoor_id
-                        //     $record->actions()->where('action_type_id', 2)->count()
-                        //     ? "Indoor: {$record->indoor_id}"
-                        //     : 'No disponible'
-                        // ),
+                    // TextColumn::make('indoor_id')
+                    // ->getStateUsing(fn($record) => __('indoor_id').': '.$record->indoor()->where('indoor_id', $record->indoor_id)),
+                    // ->formatStateUsing(
+                    //     fn($state, $record) =>
+                    //     $record->indoor_id
+                    //     $record->actions()->where('action_type_id', 2)->count()
+                    //     ? "Indoor: {$record->indoor_id}"
+                    //     : 'No disponible'
+                    // ),
 
 
                     TextColumn::make('indoor_id')
@@ -278,18 +278,28 @@ class PlantsResource extends Resource
                         ->color('success')
                         ->weight(FontWeight::ExtraLight)
                         ->formatStateUsing(function ($state, $record) {
+                            // Obtener la última acción de tipo "change_state" asociada a esta planta
                             $lastChangeStateAction = $record->actions()
-                                ->where('type', 'change_state')
-                                ->orderByDesc('created_at')
+                                ->where('action_type_id', 7) // ID del tipo "change_state"
+                                ->orderByDesc('action_date') // Ordenar por fecha de la acción
                                 ->first();
-
-                            $baseDate = $lastChangeStateAction?->created_at ?? $record->germination_date;
-
+                        
+                            // Determinar la base para el cálculo (última acción o fecha de germinación)
+                            $baseDate = $lastChangeStateAction?->action_date ?? $record->germination_date;
+                        
                             return $baseDate
                                 ? 'Esta planta está hace ' . now()->diffInDays($baseDate) . ' días en la misma etapa'
                                 : 'No disponible';
                         }),
+                                                
 
+                    TextColumn::make('indoor.name')
+                        ->label(__('Indoor Name'))
+                        ->formatStateUsing(function ($state, $record) {
+                            return __('indoor_name') . ' ' . $record->indoor?->name ?? __('Not Available');
+                        })
+                        ->size(TextColumn\TextColumnSize::Small)
+                        ->weight(FontWeight::Light),
 
                     TextColumn::make('flowerpot')
                         ->formatStateUsing(function ($record) {
@@ -299,11 +309,11 @@ class PlantsResource extends Resource
 
                     TextColumn::make('actions_count')
                         ->label('Total de Acciones')
-                        ->getStateUsing(fn($record) => __('actions_registered_for_plant').': '.$record->actions()->count()),
+                        ->getStateUsing(fn($record) => __('actions_registered_for_plant') . ': ' . $record->actions()->count()),
 
                     TextColumn::make('prunings_count')
                         ->label('Podas Realizadas')
-                        ->getStateUsing(fn($record) => __('prunes_count_for_plant').': '.$record->actions()->where('action_type_id', 2)->count()),
+                        ->getStateUsing(fn($record) => __('prunes_count_for_plant') . ': ' . $record->actions()->where('action_type_id', 2)->count()),
 
                 ])
                     ->space(2),

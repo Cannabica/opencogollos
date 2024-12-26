@@ -86,8 +86,10 @@
     "Additional equipment": "Equipo Adicional",
     "Automatic irrigation equipment": "Equipo de Riego Automático",
     "Scheduled Time": "Tiempo Programado",
+    "Scheduled Time Helper": "Tiempo que se deja abierto el riego",
     "Times a day": "Veces al día",
-    "Peak Quantity": "Cantidad de Picos por planta",
+    "Peak Quantity": "Cantidad de picos por planta",
+    "Peak Quantity Helper": "Lo habitual es tener uno o dos picos en la base de la planta para distribuir el riego",
     "Scheduled days": "Días Programados",
 
     "Pot and Substrate": "Maceta y sustrato",
@@ -138,6 +140,19 @@
     "action_data":"Tercer paso",
     "action_data_description":"Luego de seleccionar el tipo de acción completa los campos necesarios para terminar el registro",
     "Action Date":"Fecha",
-    "subheading_plant":"Gestiona y haz seguimiento de todas tus plantas. Utiliza la barra de búsqueda para encontrar plantas específicas o filtra por su etapa actual."
+    "subheading_plant":"Gestiona y haz seguimiento de todas tus plantas. Utiliza la barra de búsqueda para encontrar plantas específicas o filtra por su etapa actual.",
+    "Flowering Time": "Tiempo de Floración",
+
+    "subheading_list_seeds":"Gestiona y haz seguimiento de todas tus semillas. Utiliza la barra de búsqueda para encontrar semillas específicas o filtra por su tipo.",
+    "Dimensions":"Dimensiones",
+    "light_and_ventilation":"Luz y Ventilación",
+
+    "lamp_observations_placeholder":"Identificador para la luz, por ej: AMAZONAS VITAL L144",
+    "light_and_ventilation_description":"Información sobre los equipos de iluminación y los ventiladores que se utilizan en el indoor. Tanto los ventiladores como las luces se pueden clonar para facilitar la creación de nuevos registros.",
+    
+    "Power":"Potencia",
+    "indoor_name":"Indoor: ",
+    "Lamp info tooltip":"Potencia y tipo de lampara",
+    "subheading_list_indoors":"Gestiona tus espacios de cultivo indoor, incluyendo dimensiones, iluminación y ventilación"
 
 }

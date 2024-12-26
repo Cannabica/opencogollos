@@ -20,6 +20,8 @@ use Filament\Forms\Components\Fieldset;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Tables\Columns\BadgeColumn;
+
 
 class SeedResource extends Resource
 {
@@ -57,18 +59,21 @@ class SeedResource extends Resource
                     ->required(),
 
                 TextInput::make('flowering_time')
-                    ->label(__('Tiempo de floración en semanas'))
+                    ->label(__('Tiempo de floración'))
                     ->numeric()
+                    ->suffix(label: __('weeks'))
                     ->required(),
 
                 TextInput::make('ratio_thc')
-                    ->label(__('Ratio THC (en %)'))
+                    ->label(__('Ratio THC'))
                     ->numeric()
+                    ->suffix(label: '%')
                     ->required(),
 
                 TextInput::make('ratio_cbd')
-                    ->label(__('Ratio CBD (en %)'))
+                    ->label(__('Ratio CBD'))
                     ->numeric()
+                    ->suffix(label: '%')
                     ->required(),
 
             ]);
@@ -79,20 +84,41 @@ class SeedResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->searchable()
                     ->label(__('Name')),
-                TextColumn::make('seed_type')
-                    ->label(__('Seed Type')),
+
+                BadgeColumn::make('seed_type')
+                    ->wrap()
+                    ->label(__('Seed Type'))
+                    ->columnSpan(1)
+                    ->alignment('center') // Alineación horizontal
+                    ->verticalAlignment('center') // Alineación vertical                        
+                    ->colors(colors: [
+                        'primary' => static fn($record): bool => $record->seed_type === 'Fotoperiodica feminizada',
+                        'success' => static fn($record): bool => $record->seed_type === 'Fotoperiodica regular',
+                        'warning' => static fn($record): bool => $record->seed_type === 'Automatica',
+                    ]),
+
                 TextColumn::make('flowering_time')
+                    ->searchable()
+                    ->label(__('Flowering Time'))
+                    ->suffix(' ' . __('weeks'))
                     ->label(__('Flowering Time')),
+
                 TextColumn::make('ratio_thc')
+                    ->searchable()
+                    ->suffix('%')
                     ->label(__('Ratio THC')),
                 TextColumn::make('ratio_cbd')
+                    ->searchable()
+                    ->suffix('%')
                     ->label(__('Ratio CBD')),
             ])
             ->filters([
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

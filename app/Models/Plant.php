@@ -30,8 +30,8 @@ class Plant extends Model
     // {
     //     return $this->belongsTo(PlantState::class, 'plant_state_id');
     // }
-    
-public function actions()
+
+    public function actions()
     {
         return $this->belongsToMany(Action::class, 'action_plant');
     }

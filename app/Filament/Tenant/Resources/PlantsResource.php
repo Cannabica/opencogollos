@@ -232,7 +232,7 @@ class PlantsResource extends Resource
 
                     TextColumn::make('germination_date')
                         ->formatStateUsing(
-                            fn($state, $record) =>
+                            callback: fn($state, $record) =>
                             $record->germination_date
                             ? __('days_of_life') . ' ' . now()->diffInDays($record->germination_date)
                             : 'Fecha no disponible'
@@ -259,6 +259,7 @@ class PlantsResource extends Resource
                             'Etapa de Plantula' => 'info',
                             'Etapa Vegetativa' => 'success',
                             'Etapa Floracion' => 'danger',
+                            'muerta' => 'gray',
                         }),
 
 
@@ -344,7 +345,6 @@ class PlantsResource extends Resource
                         'Etapa de Plantula' => 'Etapa de Plantula',
                         'Etapa Vegetativa' => 'Etapa Vegetativa',
                         'Etapa Floracion' => 'Etapa Floracion',
-
                     ]),
             ])
             ->actions([
@@ -368,7 +368,7 @@ class PlantsResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPlants::route('/'),
+            'index' => Pages\ListPlants::route(path: '/'),
             'create' => Pages\CreatePlants::route('/create'),
             'edit' => Pages\EditPlants::route('/{record}/edit'),
         ];

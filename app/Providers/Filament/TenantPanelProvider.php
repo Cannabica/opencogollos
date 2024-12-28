@@ -19,11 +19,16 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Tenant;
 use App\Filament\Pages\Dashboard;
+use Filament\Support\Assets\Css;
+use Filament\Support\Facades\FilamentAsset;
 
 class TenantPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        FilamentAsset::register([
+            Css::make('custom-css', asset('css/custom.css')),
+        ]);
         return $panel
             ->id('tenant')
             ->path('tenant')
@@ -41,7 +46,7 @@ class TenantPanelProvider extends PanelProvider
             ->widgets([
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
-                Tenant\Widgets\PlantList::class,
+                // Tenant\Widgets\PlantList::class,
                 Tenant\Widgets\IndoorData::class,
             ])
             ->middleware([

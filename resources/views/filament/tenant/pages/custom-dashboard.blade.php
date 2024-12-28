@@ -1,117 +1,113 @@
 <x-filament::page>
-    <!-- Mostrar el formulario de filtros -->
+    @push('styles')
+        <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+    @endpush
+
     <div class="mb-6">
         {{ $this->filtersForm }}
     </div>
 
-    <!-- Mostrar los datos del indoor y los widgets en columnas -->
     <div class="space-y-6">
         @foreach($this->getIndoors() as $indoor)
-            <div class="!bg-gray-900 shadow-lg rounded-lg p-6" style="background-color: #18181b;">
-                <!-- Encabezado del Indoor -->
-                <h3 class="text-2xl font-semibold mb-4 text-gray-300">{{ $indoor->name }}</h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Información del Indoor -->
-                    <div class="bg-gray-900 p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold mb-4 text-gray-200">{{ __('Información del Indoor') }}</h4>
-                        <table class="min-w-full text-sm text-left text-gray-400">
-                            <tbody>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4 " style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Largo') }}:</strong></td>
-                                    <td class="py-2 px-4 " style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->large }}</td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Ancho') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->width }}</td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Alto') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->height }}</td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Días Programados') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                        @if(is_array($indoor->scheduled_days))
-                                            {{ implode(', ', $indoor->scheduled_days) }}
-                                        @else
-                                            {{ __('No disponible') }}
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Ventiladores') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                        @if(is_array($indoor->fans))
-                                            {{ count($indoor->fans) }}
-                                        @else
-                                            {{ __('No disponible') }}
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Lámparas') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                        @if(is_array($indoor->lamps))
-                                            {{ count($indoor->lamps) }}
-                                        @else
-                                            {{ __('No disponible') }}
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Higrómetro') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->hygrometer == 1 ? __('Sí') : __('No') }}</td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Humidificador') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->humidifier == 1 ? __('Sí') : __('No') }}</td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Cantidad de Picos por planta') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->peak_quantity }}</td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Horas Programadas') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->scheduled_time }}</td>
-                                </tr>
-                                <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;"><strong>{{ __('Veces al día') }}:</strong></td>
-                                    <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $indoor->times_a_day }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="mx-auto shadow-lg overflow-hidden  rounded-xl border border-gray-200 dark:border-white/10">
+                    <!-- Header with title and days -->
+                    <div class="p-4 border text-center border-gray-200 dark:border-white/10">
+                        <h2 class="text-2xl font-bold"> {{ $indoor->name }} ({{ $indoor->plants->count() }} plantas)</h2>
                     </div>
+                    <!-- Light info section -->
+                    <div class="p-4 container-flex border border-gray-200 dark:border-white/10">
+                        <div class="flex justify-center items-center mb-4">
+                            <svg class="w-8 h-8 mr-2" viewBox="0 0 24 24" fill="currentColor" style="color: violet;">
+                            <path fill-rule="evenodd" d="M7.05 4.05A7 7 0 0 1 19 9c0 2.407-1.197 3.874-2.186 5.084l-.04.048C15.77 15.362 15 16.34 15 18a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1c0-1.612-.77-2.613-1.78-3.875l-.045-.056C6.193 12.842 5 11.352 5 9a7 7 0 0 1 2.05-4.95ZM9 21a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1Zm1.586-13.414A2 2 0 0 1 12 7a1 1 0 1 0 0-2 4 4 0 0 0-4 4 1 1 0 0 0 2 0 2 2 0 0 1 .586-1.414Z" clip-rule="evenodd"/>
 
-                    <!-- Listado de Plantas del Indoor -->
-                    <div class="bg-gray-900 p-4 rounded-lg shadow-md">
-                        <h4 class="text-xl font-semibold mb-3 text-gray-200">{{ __('Plantas') }}</h4>
-
-                        @if(count($this->getPlants($indoor->id)) > 0)
-                            <table class="min-w-full text-sm text-left text-gray-400">
-                                <thead>
-                                    <tr class="bg-gray-800" style="background-color: #27272a;border-color: #18181b;border-width: medium;">
-                                        <th class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ __('Nombre') }}</th>
-                                        <th class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ __('Estado') }}</th>
-                                        <th class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ __('Fecha de Germinación') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($this->getPlants($indoor->id) as $plant)
-                                        <tr class="bg-gray-800 rounded-lg">
-                                            <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $plant->name }}</td>
-                                            <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $plant->state }}</td>
-                                            <td class="py-2 px-4" style="background-color: #27272a;border-color: #18181b;border-width: medium;">{{ $plant->germination_date }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold">Lámparas</h3>
+                            </div>
+                        </div>
+                        @if(!empty($indoor->lamps) && is_array($indoor->lamps))
+                            @foreach($indoor->lamps as $lamp)
+                                <div class="flex items-center">
+                                    {{ $lamp['power'] . ' W - ' . $lamp['technology'] ?? 'N/A' }}<br>
+                                    {{ $lamp['observations'] ?? '' }}
+                                </div>
+                            @endforeach
                         @else
-                            <p class="text-gray-500">{{ __('No hay plantas registradas para este indoor.') }}</p>
+                            <p class="text-sm text-gray-400">No hay información sobre lámparas.</p>
                         @endif
                     </div>
+
+
+                    <!-- Plants info section -->
+                    <div class="container-flex space-y-2 p-4 ">
+                        @foreach($this->getPlants($indoor->id) as $plant)
+                                    <div class="custom-class p-4 rounded-xl border border-gray-200 dark:border-white/10">
+                                        <div class="space-y-1">
+                                            <p class="font-semibold">{{ $plant->name }}</p>
+                                            <p class="text-sm text-gray-500">
+                                                @if($plant->seedType)
+                                                    {{ $plant->seedType->name }} ({{ $plant->seedType->seed_type }})
+                                                @else
+                                                    No seed information available
+                                                @endif
+                                            </p>
+                                            <!-- calcula los días en base a la fecha actual con germination_date -->
+                                            @php
+                                                $germinationDate = \Carbon\Carbon::parse($plant->germination_date);
+                                                $daysOfLife = $germinationDate->diffInDays(\Carbon\Carbon::now());
+                                            @endphp
+                                            <p class="text-sm text-gray-400">{{ $daysOfLife }} días de vida</p>
+                                            @php
+                                                $stateColors = [
+                                                    'Etapa de Germinación' => 'color: #22c55e;', // green-500
+                                                    'Etapa de Plantula' => 'color: #3b82f6;', // blue
+                                                    'Etapa Vegetativa' => 'color: #f59e0b;', // yellow-500
+                                                    'Etapa Floracion' => 'color: #ef4444;', // red-500
+                                                ];
+                                            @endphp
+                                            <p class="text-sm" style="{{ $stateColors[$plant->state] ?? 'color: #9ca3af;' }}">{{ $plant->state }}</p>
+                                            @php
+                                                $flowerpots = ['Geotextiles', 'Plásticas', 'Bolsones'];
+                                            @endphp
+                                            <p class="text-sm text-gray-400">{{ $flowerpots[$plant->flowerpot] ?? 'N/A' }}:
+                                                {{ $plant->capacity ?? '00' }}</p>
+                                        </div>
+                                    </div>
+                        @endforeach
+                    </div>
+
+<!-- Last Actions Section -->
+<div class="p-4">
+                            <h3 class="text-lg font-bold mb-2">Últimas acciones</h3>
+                            @php
+                                $actions = $this->getLastActionsForIndoor($indoor->id);
+                            @endphp
+                            @if($actions->isNotEmpty())
+                                <ul class="space-y-2">
+                                    @foreach($actions as $action)
+                                        <li class="p-1">
+                                            <p class="">
+                                            <span class="text-xs">{{ \Carbon\Carbon::parse($action->action_date)->format('d/m/y') }}</span> - 
+                                            {{ $action->action_type->name ?? 'Acción desconocida' }}:
+                                            {{ $action->getDetalleAccionAttribute() ?? 'Sin detalles' }} 
+                                            </p>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <p class="text-sm text-gray-500">No hay acciones recientes.</p>
+                            @endif
+                        </div>
+
+                    <!-- Cultivation area info -->
+                    <div
+                        class="px-4 py-2 bg-gray-900 text-gray-400 text-sm text-center border border-gray-200 dark:border-white/10">
+                        <p> {{__('carpa_cultivo') . ' ' . $indoor->width ?? '80' }}cm x{{ $indoor->large ?? '80' }}cm</p>
+                    </div>
+
+                    
                 </div>
-            </div>
         @endforeach
+        
     </div>
 </x-filament::page>

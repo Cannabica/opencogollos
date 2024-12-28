@@ -1,0 +1,21 @@
+.container-flex{
+    display: flex;
+    overflow-x: auto;
+}
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+.container-flex > div {
+    --tw-space-y-reverse: 0;
+    margin-bottom: calc(.5rem* var(--tw-space-y-reverse));
+    margin-top: calc(.5rem*(1 - var(--tw-space-y-reverse)));
+    flex: 0 0 auto;
+    width: 200px;
+    margin-right: 10px;
+    border-radius: 8px;
+}
+
+.justify-to-center {
+    justify-content: center;
+}

@@ -33,7 +33,8 @@ class CropPlanResource extends Resource
 {
     protected static ?string $model = CropPlan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-beaker';
+
 
     public static function getPluralLabel(): string
     {

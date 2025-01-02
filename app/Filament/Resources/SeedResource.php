@@ -25,7 +25,7 @@ class SeedResource extends Resource
 {
     protected static ?string $model = Seed::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
 
     public static function getPluralLabel(): string
     {

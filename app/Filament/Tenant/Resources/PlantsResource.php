@@ -37,6 +37,7 @@ class PlantsResource extends Resource
 {
     protected static ?string $model = Plant::class;
 
+
     protected static ?string $navigationIcon = 'heroicon-o-sun';
 
     public static function getPluralLabel(): string
@@ -255,10 +256,10 @@ class PlantsResource extends Resource
                     TextColumn::make('state')
                         ->badge()
                         ->color(fn(string $state): string => match ($state) {
-                            'Etapa de Germinación' => 'gray',
-                            'Etapa de Plantula' => 'info',
-                            'Etapa Vegetativa' => 'success',
-                            'Etapa Floracion' => 'danger',
+                            'Etapa de Germinación' => 'secondary',
+                            'Etapa de Plantula' => 'primary',
+                            'Etapa Vegetativa' => 'tertiary',
+                            'Etapa Floracion' => 'accent',
                             'muerta' => 'gray',
                         }),
 

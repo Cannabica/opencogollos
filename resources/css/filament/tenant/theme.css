@@ -1,0 +1,141 @@
+@import '/vendor/filament/filament/resources/css/theme.css';
+
+@config 'tailwind.config.js';
+
+@layer base {
+    /* Variables para los temas claro y oscuro */
+    :root {
+        --primary: #4174DD;
+        --primary-light: #E6F2FA;
+        --primary-dark: #355CB2;
+
+        --secondary: #65CDAF;
+        --secondary-light: #F0FAF2;
+        --secondary-dark: #52A78C;
+
+        --tertiary: #68AD68;
+        --tertiary-light: #E9F2E9;
+        --tertiary-dark: #558A55;
+
+        --dark: #564C72;
+        --dark-light: #F1EFF3;
+        --dark-dark: #423957;
+
+        --accent: #B97272;
+        --accent-light: #FAEBEB;
+        --accent-dark: #A55E5E;
+
+        color-scheme: light; /* Esquema de color claro por defecto */
+    }
+
+    :root.dark {
+        --primary: #355CB2;
+        --primary-light: #D1E5F5;
+        --primary-dark: #294587;
+
+        --secondary: #52A78C;
+        --secondary-light: #E1F5E5;
+        --secondary-dark: #3F8169;
+        padding: px;
+        --tertiary: #558A55;
+        --tertiary-light: #D4E5D4;
+        --tertiary-dark: #426742;
+
+        --dark: #423957;
+        --dark-light: #E2DFE7;
+        --dark-dark: #2E263C;
+
+        --accent: #A55E5E;
+        --accent-light: #F5D7D7;
+        --accent-dark: #914A4A;
+
+        color-scheme: dark;
+    }
+    /* Scroll margin para validación */
+    [data-field-wrapper] {
+        scroll-margin-top: 8rem;
+    }
+    
+    .fi-sidebar-item-active
+    {
+        background-color: var(--dark) !important;
+        border-radius: 5px !important;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .fi-sidebar-item-active a {
+        background-color: inherit !important;
+    }
+
+
+    .fi-sidebar-item-active .fi-sidebar-item-label, .fi-sidebar-item-active .fi-sidebar-item-icon{
+        color: var(--accent-light)!important;
+    }
+    .fi-btn{
+        background-color: var(--tertiary) !important;
+        color: white!important;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.08) !important;
+    }
+    .fi-btn ~ .fi-btn{
+        background-color: var(--secondary) !important;
+    }
+
+    .fi-header{
+        font-family: inherit;
+    }
+
+    .border-primary, .border-secondary, .border-tertiary, .border-accent, .border-dark , .border-grey{
+        padding: 3px 5px !important;
+        display: inline-block !important;
+        border: 1px solid !important;
+        border-radius: 10px;
+        border-color: inherit !important;
+        color: grey;
+        font-size: x-small !important; 
+    }
+    .border-primary{
+        border-color: var(--primary) !important; 
+        color: var(--primary) !important;
+        background-color: var(--primary-light) !important;
+    }
+    .border-secondary{
+        border-color: var(--secondary) !important; 
+        color: var(--secondary) !important;
+        background-color: var(--secondary-light) !important;
+    }
+    .border-tertiary{
+        border-color: var(--tertiary) !important; 
+        color: var(--tertiary) !important;
+        background-color: var(--tertiary-light) !important;
+    }
+    .border-accent{
+        border-color: var(--accent) !important; 
+        color: var(--accent) !important;
+        background-color: var(--accent-light) !important;
+    }
+    .border-dark{
+        border-color: var(--dark) !important; 
+        color: var(--dark) !important;
+        background-color: var(--dark-light) !important;
+    }
+    
+    .border-accent:is(.dark *), .border-secondary:is(.dark *) , .border-tertiary:is(.dark *) , .border-primary:is(.dark *) , .border-dark:is(.dark *){
+        background-color: transparent !important;
+    }
+
+    .border-primary:is(.dark *){
+        color: var(--primary-light) !important;
+    }
+
+    .border-secondary:is(.dark *){
+        color: var(--secondary-light) !important;
+    }
+    .border-tertiary:is(.dark *){
+        color: var(--tertiary-light) !important;
+    }
+    .border-accent:is(.dark *){
+        color: var(--accent-light) !important;
+    }
+    .border-dark:is(.dark *){
+        color: var(--dark-light) !important;
+    }   
+}

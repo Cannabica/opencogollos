@@ -1,3 +1,6 @@
+.{
+    font-family: 'inherit';
+}
 .container-flex{
     display: flex;
     overflow-x: auto;

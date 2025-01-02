@@ -17,7 +17,7 @@ class Dashboard extends BaseDashboard
 {
     use HasFiltersForm;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
 
     protected static string $view = 'filament.tenant.pages.custom-dashboard';
     protected static ?string $title = 'Dashboard';

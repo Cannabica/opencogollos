@@ -27,7 +27,7 @@ class IndoorResource extends Resource
 {
     protected static ?string $model = Indoor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-home-modern';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
 
     public static function getPluralLabel(): string
     {

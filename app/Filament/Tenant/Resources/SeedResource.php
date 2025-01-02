@@ -27,7 +27,7 @@ class SeedResource extends Resource
 {
     protected static ?string $model = Seed::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
 
     public static function getPluralLabel(): string
     {
@@ -94,9 +94,9 @@ class SeedResource extends Resource
                     ->alignment('center') // Alineación horizontal
                     ->verticalAlignment('center') // Alineación vertical                        
                     ->colors(colors: [
-                        'primary' => static fn($record): bool => $record->seed_type === 'Fotoperiodica feminizada',
-                        'success' => static fn($record): bool => $record->seed_type === 'Fotoperiodica regular',
-                        'warning' => static fn($record): bool => $record->seed_type === 'Automatica',
+                        'secondary' => static fn($record): bool => $record->seed_type === 'Fotoperiodica feminizada',
+                        'tertiary' => static fn($record): bool => $record->seed_type === 'Fotoperiodica regular',
+                        'dark' => static fn($record): bool => $record->seed_type === 'Automatica',
                     ]),
 
                 TextColumn::make('flowering_time')

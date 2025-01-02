@@ -1,0 +1,1 @@
+<img src="{{ asset('images/isologo-bold-blue.png') }}" alt="Logo" class="h-10"> 

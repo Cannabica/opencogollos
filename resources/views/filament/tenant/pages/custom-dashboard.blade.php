@@ -1,6 +1,7 @@
 <x-filament::page>
     @push('styles')
         <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/filament/tenant/theme.css') }}" rel="stylesheet">
     @endpush
 
     <div class="mb-6">
@@ -17,7 +18,7 @@
                     <!-- Light info section -->
                     <div class="p-4 container-flex border border-gray-200 dark:border-white/10">
                         <div class="flex justify-center items-center mb-4">
-                            <svg class="w-8 h-8 mr-2" viewBox="0 0 24 24" fill="currentColor" style="color: violet;">
+                            <svg class="w-8 h-8 mr-2" viewBox="0 0 24 24" fill="currentColor" style="color: var(--secondary);">
                             <path fill-rule="evenodd" d="M7.05 4.05A7 7 0 0 1 19 9c0 2.407-1.197 3.874-2.186 5.084l-.04.048C15.77 15.362 15 16.34 15 18a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1c0-1.612-.77-2.613-1.78-3.875l-.045-.056C6.193 12.842 5 11.352 5 9a7 7 0 0 1 2.05-4.95ZM9 21a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1Zm1.586-13.414A2 2 0 0 1 12 7a1 1 0 1 0 0-2 4 4 0 0 0-4 4 1 1 0 0 0 2 0 2 2 0 0 1 .586-1.414Z" clip-rule="evenodd"/>
 
                             </svg>
@@ -59,13 +60,14 @@
                                             <p class="text-sm text-gray-400">{{ $daysOfLife }} días de vida</p>
                                             @php
                                                 $stateColors = [
-                                                    'Etapa de Germinación' => 'color: #22c55e;', // green-500
-                                                    'Etapa de Plantula' => 'color: #3b82f6;', // blue
-                                                    'Etapa Vegetativa' => 'color: #f59e0b;', // yellow-500
-                                                    'Etapa Floracion' => 'color: #ef4444;', // red-500
+                                                    'Etapa de Germinación' => 'border-secondary',
+                                                    'Etapa de Plantula' => 'border-primary',
+                                                    'Etapa Vegetativa' => 'border-tertiary',
+                                                    'Etapa Floracion' => 'border-accent',
+                                                    'muerta' => 'border-grey',
                                                 ];
                                             @endphp
-                                            <p class="text-sm" style="{{ $stateColors[$plant->state] ?? 'color: #9ca3af;' }}">{{ $plant->state }}</p>
+                                            <p class="text-sm {{ $stateColors[$plant->state] ?? '' }}">{{ $plant->state }}</p>
                                             @php
                                                 $flowerpots = ['Geotextiles', 'Plásticas', 'Bolsones'];
                                             @endphp
@@ -101,7 +103,7 @@
 
                     <!-- Cultivation area info -->
                     <div
-                        class="px-4 py-2 bg-gray-900 text-gray-400 text-sm text-center border border-gray-200 dark:border-white/10">
+                        class="px-4 py-2 bg-text-gray-400 text-sm text-center border border-gray-200 dark:border-white/10">
                         <p> {{__('carpa_cultivo') . ' ' . $indoor->width ?? '80' }}cm x{{ $indoor->large ?? '80' }}cm</p>
                     </div>
 

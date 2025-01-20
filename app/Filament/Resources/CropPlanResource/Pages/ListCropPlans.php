@@ -10,10 +10,16 @@ class ListCropPlans extends ListRecords
 {
     protected static string $resource = CropPlanResource::class;
 
+    public function getSubheading(): ?string
+    {
+    return __('subheading_cropplan');
+    }
+    
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->icon('heroicon-o-plus'),
         ];
     }
 }

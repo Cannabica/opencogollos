@@ -26,6 +26,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Carbon\Carbon;
 
@@ -34,6 +35,8 @@ class PlantsResource extends Resource
     protected static ?string $model = Plant::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-sun';
+
+    protected static ?string $tenantOwnershipRelationshipName = 'indoor';
 
     public static function getPluralLabel(): string
     {
@@ -81,6 +84,7 @@ class PlantsResource extends Resource
                                 'Etapa de Plantula' => 'Etapa de Plantula',
                                 'Etapa Vegetativa' => 'Etapa Vegetativa',
                                 'Etapa Floracion' => 'Etapa Floracion',
+                                'Muerta' => 'Muerta'
 
                             ])
                             ->required(),
@@ -97,23 +101,23 @@ class PlantsResource extends Resource
                         Select::make('flowerpot')
                             ->label(__('Flowerpot'))
                             ->options([
-                                'Geotextiles',
-                                'Plásticas',
-                                'Bolsones',
-                                'N10',
-                                'N12',
-                                'N14',
-                                '3L',
-                                '5L',
-                                '7L',
-                                '10L',
-                                '12L',
-                                '15L',
-                                '20L',
-                                '30L',
-                                '40L',
-                                '50L',
-                                '75L',
+                                'Geotextiles' => 'Geotextiles',
+                                'Plásticas' => 'Plásticas',
+                                'Bolsones' => 'Bolsones',
+                                'N10' => 'N10',
+                                'N12' => 'N12',
+                                'N14' => 'N14',
+                                '3L' => '3L',
+                                '5L' => '5L',
+                                '7L' => '7L',
+                                '10L' => '10L',
+                                '12L' => '12L',
+                                '15L' => '15L',
+                                '20L' => '20L',
+                                '30L' => '30L',
+                                '40L' => '40L',
+                                '50L' => '50L',
+                                '75L' => '75L',
                             ])
                             ->required(),
 
@@ -212,6 +216,11 @@ class PlantsResource extends Resource
                     ->options(function () {
                         return Indoor::pluck('name', 'id');
                     }),
+                Filter::make('Plantas Muertas')
+                    ->toggle()
+                    ->query(fn (Builder $query): Builder => $query->where('state', '!=', 'Muerta'))
+                    ->default(true) // Oculta "Muerta" por defecto
+                    ->label(__('Ocultar Plantas Muertas')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

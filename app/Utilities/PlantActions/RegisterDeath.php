@@ -8,8 +8,6 @@ class RegisterDeath extends BasePlantAction
 {
     public function trigger(Plant $plant, ?array $data = null)
     {
-
-        $plant->update(['state' => 'Muerta']);
-
+        $plant->update(['state' => 'muerta']);
     }
 }

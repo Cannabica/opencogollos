@@ -10,10 +10,16 @@ class ListIndoors extends ListRecords
 {
     protected static string $resource = IndoorResource::class;
 
+    public function getSubheading(): ?string
+    {
+        return __('subheading_list_indoors');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->icon('heroicon-o-plus'),
         ];
     }
 }

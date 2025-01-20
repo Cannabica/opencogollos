@@ -24,8 +24,8 @@ use Filament\Forms\Components\CheckboxList;
 class SeedResource extends Resource
 {
     protected static ?string $model = Seed::class;
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getPluralLabel(): string
     {

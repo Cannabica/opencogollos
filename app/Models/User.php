@@ -21,12 +21,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         return true; // TODO: Implement canAccessTenant() method.
     }
-    
+
     public function getTenants(Panel $panel): array|Collection
     {
         return $this->tenant_id == null ? Tenant::all() : [$this->tenant];
     }
-    
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
@@ -34,12 +34,12 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     public function canAccessPanel(Panel $panel): bool
     {
-         
+
         if ($panel->getId() === 'tenant') {
             return $this->tenant?->active ?? false;
         }
 
-        return true; 
+        return true;
     }
 
     /**

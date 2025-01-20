@@ -42,12 +42,12 @@ class Indoor extends Model
         static::deleting(function ($indoor) {
             // Eliminar todas las plantas asociadas
             foreach ($indoor->plants as $plant) {
-                $plant->delete(); 
+                $plant->delete();
             }
 
             foreach ($indoor->actions as $action) {
                  // Eliminar todas las acciones asociadas
-                $action->delete(); 
+                $action->delete();
             }
         });
     }

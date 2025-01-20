@@ -1,4 +1,5 @@
 {
+    "app_name":"Cannabica",
     "Dashboard": "Tablero",
     "Users": "Usuarios",
     "Settings": "Configuración",
@@ -37,6 +38,8 @@
     "Plant State": "Estado de Planta",
     "plant state": "estado de planta",
     "plant states": "estados de plantas",
+    "days": "días",
+    "weeks": "semanas",
     "Days Since": "Días desde",
     "Days Until": "Días hasta",
     "Minimum daylight hours": "Horas mínimas de luz",
@@ -71,7 +74,7 @@
     "Comments": "Comentarios",
     "Image": "Imagen",
     "Observation with photo": "Observación con Foto",
-    "Change of State": "Cambio de Estado",  
+    "Change of State": "Cambio de Estado",
     "Change State": "Cambiar Estado",
 
     "Large": "Largo",
@@ -84,8 +87,10 @@
     "Additional equipment": "Equipo Adicional",
     "Automatic irrigation equipment": "Equipo de Riego Automático",
     "Scheduled Time": "Tiempo Programado",
+    "Scheduled Time Helper": "Tiempo que se deja abierto el riego",
     "Times a day": "Veces al día",
-    "Peak Quantity": "Cantidad de Picos por planta",
+    "Peak Quantity": "Cantidad de picos por planta",
+    "Peak Quantity Helper": "Lo habitual es tener uno o dos picos en la base de la planta para distribuir el riego",
     "Scheduled days": "Días Programados",
 
     "Pot and Substrate": "Maceta y sustrato",
@@ -95,5 +100,61 @@
     "Soil Enrichment":"Enriquecimiento del suelo",
 
     "Name": "Nombre",
-    "Active": "Activo"
+    "Active": "Activo",
+    "days_of_life" : "Días de vida",
+    "recipient" : "Recipiente",
+    "days_before_flowering_date": "días antes de corte",
+    "cropPlan_stages_tooltip": "Dias de vida de la planta en los que se considera dentro del periodo",
+    "irrigation_suggest_tooltip" : "Porcentaje de irrigación sugerido para el contenedor de la planta",
+    "rest_pruning_tooltip" : "Se avisará las plantas que hayan recibido podas en periodos menores a este valor",
+    "rest_fert_tooltip": "Se avisará las plantas que hayan recibido aplicaciones de productos/fertilizantes en periodos menos a este valor",
+    "stop_fert_tooltip" : "Se sugerirá dejar de fertilizar plantas proximas a fecha de corte estimado",
+
+    "subheading_cropplan": "Los planes de cultivo están pensados para guiar el ciclo de tu indoor, se utilizan para determinar alertas y comportamientos sugeridos en la plataforma",
+
+    "helper_rest_pruning" : "Identificar plantas podadas en un intervalo de tiempo menor al establecido aquí en días. Esta función previene podas frecuentes que podrían dañar las plantas",
+    "helper_rest_fert" : "Identificar apliques de productos en un intervalo de tiempo menor al establecido aquí en días",
+    "helper_stop_fert" : "Estando cerca de la fecha de corte se informan dichas plantas para evitar fertilizaciones nuevas",
+    "helper_irrigation" : "se recomienda 10% del tamaño del recipiente. Por ejemplo: recipiente 10lts -> 1lts de agua",
+    "helper_max_days_stage" : "Notificar de plantas al llegar a estos dias de vida dentro de la etapa",
+    "helper_ambience_parameters" : "Indicadores minimos y maximos para el control del indoor",
+    "alert_in_cant_days" : "con alerta a los",
+    "actions_registered_for_plant" : "Acciones registradas",
+    "prunes_count_for_plant" : "Podas registradas",
+    "base_floor_description": "Esta sección sirve como la base de tu mezcla, aportando estructura y retención de agua",
+    "Soil_Enrichment_description" : "Esta sección agrega nutrientes esenciales y mejora la vida microbiana del suelo",
+
+    "actions_Subheading": "Aquí puedes registrar y gestionar acciones relacionadas con tus plantas. Usa la barra de búsqueda o los filtros para encontrar registros específicos.",
+    "actions_searchable_placeholder": "Buscar por tipo de acción, fecha o detalle",
+    "fixed_liters":"Cantidad de agua entregada al recipiente",
+    "timer_irrigation":"Tiempo de apertura de riego",
+    "Observations_product_application":"Ej: BioFizz 1ml por litro de agua",
+    "Death_message":"La planta seleccionada se marcará como muerta y no se mostrará en la lista de plantas",
+    "Irrigation_type_description":"Selecciona el método utilizado para regar la planta, como riego directo o a traves de un sistema de riego automático",
+    "fixed_liters_helper":"Litros de agua que le entregaste a la planta.",
+    "timed_irrigation_helper":"Tiempo que se dejó el riego abierto en minutos.",
+    "indoor_helper":"Al seleccionar un indoor, se mostrarán las plantas que se encuentran en él.",
+    "action_basic_data":"Primer paso",
+    "action_basic_description":"Selecciona la fecha y las plantas a las que deseas crear un registro",
+    "action_action_type_data":"Segundo paso",
+    "action_action_type_description":"Selecciona el tipo de acción que vas a registrar en la planta",
+    "action_data":"Tercer paso",
+    "action_data_description":"Luego de seleccionar el tipo de acción completa los campos necesarios para terminar el registro",
+    "Action Date":"Fecha",
+    "subheading_plant":"Gestiona y haz seguimiento de todas tus plantas. Utiliza la barra de búsqueda para encontrar plantas específicas o filtra por su etapa actual.",
+    "Flowering Time": "Tiempo de Floración",
+
+    "subheading_list_seeds":"Gestiona y haz seguimiento de todas tus semillas. Utiliza la barra de búsqueda para encontrar semillas específicas o filtra por su tipo.",
+    "Dimensions":"Dimensiones",
+    "light_and_ventilation":"Luz y Ventilación",
+
+    "lamp_observations_placeholder":"Identificador para la luz, por ej: AMAZONAS VITAL L144",
+    "light_and_ventilation_description":"Información sobre los equipos de iluminación y los ventiladores que se utilizan en el indoor. Tanto los ventiladores como las luces se pueden clonar para facilitar la creación de nuevos registros.",
+
+    "Power":"Potencia",
+    "indoor_name":"Indoor: ",
+    "Lamp info tooltip":"Potencia y tipo de lampara",
+    "subheading_list_indoors":"Gestiona tus espacios de cultivo indoor, incluyendo dimensiones, iluminación y ventilación",
+    "carpa_cultivo":"Carpa de cultivo"
+
 }

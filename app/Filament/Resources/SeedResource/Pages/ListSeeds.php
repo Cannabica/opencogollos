@@ -10,10 +10,15 @@ class ListSeeds extends ListRecords
 {
     protected static string $resource = SeedResource::class;
 
+    public function getSubheading(): ?string
+    {
+    return __('subheading_list_seeds');
+    }
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->icon('heroicon-o-plus'),
         ];
     }
 }

@@ -21,12 +21,20 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Grid;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\HtmlString;
+
+
+
 
 class CropPlanResource extends Resource
 {
     protected static ?string $model = CropPlan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-beaker';
+
 
     public static function getPluralLabel(): string
     {
@@ -41,379 +49,480 @@ class CropPlanResource extends Resource
     {
         return $form
             ->schema([
-
-                TextInput::make('name')
-                ->label('Nombre')
-                ->required(),
-                
                 Section::make('Datos Generales')
+                    ->columns(2)
                     ->schema([
-                        
+                        TextInput::make('name')
+                            ->label('Nombre')
+                            ->columnSpan('full')
+                            ->required(),
+
                         TextInput::make('rest_pruning')
-                            ->label('Descanso sugerido entre podas (en días)')
-                            ->numeric()
+                            ->label('Descanso entre podas')
+                            ->helperText(__('helper_rest_pruning'))
+                            ->numeric(1)
+                            ->suffix(__('days'))
                             ->step(1)
                             ->required(),
 
                         TextInput::make('rest_fert')
-                            ->label('Descanso entre fertilizaciones (en días)')
+                            ->label('Descanso entre fertilizaciones')
+                            ->helperText(__('helper_rest_fert'))
                             ->numeric()
+                            ->suffix(__('days'))
                             ->step(1)
                             ->required(),
 
                         TextInput::make('stop_fert')
-                            ->label('Dejar de fertilizar antes de fecha de corte (en días)')
+                            ->label('Dejar de fertilizar antes de fecha de corte')
+                            ->helperText(__('helper_stop_fert'))
                             ->numeric()
+                            ->suffix(__('days'))
                             ->step(1)
                             ->required(),
 
                         TextInput::make('irrigation')
-                            ->label('Irrigación de maceta sugerida (en %)')
+                            ->label('Irrigación de maceta sugerida')
+                            ->helperText(__('helper_irrigation'))
+                            ->suffix('%')
                             ->numeric()
                             ->required(),
-                           
+
                     ]),
-                
+
                 Section::make('Etapa de germinación')
+                    ->columns('4')
                     ->schema([
- 
                         Fieldset::make('Período comprendido')
+                            ->label('Maximos dias de vida en etapa')
+                            ->columnSpan('1')
                             ->schema([
-                                
-                            TextInput::make('germination_since')
-                                ->label('Desde')
-                                ->numeric()
-                                ->step(1)
-                                ->required(),
-    
-                            TextInput::make('germination_until')
-                                ->label('Hasta')
-                                ->numeric()
-                                ->step(1)
-                                ->required(),
+                                TextInput::make('germination_since')
+                                    ->label('Primer aviso')
+                                    ->suffix('dias')
+                                    ->numeric()
+                                    ->step(1)
+                                    ->columnSpan('2')
+                                    ->required(),
 
+                                TextInput::make('germination_until')
+                                    ->label('Segundo aviso')
+                                    ->numeric()
+                                    ->suffix('dias')
+                                    ->columnSpan('2')
+                                    ->step(1)
+                                    ->required(),
+
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_max_days_stage')),
                             ]),
 
-                        Fieldset::make('Iluminación')
+                        Fieldset::make('Parametros ambiente')
+                            ->columnSpan('3')
+                            ->columns(columns: '2')
+                            ->inlineLabel()
                             ->schema([
-                                
-                            TextInput::make('germination_light')
-                                ->label('Horas de luz')
-                                ->numeric()
-                                ->required(),
 
-                            TextInput::make('germination_darkness')
-                                ->label('Horas de oscuridad')
-                                ->numeric()
-                                ->required(),
+                                TextInput::make('germination_light')
+                                    ->label('Luz encendida')
+                                    ->numeric()
+                                    ->suffix('hs')
+                                    ->required(),
 
-                            ]),
+                                TextInput::make('germination_darkness')
+                                    ->label('Oscuridad')
+                                    ->numeric()
+                                    ->suffix('hs')
+                                    ->required(),
 
-                            Fieldset::make('Humedad')
-                                ->schema([
-                                    
                                 TextInput::make('germination_humidity_since')
-                                    ->label('Humedad recomendada desde')
+                                    ->label('Humedad min')
+                                    ->suffix('%')
                                     ->numeric()
                                     ->required(),
 
                                 TextInput::make('germination_humidity_until')
-                                    ->label('Humedad recomendada hasta')
+                                    ->label('Humedad max')
+                                    ->suffix('%')
                                     ->numeric()
-                                    ->required(), 
+                                    ->required(),
 
-                                ]),
-
-                            Fieldset::make('Temperatura')
-                                ->schema([
-                                    
                                 TextInput::make('germination_temp_since')
-                                    ->label('Temperatura recomendada desde')
+                                    ->label('Temp min')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
                                     ->required(),
 
                                 TextInput::make('germination_temp_until')
-                                    ->label('Temperatura recomendada hasta')
+                                    ->label('Temp max')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
                                     ->required(),
-    
-                                ]),
+
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_ambience_parameters')),
+
+                            ]),
 
                     ]),
 
+
                 Section::make('Etapa Plantula')
+                    ->columns('4')
                     ->schema([
-
                         Fieldset::make('Período comprendido')
+                            ->label('Maximos dias de vida en etapa')
+                            ->columnSpan('1')
                             ->schema([
-                                
                                 TextInput::make('plantula_since')
-                                    ->label('Desde')
+                                    ->label('Primer aviso')
+                                    ->suffix('dias')
                                     ->numeric()
                                     ->step(1)
+                                    ->columnSpan('2')
                                     ->required(),
-        
+
                                 TextInput::make('plantula_until')
-                                    ->label('Hasta')
+                                    ->label('Segundo aviso')
                                     ->numeric()
+                                    ->suffix('dias')
+                                    ->columnSpan('2')
                                     ->step(1)
                                     ->required(),
 
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_max_days_stage')),
                             ]),
 
-                        Fieldset::make('Iluminación')
+                        Fieldset::make('Parametros ambiente')
+                            ->columnSpan('3')
+                            ->columns('2')
+                            ->inlineLabel()
                             ->schema([
-                                
+
                                 TextInput::make('plantula_light')
-                                    ->label('Horas de luz')
+                                    ->label('Luz encendida')
                                     ->numeric()
+                                    ->suffix('hs')
                                     ->required(),
 
                                 TextInput::make('plantula_darkness')
-                                    ->label('Horas de oscuridad')
+                                    ->label('Oscuridad')
                                     ->numeric()
+                                    ->suffix('hs')
                                     ->required(),
 
-                            ]),
-
-                        Fieldset::make('Humedad')
-                            ->schema([
-                                
                                 TextInput::make('plantula_humidity_since')
-                                    ->label('Humedad recomendada desde')
+                                    ->label('Humedad min')
+                                    ->suffix('%')
                                     ->numeric()
                                     ->required(),
 
                                 TextInput::make('plantula_humidity_until')
-                                    ->label('Humedad recomendada hasta')
+                                    ->label('Humedad max')
+                                    ->suffix('%')
                                     ->numeric()
                                     ->required(),
 
-                            ]),
-
-                        Fieldset::make('Temperatura')
-                            ->schema([
-                                
                                 TextInput::make('plantula_temp_since')
-                                    ->label('Temperatura recomendada desde')
+                                    ->label('Temp min')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
                                     ->required(),
 
                                 TextInput::make('plantula_temp_until')
-                                    ->label('Temperatura recomendada hasta')
+                                    ->label('Temp max')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
-                                    ->required(), 
+                                    ->required(),
+
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_ambience_parameters')),
 
                             ]),
 
                     ]),
 
                 Section::make('Etapa Vegetativa')
+                    ->columns('4')
                     ->schema([
-
                         Fieldset::make('Período comprendido')
+                            ->label('Maximos dias de vida en etapa')
+                            ->columnSpan('1')
                             ->schema([
-                                
                                 TextInput::make('vegetative_since')
-                                    ->label('Desde')
+                                    ->label('Primer aviso')
+                                    ->suffix('dias')
                                     ->numeric()
                                     ->step(1)
+                                    ->columnSpan('2')
                                     ->required(),
-        
+
                                 TextInput::make('vegetative_until')
-                                    ->label('Hasta')
+                                    ->label('Segundo aviso')
                                     ->numeric()
+                                    ->suffix('dias')
+                                    ->columnSpan('2')
                                     ->step(1)
                                     ->required(),
 
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_max_days_stage')),
                             ]),
 
-                        Fieldset::make('Iluminación')
+                        Fieldset::make('Parametros ambiente')
+                            ->columnSpan('3')
+                            ->columns('2')
+                            ->inlineLabel()
                             ->schema([
-                                
+
                                 TextInput::make('vegetative_light')
-                                    ->label('Horas de luz')
+                                    ->label('Luz encendida')
                                     ->numeric()
+                                    ->suffix('hs')
                                     ->required(),
-        
+
                                 TextInput::make('vegetative_darkness')
-                                    ->label('Horas de oscuridad')
+                                    ->label('Oscuridad')
                                     ->numeric()
+                                    ->suffix('hs')
                                     ->required(),
 
-                            ]),
-
-                        Fieldset::make('Humedad')
-                            ->schema([
-                                
                                 TextInput::make('vegetative_humidity_since')
-                                    ->label('Humedad recomendada desde')
+                                    ->label('Humedad min')
+                                    ->suffix('%')
                                     ->numeric()
                                     ->required(),
-        
+
                                 TextInput::make('vegetative_humidity_until')
-                                    ->label('Humedad recomendada hasta')
+                                    ->label('Humedad max')
+                                    ->suffix('%')
                                     ->numeric()
                                     ->required(),
 
-                            ]),
-
-                        Fieldset::make('Temperatura')
-                            ->schema([
-                                
                                 TextInput::make('vegetative_temp_since')
-                                    ->label('Temperatura recomendada desde')
+                                    ->label('Temp min')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
                                     ->required(),
-        
+
                                 TextInput::make('vegetative_temp_until')
-                                    ->label('Temperatura recomendada hasta')
+                                    ->label('Temp max')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
                                     ->required(),
+
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_ambience_parameters')),
 
                             ]),
 
                     ]),
 
-                Section::make('Etapa Floracion')
+                Section::make('Etapa Floración')
+                    ->columns('4')
                     ->schema([
-
                         Fieldset::make('Período comprendido')
+                            ->label('Maximos dias de vida en etapa')
+                            ->columnSpan('1')
                             ->schema([
-                                
                                 TextInput::make('flowering_since')
-                                    ->label('Desde')
+                                    ->label('Primer aviso')
+                                    ->suffix('dias')
                                     ->numeric()
                                     ->step(1)
+                                    ->columnSpan('2')
                                     ->required(),
-        
+
                                 TextInput::make('flowering_until')
-                                    ->label('Hasta')
+                                    ->label('Segundo aviso')
                                     ->numeric()
+                                    ->suffix('dias')
+                                    ->columnSpan('2')
                                     ->step(1)
                                     ->required(),
 
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_max_days_stage')),
                             ]),
-                        
-                        Fieldset::make('Iluminación')
+
+                        Fieldset::make('Parametros ambiente')
+                            ->columnSpan('3')
+                            ->columns('2')
+                            ->inlineLabel()
                             ->schema([
-                                
+
                                 TextInput::make('flowering_light')
-                                    ->label('Horas de luz')
+                                    ->label('Luz encendida')
                                     ->numeric()
+                                    ->suffix('hs')
                                     ->required(),
-        
+
                                 TextInput::make('flowering_darkness')
-                                    ->label('Horas de oscuridad')
+                                    ->label('Oscuridad')
                                     ->numeric()
+                                    ->suffix('hs')
                                     ->required(),
 
-                            ]),
-
-                        Fieldset::make('Humedad')
-                            ->schema([
-                                
                                 TextInput::make('flowering_humidity_since')
-                                    ->label('Humedad recomendada desde')
+                                    ->label('Humedad min')
+                                    ->suffix('%')
                                     ->numeric()
                                     ->required(),
-        
+
                                 TextInput::make('flowering_humidity_until')
-                                    ->label('Humedad recomendada hasta')
+                                    ->label('Humedad max')
+                                    ->suffix('%')
                                     ->numeric()
                                     ->required(),
 
-                            ]),
-
-                        Fieldset::make('Temperatura')
-                            ->schema([
-                                
                                 TextInput::make('flowering_temp_since')
-                                    ->label('Temperatura recomendada desde')
+                                    ->label('Temp min')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
                                     ->required(),
-        
+
                                 TextInput::make('flowering_temp_until')
-                                    ->label('Temperatura recomendada hasta')
+                                    ->label('Temp max')
+                                    ->suffix('°C')
+                                    ->columnSpan('1')
                                     ->numeric()
                                     ->required(),
+
+                                Placeholder::make('documentation')
+                                    ->label('')
+                                    ->columnSpan('full')
+                                    ->helperText(__('helper_ambience_parameters')),
 
                             ]),
 
                     ]),
-
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->actionsPosition(Tables\Enums\ActionsPosition::BeforeColumns)
             ->columns([
                 // Resumen del ciclo de cultivo
                 TextColumn::make('name')
-                    ->label('Nombre')
+                    ->label(label: 'Nombre')
                     ->sortable()
                     ->searchable(),
 
                 TextColumn::make('germination_since')
-                    ->label('Germinación Desde')
-                    ->sortable()
-                    ->searchable(),
-                
-                TextColumn::make('germination_until')
-                    ->label('Germinación Hasta')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('Periodo Germinación')
+                    ->tooltip(__('cropPlan_stages_tooltip'))
+                    ->wrapHeader()
+                    ->markdown()
+                    ->listWithLineBreaks()
+                    ->formatStateUsing(function ($state, $record) {
+                        $weeksSince = round($record->germination_since / 7, 1);
+                        return "{$record->germination_since} " . __('days') .
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->germination_until} " . __('days') . "*";
+                    })
+                    ->sortable(),
 
                 TextColumn::make('plantula_since')
-                    ->label('Plántula Desde')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('Periodo Plantula')
+                    ->tooltip(__('cropPlan_stages_tooltip'))
+                    ->wrapHeader()
+                    ->markdown()
+                    ->listWithLineBreaks()
+                    ->formatStateUsing(function ($state, $record) {
+                        $weeksSince = round($record->plantula_since / 7, 1);
+                        return "{$record->plantula_since} " . __('days') .
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->plantula_until} " . __('days') . "*";
+                    })
 
-                TextColumn::make('plantula_until')
-                    ->label('Plántula Hasta')
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
 
                 TextColumn::make('vegetative_since')
-                    ->label('Vegetativa Desde')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('Periodo Vegetativo')
+                    ->tooltip(__('cropPlan_stages_tooltip'))
+                    ->wrapHeader()
+                    ->markdown()
+                    ->listWithLineBreaks()
+                    ->formatStateUsing(function ($state, $record) {
+                        $weeksSince = round($record->vegetative_since / 7, 1);
+                        return "{$record->vegetative_since} " . __('days') .
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->vegetative_until} " . __('days') . "*";
+                    })
 
-                TextColumn::make('vegetative_until')
-                    ->label('Vegetativa Hasta')
-                    ->sortable()
-                    ->searchable(),
+
+                    ->sortable(),
 
                 TextColumn::make('flowering_since')
-                    ->label('Floración Desde')
-                    ->sortable()
-                    ->searchable(),
+                    ->label('Periodo Floracion')
+                    ->tooltip(__('cropPlan_stages_tooltip'))
+                    ->wrapHeader()
+                    ->markdown()
+                    ->listWithLineBreaks()
+                    ->formatStateUsing(function ($state, $record) {
+                        $weeksSince = round($record->flowering_since / 7, 1);
+                        return "{$record->flowering_since} " . __('days') .
+                            "  __({$weeksSince} " . __('weeks') . ")__ <br>" .
+                            "*" . __('alert_in_cant_days') . " {$record->flowering_until} " . __('days') . "*";
+                    })
+                    ->sortable(),
 
-                TextColumn::make('flowering_until')
-                    ->label('Floración Hasta')
-                    ->sortable()
-                    ->searchable(),
-                
                 // Parámetros clave
                 TextColumn::make('irrigation')
-                    ->label('Irrigación Sugerida (ml)')
+                    ->label('Irrigación Sugerida')
                     ->sortable()
+                    ->wrapHeader()
+                    ->tooltip(__('irrigation_suggest_tooltip'))
+                    ->suffix('%')
+                    ->alignCenter()
                     ->searchable(),
 
                 TextColumn::make('rest_pruning')
-                    ->label('Descanso Entre Podas (días)')
+                    ->label('Descanso Podas')
                     ->sortable()
+                    ->wrapHeader()
+                    ->suffix(' ' . __('days'))
+                    ->tooltip(__('rest_pruning_tooltip'))
                     ->searchable(),
 
                 TextColumn::make('rest_fert')
-                    ->label('Descanso Entre Fertilizaciones (días)')
+                    ->label('Descanso Fertilizaciones')
                     ->sortable()
+                    ->wrapHeader()
+                    ->suffix(' ' . __('days'))
+                    ->tooltip(__('rest_fert_tooltip'))
                     ->searchable(),
 
                 TextColumn::make('stop_fert')
-                    ->label('Parar Fertilización Antes de Corte (días)')
+                    ->label('Detener Fertilización')
                     ->sortable()
+                    ->wrapHeader()
+                    ->suffix(' ' . __('days_before_flowering_date'))
+                    ->tooltip(__('stop_fert_tooltip'))
                     ->searchable(),
 
                 TextColumn::make('created_at')
@@ -425,6 +534,7 @@ class CropPlanResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

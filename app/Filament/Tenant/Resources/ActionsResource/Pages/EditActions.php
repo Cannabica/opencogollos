@@ -28,30 +28,29 @@ class EditActions extends EditRecord
 
         // Sincroniza las plantas seleccionadas con la tabla pivote
         $this->record->plants()->sync($selectedPlants);
-        $this->executeActionTrigger($this->record); 
+        $this->executeActionTrigger($this->record);
     }
 
     protected function executeActionTrigger($action)
     {
         $plants = $action->plants()->get();
 
-        foreach ($plants as $plant) {
+        foreach($plants as $plant){
+
             $actionClass = $action->action_type->action_class;
 
             if (class_exists($actionClass)) {
-                // Obtener los datos necesarios para la acción
-                $data = $actionClass::getConstructorArguments($action);
+               // Obtener los argumentos de forma estática
+               $constructorArgs = $actionClass::getConstructorArguments($action);
 
-                // Crear una instancia de la acción
-                $actionInstance = new $actionClass();
+               // Crear la instancia real con los argumentos del constructor
+               $actionInstance = new $actionClass(...$constructorArgs);
 
-                // Llamar al método trigger con la planta y los datos
-                $actionInstance->trigger($plant, $data);
+               // Llamar al método trigger con la planta como argumento
+               $actionInstance->trigger($plant);
             }
         }
     }
-
-
 
     protected function getHeaderActions(): array
     {

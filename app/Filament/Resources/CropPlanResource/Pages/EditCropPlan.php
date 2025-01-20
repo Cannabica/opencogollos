@@ -10,6 +10,11 @@ class EditCropPlan extends EditRecord
 {
     protected static string $resource = CropPlanResource::class;
 
+    public function getSubheading(): ?string
+    {
+    return __('subheading_cropplan');
+    }
+    
     protected function getHeaderActions(): array
     {
         return [

@@ -33,12 +33,15 @@ use Filament\Forms\Components\Placeholder;
 use Carbon\Carbon;
 use Filament\Forms\Get;
 use Illuminate\Support\HtmlString;
+use Filament\Facades\Filament;
 
 class ActionsResource extends Resource
 {
     protected static ?string $model = Action::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $tenantOwnershipRelationshipName = 'indoor';
 
     public static function getPluralLabel(): string
     {

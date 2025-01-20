@@ -292,6 +292,12 @@ class ActionsResource extends Resource
                     ->getStateUsing(fn ($record) => $record->detalle_accion)
                     ->sortable(),
 
+                
+                TextColumn::make('indoor.name')
+                    ->label(__('Indoor'))
+                    ->sortable() 
+                    ->searchable(),
+
 
             ])
             ->filters([

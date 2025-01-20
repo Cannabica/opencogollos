@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email');
             $table->boolean('active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -35,4 +35,14 @@ class Plant extends Model
     {
         return $this->belongsToMany(Action::class, 'action_plant');
     }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($plant) {
+            // Eliminar las relaciones en la tabla pivote
+            $plant->actions()->detach();
+        });
+    }
 }

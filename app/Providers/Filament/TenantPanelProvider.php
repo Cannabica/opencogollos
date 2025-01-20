@@ -19,6 +19,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Tenant;
 use App\Filament\Pages\Dashboard;
+use App\Models\Tenant as T;
 
 class TenantPanelProvider extends PanelProvider
 {
@@ -27,6 +28,7 @@ class TenantPanelProvider extends PanelProvider
         return $panel
             ->id('tenant')
             ->path('tenant')
+            ->tenant(T::class, ownershipRelationship: 'tenant')
             ->colors([
                 'primary' => Color::hex('#3eff38'),
             ])

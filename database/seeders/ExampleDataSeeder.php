@@ -67,39 +67,5 @@ class ExampleDataSeeder extends Seeder
             'updated_at' => Carbon::now(),
         ]);
 
-        //Insertar en la tabla Seeds
-        DB::table('seeds')->insert([
-            [
-                'name' => 'Seed Example 1',
-                'tenant_id' => 1, 
-                'seed_type' => 'Fotoperiodica feminizada',
-                'flowering_time' => 10,
-                'ratio_thc' => 18,
-                'ratio_cbd' => 2,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'name' => 'Seed Example 2',
-                'tenant_id' => 1, 
-                'seed_type' => 'Automatica',
-                'flowering_time' => 8,
-                'ratio_thc' => 15,
-                'ratio_cbd' => 5,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'name' => 'Seed Example 3',
-                'tenant_id' => 1, 
-                'seed_type' => 'Fotoperiodica regular',
-                'flowering_time' => 12,
-                'ratio_thc' => 20,
-                'ratio_cbd' => 1,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
-
     }
 }

@@ -277,9 +277,8 @@ class PlantsResource extends Resource
                             'Etapa de Plantula' => 'primary',
                             'Etapa Vegetativa' => 'tertiary',
                             'Etapa Floracion' => 'accent',
-                            'muerta' => 'gray',
+                            'Muerta', 'muerta' => 'gray',
                         }),
-
 
                     // TextColumn::make('indoor_id')
                     // ->getStateUsing(fn($record) => __('indoor_id').': '.$record->indoor()->where('indoor_id', $record->indoor_id)),

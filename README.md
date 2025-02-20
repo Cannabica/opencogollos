@@ -39,3 +39,16 @@ password
 /tenant
 user@tenant.com
 password
+
+## Notas
+volar db, crearla y seedearla
+`php artisan migrate:fresh --seed`
+
+separados 
+```
+php artisan migrate:fresh
+php artisan db:seed
+```
+uno especifico 
+`php artisan db:seed --class=NombreDelSeeder`
+

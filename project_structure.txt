@@ -1,0 +1,184 @@
+=== Estructura del Proyecto ===
+.
+├── app
+│   ├── Console
+│   │   └── Kernel.php
+│   ├── Exceptions
+│   │   └── Handler.php
+│   ├── Filament
+│   │   ├── Pages
+│   │   ├── Resources
+│   │   └── Tenant
+│   ├── Http
+│   │   ├── Controllers
+│   │   ├── Middleware
+│   │   └── Kernel.php
+│   ├── Models
+│   │   ├── Scopes
+│   │   ├── Action.php
+│   │   ├── ActionType.php
+│   │   ├── Batch.php
+│   │   ├── CropPlan.php
+│   │   ├── Indoor.php
+│   │   ├── Plant.php
+│   │   ├── PlantState.php
+│   │   ├── Seed.php
+│   │   ├── Tenant.php
+│   │   └── User.php
+│   ├── Providers
+│   │   ├── Filament
+│   │   ├── AppServiceProvider.php
+│   │   ├── AuthServiceProvider.php
+│   │   ├── BroadcastServiceProvider.php
+│   │   ├── EventServiceProvider.php
+│   │   └── RouteServiceProvider.php
+│   └── Utilities
+│       └── PlantActions
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── broadcasting.php
+│   ├── cache.php
+│   ├── cors.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── hashing.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── sanctum.php
+│   ├── services.php
+│   ├── session.php
+│   └── view.php
+├── artisan
+├── cannabica_db.sqlite
+├── composer.lock
+├── Dockerfile
+├── generate_project_info.sh
+├── package-lock.json
+├── phpunit.xml
+├── postcss.config.js
+├── project_structure.txt
+├── README.md
+└── vite.config.js
+
+17 directories, 44 files
+
+
+
+=== Proveedor del Panel de Filament ===
+<?php
+
+namespace App\Providers\Filament;
+
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Widgets;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+
+class SuperadminPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->default()
+            ->id('superadmin')
+            ->path('superadmin')
+            ->login()
+            ->colors([
+                'primary' => Color::hex('#006400'),
+            ])
+            ->font(family: 'Nunito')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->pages([
+                Pages\Dashboard::class,
+            ])
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->widgets([
+                Widgets\AccountWidget::class,
+                Widgets\FilamentInfoWidget::class,
+            ])
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                VerifyCsrfToken::class,
+                SubstituteBindings::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+            ])
+            ->authMiddleware([
+                Authenticate::class,
+            ]);
+    }
+}
+
+
+
+=== Variables de Entorno Relevantes ===
+APP_NAME=Cannabica #OJO Acá que rompe la sesion si se cambia el app name
+APP_ENV=local
+
+
+
+=== Dependencias de Composer ===
+{
+  "php": "^8.1",
+  "codeat3/blade-phosphor-icons": "^2.2",
+  "filament/filament": "^3.2",
+  "guzzlehttp/guzzle": "^7.2",
+  "laravel/framework": "^10.10",
+  "laravel/sanctum": "^3.3",
+  "laravel/tinker": "^2.8"
+}
+
+
+
+=== Últimos 5 Commits ===
+d17fd94 .
+664cee2 Merge conflicts fixes
+fd5cb9b Merge pull request #117 from Adue-Digital/feature/106-agregar-checkbox-en-accion-aplique-de-producto
+d22a219 Merge pull request #116 from Adue-Digital/feature/105-quitar-required-de-campo-en-indoor
+6172298 Merge pull request #115 from Adue-Digital/feature/104-add-fields-to-lists-and-filters
+
+
+
+=== Estado del Repositorio ===
+On branch develop
+Your branch is ahead of 'origin/develop' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+	modified:   app/Filament/Tenant/Resources/PlantsResource.php
+	modified:   app/Models/Scopes/TenantScope.php
+	modified:   database/migrations/2024_08_22_151207_create_plants_table.php
+	modified:   database/seeders/ActionTypesSeeder.php
+	modified:   database/seeders/DatabaseSeeder.php
+	modified:   database/seeders/ExampleDataSeeder.php
+	modified:   database/seeders/PlantSeeder.php
+	modified:   database/seeders/SeedsSeeder.php
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	database/seeders/seeds.csv
+	generate_project_info.sh
+	project_structure.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")

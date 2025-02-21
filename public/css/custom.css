@@ -25,7 +25,15 @@
 
 .bug-notification{
     background-color: peru !important;
+    color: black !important;
 }
+.bug-notification:is(.dark *){
+    /* blablabla selector para cuando se selecciona el tema oscuro */
+}
+
+
 .first-steps{
     background-color: cadetblue !important;
+    color: black !important;
 }
+

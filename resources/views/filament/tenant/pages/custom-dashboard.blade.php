@@ -6,7 +6,7 @@
     @endpush
 
     <div x-data="{ show: true }" x-show="show" 
-         class="dimiss-alert bug-notification bg-yellow-200 border-l-4 border-yellow-600 text-yellow-900 p-4 mb-4 rounded-lg shadow-lg relative flex">
+         class="dimiss-alert bug-notification bg-yellow-200 p-4 mb-4 rounded-lg shadow-lg relative flex">
 
         <div class="flex-1">
             <p class="text-sm">
@@ -22,7 +22,7 @@
     </div>
 
     <div x-data="{ show: true }" x-show="show" 
-     class="dimiss-alert first-steps bg-blue-100 border-l-4 border-blue-600 text-blue-900 p-4 mb-4 rounded-lg shadow-lg relative flex">
+     class="dimiss-alert first-steps bg-blue-100 border-l-4 p-4 mb-4 rounded-lg shadow-lg relative flex">
 
     <div class="flex-1">
         <p class="text-sm font-semibold mb-2">¡Bienvenido! Te sugerimos estos primeros pasos:</p>

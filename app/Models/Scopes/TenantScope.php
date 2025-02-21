@@ -16,10 +16,15 @@ class TenantScope implements Scope
     {
          // Obtener el tenant_id del usuario logueado
          $user = Auth::user();
-         $tenantId = $user->tenant_id;
- 
-         // Aplicar el filtro: solo mostrar seeds con el tenant_id del usuario o null
-         $builder->where('tenant_id', $tenantId)
-                 ->orWhereNull('tenant_id');
+         
+         if ($user) {
+            $tenantId = $user->tenant_id;
+            // Aplicar el filtro: solo mostrar seeds con el tenant_id del usuario o null
+            $builder->where('tenant_id', $tenantId)
+                    ->orWhereNull('tenant_id');
+         }else{
+            // Si no hay usuario logueado, no mostrar nada
+            $builder->where('tenant_id', null);
+         }
     }
 }

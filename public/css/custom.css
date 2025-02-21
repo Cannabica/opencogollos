@@ -22,3 +22,10 @@
 .justify-to-center {
     justify-content: center;
 }
+
+.bug-notification{
+    background-color: peru !important;
+}
+.first-steps{
+    background-color: cadetblue !important;
+}

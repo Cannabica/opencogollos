@@ -5,6 +5,67 @@
         <link href="{{ asset('css/filament/tenant/theme.css') }}" rel="stylesheet">
     @endpush
 
+    <div x-data="{ show: true }" x-show="show" 
+         class="dimiss-alert bug-notification bg-yellow-200 border-l-4 border-yellow-600 text-yellow-900 p-4 mb-4 rounded-lg shadow-lg relative flex">
+
+        <div class="flex-1">
+            <p class="text-sm">
+                La plataforma se encuentra en una fase alfa. <b>Puede ser inestable o presentar problemas</b>.
+                Si encuentras un error, por favor <a href="https://forms.gle/ExezFvDNXfAJLbW4A" Target="_blank"  class="underline font-medium text-yellow-900 hover:text-yellow-700">repórtalo aquí</a>.
+            </p>
+        </div>
+
+        {{-- Botón de cierre --}}
+        <button @click="show = false" class=" text-yellow-900 hover:text-yellow-700">
+            ✖
+        </button>
+    </div>
+
+    <div x-data="{ show: true }" x-show="show" 
+     class="dimiss-alert first-steps bg-blue-100 border-l-4 border-blue-600 text-blue-900 p-4 mb-4 rounded-lg shadow-lg relative flex">
+
+    <div class="flex-1">
+        <p class="text-sm font-semibold mb-2">¡Bienvenido! Te sugerimos estos primeros pasos:</p>
+        <ul class="list-disc list-inside space-y-2">
+            <li>
+                <strong>Configurar tu indoor:</strong><br>
+                <a href="/tenant/indoors/create" class="underline hover:text-blue-700">
+                    /tenant/indoors/create
+                </a> - Carga dimensiones, potencia de luces, ventiladores, etc.
+            </li>
+            <li>
+                <strong>Revisa nuestras semillas ya cargadas:</strong><br>
+                <a href="/tenant/seeds" class="underline hover:text-blue-700">
+                    /tenant/seeds
+                </a> - Listado pre cargado, filtra por tipo y ratios CBD/THC
+            </li>
+            <li>
+                <strong>Cargar tus semillas:</strong><br>
+                <a href="/tenant/seeds/create" class="underline hover:text-blue-700">
+                    /tenant/seeds/create
+                </a> - Registra tipo (feminizadas, automáticas), floración y ratios CBD/THC
+            </li>
+            <li>
+                <strong>Registrar tus plantas:</strong><br>
+                <a href="/tenant/plants/create" class="underline hover:text-blue-700">
+                    /tenant/plants/create
+                </a> - Usa tus semillas registradas, agrega fechas, macetas y sustratos
+            </li>
+            <li>
+                <strong>Primer cuidado de plantas:</strong><br>
+                <a href="/tenant/actions/create" class="underline hover:text-blue-700">
+                    /tenant/actions/create
+                </a> - Registra riegos, podas o aplicaciones de productos
+            </li>
+        </ul>
+    </div>
+
+    {{-- Botón de cierre --}}
+    <button @click="show = false" class="text-blue-900 hover:text-blue-700 ml-4 self-start">
+        ✖
+    </button>
+</div>
+
     <div class="mb-6">
         {{ $this->filtersForm }}
     </div>

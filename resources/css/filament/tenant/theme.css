@@ -137,5 +137,5 @@
     }
     .border-dark:is(.dark *){
         color: var(--dark-light) !important;
-    }   
+    }
 }

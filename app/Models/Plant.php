@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -44,5 +45,10 @@ class Plant extends Model
             // Eliminar las relaciones en la tabla pivote
             $plant->actions()->detach();
         });
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new TenantScope(byIndoor: true));
     }
 }

@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 
 class TenantScope implements Scope
 {
+
+    public function __construct(public bool $byIndoor = false)
+    {}
+
     /**
      * Apply the scope to a given Eloquent query builder.
      */
@@ -16,13 +20,18 @@ class TenantScope implements Scope
     {
          // Obtener el tenant_id del usuario logueado
          $user = Auth::user();
-         
+
          if ($user) {
             $tenantId = $user->tenant_id;
             // Aplicar el filtro: solo mostrar seeds con el tenant_id del usuario o null
-            $builder->where('tenant_id', $tenantId)
+            if ($this->byIndoor) {
+                $builder->whereIn('indoor_id', $user->tenant->indoors->pluck('id'));
+            } else {
+                $builder->where('tenant_id', $tenantId)
                     ->orWhereNull('tenant_id');
-         }else{
+            }
+
+         } else {
             // Si no hay usuario logueado, no mostrar nada
             $builder->where('tenant_id', null);
          }

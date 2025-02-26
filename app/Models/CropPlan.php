@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Scopes\CropPlanScope;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CropPlan extends Model
 {
     use HasFactory;
+
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -50,7 +54,7 @@ class CropPlan extends Model
         'flowering_temp_since',
         'flowering_temp_until',
     ];
-    
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
@@ -58,6 +62,12 @@ class CropPlan extends Model
 
     protected static function booted()
     {
-        static::addGlobalScope(new CropPlanScope);
+        static::creating(function ($cropPlan) {
+            if (auth()->check() && auth()->user()->tenant_id) {
+                $cropPlan->tenant_id = auth()->user()->tenant_id;
+            }
+        });
+
+        static::addGlobalScope(new TenantScope);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Scopes\TenantScope;
@@ -21,4 +23,5 @@ class Seed extends Model
     {
         static::addGlobalScope(new TenantScope);
     }
+
 }

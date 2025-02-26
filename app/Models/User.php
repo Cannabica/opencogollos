@@ -19,6 +19,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     public function canAccessTenant(Model $tenant): bool
     {
+
         return true; // TODO: Implement canAccessTenant() method.
     }
 
@@ -37,6 +38,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
         if ($panel->getId() === 'tenant') {
             return $this->tenant?->active ?? false;
+        }
+
+        if ($panel->getId() === 'superadmin') {
+            return $this->tenant == null;
         }
 
         return true;

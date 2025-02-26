@@ -14,5 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    $user = auth()->user();
+    if($user != null){
+        return redirect($user->tenant_id != null ? '/tenant' : '/superadmin');
+    }
+    return redirect('/tenant');
 });

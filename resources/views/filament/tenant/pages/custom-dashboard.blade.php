@@ -22,7 +22,7 @@
     </div>
 
     <div x-data="{ show: true }" x-show="show" 
-     class="dimiss-alert first-steps bg-blue-100 border-l-4 p-4 mb-4 rounded-lg shadow-lg relative flex">
+     class="dimiss-alert first-steps bg-blue-100 p-4 mb-4 rounded-lg shadow-lg relative flex">
 
     <div class="flex-1">
         <p class="text-sm font-semibold mb-2">¡Bienvenido! Te sugerimos estos primeros pasos:</p>

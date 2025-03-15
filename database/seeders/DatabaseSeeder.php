@@ -27,5 +27,6 @@ class DatabaseSeeder extends Seeder
         $this->call(SeedsSeeder::class);
         $this->call(PlantSeeder::class);
         $this->call(CropPlanSeeder::class);
+        $this->call(ActionSeeder::class);
     }
 }

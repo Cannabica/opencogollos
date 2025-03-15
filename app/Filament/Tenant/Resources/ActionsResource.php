@@ -91,14 +91,14 @@ class ActionsResource extends Resource
                                     : null)
                                 ->required(),
 
-                            // Select Plants based on Indoor
-                            CheckboxList::make('data.plants')
-                                ->label(__('Plants'))
+                            // Select Plants based on Indoor using relationship
+                            CheckboxList::make('plants')
+                                ->relationship('plants', 'name')
                                 ->options(function (callable $get) {
-                                    $indoorId = $get('indoor_id'); // Obtener el valor seleccionado de indoor_id
+                                    $indoorId = $get('indoor_id');
                                     return $indoorId
-                                        ? Plant::where('indoor_id', $indoorId)->pluck('name', key: 'id')->toArray()
-                                        : []; // Retorna las plantas correspondientes o un arreglo vacío si no hay indoor seleccionado
+                                        ? Plant::where('indoor_id', $indoorId)->pluck('name', 'id')->toArray()
+                                        : [];
                                 })
                                 ->columns(2)
                                 ->bulkToggleable()
@@ -284,28 +284,32 @@ class ActionsResource extends Resource
             ])->columns(1);
     }
 
-    public function afterCreate($record)
+    public function afterCreate(): void
     {
-        $this->executeActionTrigger($record);
+        // Execute the action trigger
+        $this->executeActionTrigger($this->record);
     }
 
     protected function executeActionTrigger(Action $action)
     {
-        $plant = Plant::find($action->plant_id); // Asumiendo que tienes una referencia a la planta
-
-        // Obtener la clase de acción desde el registro de `action_class`
+        // Get the action class
         $actionClass = $action->action_type->action_class;
 
-        // Instanciar la clase de acción y ejecutar su método trigger
+        // If the class exists, create an instance and trigger it for each plant
         if (class_exists($actionClass)) {
-            $actionInstance = new $actionClass(/* pasa aquí parámetros adicionales si es necesario */);
-            $actionInstance->trigger($plant);
+            $actionInstance = new $actionClass();
+            
+            // Execute the trigger for each related plant
+            foreach ($action->plants as $plant) {
+                $actionInstance->trigger($plant);
+            }
         }
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('plants')->withCount('plants'))
             ->searchPlaceholder(__('actions_searchable_placeholder'))
             ->columns(components: [
                 Grid::make([
@@ -331,10 +335,9 @@ class ActionsResource extends Resource
                             ->grow(false)
                             ->alignCenter()
                             ->description(description: __(key: 'Plantas'), position: 'bellow')
-                            ->getStateUsing(fn($record) => $record->plants_count)
-                            ->sortable() // Permite ordenar por cantidad de plantas afectadas
-                            ->columnSpan(1)
-                            ->searchable(),
+                            ->getStateUsing(fn($record) => $record->plants()->count())
+                            ->sortable()
+                            ->columnSpan(1),
 
                         // Columna para mostrar el detalle de la acción
                         TextColumn::make('detalle_accion')

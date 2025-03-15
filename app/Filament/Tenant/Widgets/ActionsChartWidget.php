@@ -3,137 +3,105 @@
 namespace App\Filament\Tenant\Widgets;
 
 use Filament\Widgets\ChartWidget;
-use Flowframe\Trend\Trend;
 use App\Models\Action;
 use App\Models\ActionType;
-use Flowframe\Trend\TrendValue;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ActionsChartWidget extends ChartWidget
 {
     protected static ?string $heading = 'Evolución de cuidados';
-    protected array $months;
 
     protected int | string | array $columnSpan = 2;
 
+    public ?string $filter = '';
+
+    protected function getFilters(): ?array
+    {
+        return [
+            'all' => 'Todos',
+            'last30days' => 'Últimos 30 días',
+            'last7days' => 'Últimos 7 días',
+            'today' => 'Hoy',
+        ];
+    }
+
     protected function getData(): array
     {
-        $start = now()->subMonths(3)->startOfMonth();
-        $end = now()->endOfMonth();
+        $startDate = match ($this->filter) {
+            'last30days' => now()->subDays(30),
+            'last7days' => now()->subDays(7),
+            'today' => now()->startOfDay(),
+            default => now()->subDays(30),
+        };
 
-        // Obtener todos los meses en el rango
-        $this->months = [];
-        $currentMonth = $start->copy();
-        while ($currentMonth <= $end) {
-            $this->months[] = $currentMonth->format('Y-m');
-            $months[] = $currentMonth->format('Y-m');
-            $currentMonth->addMonth();
-        }
+        $endDate = now();
 
+        // Obtener todos los tipos de acciones
+        $actionTypes = ActionType::all();
 
-        // Obtener datos agrupados
-        $trendData = Action::whereBetween('action_date', [$start, $end])
-            ->selectRaw('
-                action_type_id,
-                strftime("%Y-%m", action_date) as month,
-                COUNT(*) as aggregate
-            ')
-            ->groupBy('action_type_id', 'month')
-            ->orderBy('month')
-            ->get()
-            ->groupBy('action_type_id');
+        // Preparar el rango de fechas
+        $dates = collect(new \DatePeriod(
+            $startDate->startOfDay(),
+            new \DateInterval('P1D'),
+            $endDate->endOfDay()
+        ))->map(function ($date) {
+            return $date->format('Y-m-d');
+        });
 
-        $actionTypes = ActionType::orderBy('id')->get();
+        // Obtener las acciones agrupadas por tipo y fecha
+        $actions = Action::select(
+                'action_type_id',
+                DB::raw('DATE(action_date) as date'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->whereBetween('action_date', [
+                $startDate->startOfDay(),
+                $endDate->endOfDay()
+            ])
+            ->groupBy('action_type_id', 'date')
+            ->get();
 
+        // Preparar los datos para el gráfico
         $datasets = [];
-        $colors = $this->generateColorPalette($actionTypes->count());
-        $colorIndex = 0;
+        $colors = [
+            1 => '#36A2EB',  // Riego
+            2 => '#FF6384',  // Poda
+            3 => '#FFCE56',  // Aplique producto
+            4 => '#4BC0C0',  // Transplante
+            5 => '#9966FF',  // Observación con foto
+            6 => '#FF9F40',  // Muerte de la planta
+            7 => '#C9CBCF'   // Cambio de estado
+        ];
 
-        foreach ($actionTypes as $actionType) {
-            \Log::debug("Procesando ActionType ID: {$actionType->id}", [
-                'name' => $actionType->name,
-                'total_actions' => Action::where('action_type_id', $actionType->id)->count()
-            ]);
+        // Crear un dataset para cada tipo de acción
+        foreach ($actionTypes as $type) {
+            $typeData = $dates->mapWithKeys(function ($date) {
+                return [$date => 0];
+            })->toArray();
 
-            // '#FF9F40', // Naranja
-            // '#FFCD56', // Amarillo
-            // '#36A2EB', // Azul
-
-            $dataset = [
-                'label' => __(str_replace('Registrar ', '', $actionType->name)),
-                'data' => array_fill(0, count($months), 0),
-                'borderColor' => $colors[$colorIndex],
-                'backgroundColor' => $colors[$colorIndex],
-                'pointBackgroundColor' => $colors[$colorIndex],
-                'pointBorderColor' => '#ffffff',
-                'pointBorderWidth' => 2,
-                'pointRadius' => 5,
-                'pointHoverRadius' => 8,
-                'tension' => 0.4,
-                'fill' => false,
-                'cubicInterpolationMode' => 'monotone',
-                'spanGaps' => true,
-            ];
-
-            $trendValues = $trendData->where('action_type_id', $actionType->id);
-
-            \Log::debug("Trend values para {$actionType->name}", [
-                'count_trend_values' => $trendValues->count(),
-                'first_value' => $trendValues->first()?->toArray()
-            ]);
-
-            \Log::debug('Datos crudos de Trend', [
-                'data' => $trendData->toArray(),
-                'months_generated' => $months
-            ]);
-
-
-            // Mapear datos existentes
-            foreach ($trendData->get($actionType->id, []) as $trendValue) {
-                $monthString = $trendValue->month;
-
-                // Agregar debug para verificar tipos
-                \Log::debug('Tipos de datos', [
-                    'trend_month_type' => gettype($trendValue->month),
-                    'months_array_type' => array_map('gettype', $months)
-                ]);
-
-                $monthIndex = array_search(
-                    $trendValue->month,
-                    $months
-                );
-
-                if ($monthIndex !== false) {
-                    $dataset['data'][$monthIndex] = $trendValue->aggregate;
-                }
-
-                \Log::debug("Mapeando valor", [
-                    'trend_date' => $trendValue->month,
-                    'month_string' => $monthString,
-                    'month_index' => $monthIndex,
-                    'aggregate' => $trendValue->aggregate
-                ]);
-
-
-                if ($monthIndex !== false) {
-                    $dataset['data'][$monthIndex] = $trendValue->aggregate;
-                } else {
-                    \Log::warning("Mes no encontrado en el array de meses", [
-                        'expected_months' => $months,
-                        'current_month' => $monthString
-                    ]);
+            // Llenar con los datos reales
+            foreach ($actions as $action) {
+                if ($action->action_type_id === $type->id) {
+                    $typeData[$action->date] = $action->count;
                 }
             }
 
-            $datasets[] = $dataset;
-            $colorIndex++;
+            $datasets[] = [
+                'label' => $type->name,
+                'data' => array_values($typeData),
+                'borderColor' => $colors[$type->id] ?? '#' . substr(md5($type->id), 0, 6),
+                'backgroundColor' => $colors[$type->id] ?? '#' . substr(md5($type->id), 0, 6),
+                'fill' => false,
+                'tension' => 0.4,
+            ];
         }
-
-        // dd($datasets);
 
         return [
             'datasets' => $datasets,
-            'labels' => $this->getMonthLabels()
+            'labels' => $dates->map(function ($date) {
+                return Carbon::parse($date)->translatedFormat('d M');
+            })->values(),
         ];
     }
 
@@ -169,11 +137,9 @@ class ActionsChartWidget extends ChartWidget
                     ]
                 ],
                 'x' => [
-                    'type' => 'category',
-                    'labels' => $this->getMonthLabels(),
                     'title' => [
                         'display' => true,
-                        'text' => __('Periodo')
+                        'text' => __('Fecha')
                     ],
                     'grid' => [
                         'display' => true
@@ -200,28 +166,6 @@ class ActionsChartWidget extends ChartWidget
                     'intersect' => false
                 ]
             ]
-        ];
-    }
-
-    private function getMonthLabels(): array
-    {
-        return array_map(
-            fn($month) => Carbon::createFromFormat('Y-m', $month)
-                ->translatedFormat('M Y'),
-            $this->months
-        );
-    }
-
-    private function generateColorPalette(int $count): array
-    {
-        return [
-            '#4BC0C0', // Turquesa
-            '#9966FF', // Lavanda
-            '#FF9F40', // Naranja
-            '#FFCD56', // Amarillo
-            '#36A2EB', // Azul
-            '#FF6384', // Rosa
-            '#4D5360'  // Gris oscuro
         ];
     }
 }

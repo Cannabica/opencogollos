@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('actions', function (Blueprint $table) {
             $table->id();
             $table->date('action_date');
-            $table->foreignId('indoor_id')->constrained('indoors')->onDelete('cascade');; 
+            $table->foreignId('indoor_id')->constrained('indoors')->onDelete('cascade');
             $table->foreignId('action_type_id')->constrained('action_types');
-            $table->softDeletes(); 
-            $table->timestamps(); 
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

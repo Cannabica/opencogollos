@@ -53,7 +53,7 @@
     <!-- Card 2 -->
     <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
         <a href="/tenant/seeds" class="hover:text-blue-700 block">
-        <img src="/images/tutorial02.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+        <img src="/images/tutorial02.png" class="w-full object-cover rounded mb-2 max-w-xs">
         <h3 class="font-bold text-lg text-center mb-1">Revisa nuestras semillas</h3>
         <p class="text-sm">Listado pre cargado, filtra por tipo y ratios CBD/THC.</p>
       </a>
@@ -61,7 +61,7 @@
     <!-- Card 3 -->
     <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
         <a href="/tenant/seeds/create" class="hover:text-blue-700 block">
-            <img src="/images/tutorial03.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+            <img src="/images/tutorial03.png" class="w-full object-cover rounded mb-2 max-w-xs">
             <h3 class="font-bold text-lg text-center mb-1">Cargar tus semillas</h3>
             <p class="text-sm">Registra tipo (feminizadas, automáticas), floración y ratios CBD/THC.</p>
       </a>
@@ -69,7 +69,7 @@
     <!-- Card 4 -->
     <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
         <a href="/tenant/plants/create" class="hover:text-blue-700 block">
-            <img src="/images/tutorial04.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+            <img src="/images/tutorial04.png" class="w-full object-cover rounded mb-2 max-w-xs">
             <h3 class="font-bold text-lg text-center mb-1">Registrar tus plantas</h3>
             <p class="text-sm">Usa tus semillas registradas, agrega fechas, macetas y sustratos.</p>
         </a>
@@ -77,7 +77,7 @@
     <!-- Card 5 -->
     <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
         <a href="/tenant/actions/create" class="hover:text-blue-700 block">
-            <img src="/images/tutorial05.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+            <img src="/images/tutorial05.png" class="w-full object-cover rounded mb-2 max-w-xs">
             <h3 class="font-bold text-lg text-center mb-1">Primer cuidado de plantas</h3>
             <p class="text-sm">Registra riegos, podas o aplicaciones de productos.</p>
         </a>

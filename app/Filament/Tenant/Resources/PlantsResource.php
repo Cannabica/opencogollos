@@ -366,7 +366,7 @@ class PlantsResource extends Resource
                     }),
                 Filter::make('Plantas Muertas')
                     ->toggle()
-                    ->query(fn (Builder $query): Builder => $query->where('state', '!=', 'Muerta'))
+                    ->query(fn (Builder $query): Builder => $query->where('state', '!=', 'muerta'))
                     ->default(true) // Oculta "Muerta" por defecto
                     ->label(__('Ocultar Plantas Muertas')),
             ])

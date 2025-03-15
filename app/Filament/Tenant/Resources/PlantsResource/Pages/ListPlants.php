@@ -27,7 +27,7 @@ class ListPlants extends ListRecords
         $seedlingCount = $this->getModel()::where('state', 'Etapa de Plantula')->count();
         $vegetativeCount = $this->getModel()::where('state', 'Etapa Vegetativa')->count();
         $floweringCount = $this->getModel()::where('state', 'Etapa Floracion')->count();
-        $totalPlants = $this->getModel()::count();
+        $totalPlants = $this->getModel()::where('state', '!=', 'muerta')->count();
 
         return new HtmlString("
             <div class='space-y-2'>

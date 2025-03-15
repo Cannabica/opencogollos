@@ -19,16 +19,15 @@ class CreateActions extends CreateRecord
 
     protected function handleRecordCreation(array $data): Action
     {
+        // Add tenant_id to the data
+        $data['tenant_id'] = auth()->user()->tenant_id;
+        
         return Action::create($data);
     }
 
-    protected function afterCreate()
+    protected function afterCreate(): void
     {
-        // Obtén las plantas seleccionadas del formulario
-        $selectedPlants = $this->record->data['plants'] ?? [];
-
-        // Sincroniza las plantas seleccionadas con la tabla pivote
-        $this->record->plants()->sync($selectedPlants);
+        // Execute the action trigger
         $this->executeActionTrigger($this->record);
     }
 

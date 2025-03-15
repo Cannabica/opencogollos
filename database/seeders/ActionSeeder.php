@@ -6,6 +6,8 @@ use App\Models\Action;
 use App\Models\ActionType;
 use App\Models\Indoor;
 use App\Models\Plant;
+use App\Models\Tenant;
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 
@@ -13,36 +15,100 @@ class ActionSeeder extends Seeder
 {
     public function run()
     {
-        // Asegurarse de que existen tipos de acción, indoors y plantas
-        if (ActionType::count() < 7 || Indoor::count() === 0 || Plant::count() === 0) {
-            $this->command->error('Primero crea ActionTypes, Indoors y Plants!');
+        // Verificar la existencia del tenant
+        $tenant = Tenant::withoutGlobalScope(TenantScope::class)->find(1);
+        if (!$tenant) {
+            $this->command->error('No se encontró el tenant ID 1. Ejecuta ExampleDataSeeder primero.');
             return;
         }
 
-        $actionTypes = ActionType::all();
+        // Obtener y verificar los datos necesarios
+        $actionTypes = ActionType::withoutGlobalScope(TenantScope::class)->get();
+        $actionTypesCount = $actionTypes->count();
+        
+        // Obtener indoors del tenant
+        $indoors = Indoor::withoutGlobalScope(TenantScope::class)
+            ->where('tenant_id', $tenant->id)
+            ->get();
+        $indoorsCount = $indoors->count();
+        
+        // Verificar plantas por indoor
+        $plantsByIndoor = [];
+        $totalPlants = 0;
+        foreach ($indoors as $indoor) {
+            $plants = Plant::withoutGlobalScope(TenantScope::class)
+                ->where('indoor_id', $indoor->id)
+                ->get();
+            $plantsByIndoor[$indoor->id] = $plants;
+            $totalPlants += $plants->count();
+            $this->command->info("Indoor {$indoor->name}: {$plants->count()} plantas");
+        }
+
+        // Verificar requisitos
+        if ($actionTypesCount === 0) {
+            $this->command->error('No hay tipos de acciones creados.');
+            return;
+        }
+
+        if ($indoorsCount === 0) {
+            $this->command->error('No hay indoors creados para el tenant.');
+            $this->command->info('IDs de tenant existentes: ' . Indoor::withoutGlobalScope(TenantScope::class)->distinct('tenant_id')->pluck('tenant_id')->implode(', '));
+            return;
+        }
+
+        if ($totalPlants === 0) {
+            $this->command->error('No hay plantas creadas para el tenant.');
+            return;
+        }
+
+        $this->command->info("Encontrados para tenant {$tenant->name}:");
+        $this->command->info("- {$actionTypesCount} tipos de acciones");
+        $this->command->info("- {$indoorsCount} indoors");
+        $this->command->info("- {$totalPlants} plantas en total");
 
         foreach ($actionTypes as $actionType) {
-            for ($i = 0; $i < 12; $i++) { // 5 acciones por tipo
-                $indoor = Indoor::inRandomOrder()->first();
-                $plants = Plant::where('indoor_id', $indoor->id)->pluck('id')->toArray();
+            for ($i = 0; $i < 12; $i++) {
+                // Seleccionar un indoor del tenant actual
+                $indoor = Indoor::withoutGlobalScope(TenantScope::class)
+                    ->where('tenant_id', $tenant->id)
+                    ->inRandomOrder()
+                    ->first();
 
-                if (empty($plants)) continue;
+                if (!$indoor) {
+                    $this->command->error("No se encontró ningún indoor para el tenant {$tenant->name}");
+                    return;
+                }
+
+                // Obtener plantas del indoor seleccionado
+                $plants = Plant::withoutGlobalScope(TenantScope::class)
+                    ->where('indoor_id', $indoor->id)
+                    ->pluck('id')
+                    ->toArray();
+
+                if (empty($plants)) {
+                    $this->command->info("Saltando indoor {$indoor->name} - no tiene plantas");
+                    continue;
+                }
 
                 $selectedPlants = Arr::random(
                     $plants, 
-                    rand(1, count($plants))
+                    rand(1, min(count($plants), 5)) // Máximo 5 plantas por acción
                 );
 
                 $data = $this->generateActionData($actionType->id, $selectedPlants);
 
-                Action::create([
+                $action = Action::withoutGlobalScope(TenantScope::class)->create([
                     'action_date' => now()->subDays(rand(0, 90))
                         ->subHours(rand(0, 23))
                         ->subMinutes(rand(0, 59)),
                     'indoor_id' => $indoor->id,
                     'action_type_id' => $actionType->id,
                     'data' => $data,
+                    'tenant_id' => $tenant->id,
                 ]);
+
+                // Crear las relaciones en la tabla pivot
+                $action->plants()->attach($selectedPlants);
             }
         }
     }

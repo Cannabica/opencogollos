@@ -21,33 +21,22 @@ class EditActions extends EditRecord
         return $record;
     }
 
-    protected function afterSave()
+    protected function afterSave(): void
     {
-        // Obtén las plantas seleccionadas del formulario
-        $selectedPlants = $this->record->data['plants'] ?? [];
-
-        // Sincroniza las plantas seleccionadas con la tabla pivote
-        $this->record->plants()->sync($selectedPlants);
+        // Execute the action trigger
         $this->executeActionTrigger($this->record);
     }
 
     protected function executeActionTrigger($action)
     {
-        $plants = $action->plants()->get();
+        $actionClass = $action->action_type->action_class;
 
-        foreach($plants as $plant){
-
-            $actionClass = $action->action_type->action_class;
-
-            if (class_exists($actionClass)) {
-               // Obtener los argumentos de forma estática
-               $constructorArgs = $actionClass::getConstructorArguments($action);
-
-               // Crear la instancia real con los argumentos del constructor
-               $actionInstance = new $actionClass(...$constructorArgs);
-
-               // Llamar al método trigger con la planta como argumento
-               $actionInstance->trigger($plant);
+        if (class_exists($actionClass)) {
+            $actionInstance = new $actionClass();
+            
+            // Execute the trigger for each related plant
+            foreach ($action->plants as $plant) {
+                $actionInstance->trigger($plant);
             }
         }
     }

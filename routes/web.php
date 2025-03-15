@@ -14,9 +14,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    $user = auth()->user();
-    if($user != null){
+    if (auth()->check()) {
+        $user = auth()->user();
         return redirect($user->tenant_id != null ? '/tenant' : '/superadmin');
     }
     return redirect('/tenant');
+});
+
+Route::get('/health', function () {
+    return response()->json(['status' => 'healthy'], 200);
 });

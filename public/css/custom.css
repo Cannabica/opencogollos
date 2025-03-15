@@ -22,22 +22,22 @@
 .justify-to-center {
     justify-content: center;
 }
-
 .bug-notification {
-    background-color: peru !important;
-    color: black !important;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: #d9534f !important; /* Rojo anaranjado */
+    color: white !important;
+    border: 1px solid #b52b27; /* Tono más oscuro */
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .bug-notification:hover {
-    background-color: #e0a96d;
+    background-color: #c9302c; /* Rojo más intenso al pasar el mouse */
 }
 
 .bug-notification:is(.dark *) {
-    /* Ajustes para el modo oscuro */
-    background-color: #7a624e !important;
+    /* Modo oscuro */
+    background-color: #642421 !important; /* Rojo oscuro apagado */
     color: #fff !important;
+    border-color: #4d1b18;
 }
 
 .first-steps {

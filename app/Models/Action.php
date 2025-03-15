@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Action extends Model
 {
     use HasFactory;
-    protected $fillable = ['action_date', 'indoor_id', 'action_type_id', 'data'];
+    protected $fillable = ['action_date', 'indoor_id', 'action_type_id', 'data', 'tenant_id'];
 
     protected $casts = [
         'data' => 'array',

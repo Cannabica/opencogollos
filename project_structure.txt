@@ -142,6 +142,7 @@ APP_ENV=local
   "php": "^8.1",
   "codeat3/blade-phosphor-icons": "^2.2",
   "filament/filament": "^3.2",
+  "flowframe/laravel-trend": "^0.4.0",
   "guzzlehttp/guzzle": "^7.2",
   "laravel/framework": "^10.10",
   "laravel/sanctum": "^3.3",
@@ -152,11 +153,11 @@ APP_ENV=local
 
 
 === Últimos 5 Commits ===
-8578cb3 add crop plan seeder to database seeder
-c1b74af fix seeds seeders and add crop plan seeder
-b1d05c0 fix, problema capacity en el recurso de plantas
-1cc2fd3 add discord btn
-9a64fbf Merge pull request #119 from Adue-Digital/alfa-w-register
+04e30dc update favicon and icons, dashboard, analitycsPage
+6dd95d7 agrego grafico, upd tutorial
+6a05c97 Update custom-dashboard.blade.php
+e5d663f Merge pull request #134 from Adue-Digital/fix/indoor-form-inputs-repeats
+63a1ac5 Fix inputs repeating in indoor form
 
 
 
@@ -167,17 +168,10 @@ Your branch is up to date with 'origin/develop'.
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
-	modified:   app/Filament/Pages/Dashboard.php
-	modified:   app/Providers/Filament/TenantPanelProvider.php
-	modified:   composer.json
-	modified:   composer.lock
 	modified:   project_structure.txt
-	modified:   resources/lang/es.json
-	modified:   resources/views/filament/tenant/widgets/indoor-widget.blade.php
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-	app/Filament/Tenant/Resources/ActionsPieChartResource/
-	public/js/app/
+	resources/views/errors/
 
 no changes added to commit (use "git add" and/or "git commit -a")

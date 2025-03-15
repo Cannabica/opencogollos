@@ -97,7 +97,7 @@ class ActionsResource extends Resource
                                 ->options(function (callable $get) {
                                     $indoorId = $get('indoor_id'); // Obtener el valor seleccionado de indoor_id
                                     return $indoorId
-                                        ? Plant::where('indoor_id', $indoorId)->pluck('name', 'id')->toArray()
+                                        ? Plant::where('indoor_id', $indoorId)->pluck('name', key: 'id')->toArray()
                                         : []; // Retorna las plantas correspondientes o un arreglo vacío si no hay indoor seleccionado
                                 })
                                 ->columns(2)
@@ -317,7 +317,7 @@ class ActionsResource extends Resource
                     ->schema([
 
                         // Columna para mostrar la fecha de la acción
-                        TextColumn::make('created_at')
+                        TextColumn::make('action_date')
                             ->label(__('Fecha'))
                             ->dateTime('d/m/Y')
                             ->description(description: __('Registrado el'), position: 'above')

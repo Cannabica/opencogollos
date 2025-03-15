@@ -13,6 +13,8 @@
 │   │   ├── Controllers
 │   │   ├── Middleware
 │   │   └── Kernel.php
+│   ├── Livewire
+│   │   └── ActionShortcuts.php
 │   ├── Models
 │   │   ├── Scopes
 │   │   ├── Action.php
@@ -62,7 +64,7 @@
 ├── README.md
 └── vite.config.js
 
-17 directories, 44 files
+18 directories, 45 files
 
 
 
@@ -143,42 +145,39 @@ APP_ENV=local
   "guzzlehttp/guzzle": "^7.2",
   "laravel/framework": "^10.10",
   "laravel/sanctum": "^3.3",
-  "laravel/tinker": "^2.8"
+  "laravel/tinker": "^2.8",
+  "leandrocfe/filament-apex-charts": "^3.1"
 }
 
 
 
 === Últimos 5 Commits ===
-d17fd94 .
-664cee2 Merge conflicts fixes
-fd5cb9b Merge pull request #117 from Adue-Digital/feature/106-agregar-checkbox-en-accion-aplique-de-producto
-d22a219 Merge pull request #116 from Adue-Digital/feature/105-quitar-required-de-campo-en-indoor
-6172298 Merge pull request #115 from Adue-Digital/feature/104-add-fields-to-lists-and-filters
+8578cb3 add crop plan seeder to database seeder
+c1b74af fix seeds seeders and add crop plan seeder
+b1d05c0 fix, problema capacity en el recurso de plantas
+1cc2fd3 add discord btn
+9a64fbf Merge pull request #119 from Adue-Digital/alfa-w-register
 
 
 
 === Estado del Repositorio ===
 On branch develop
-Your branch is ahead of 'origin/develop' by 1 commit.
-  (use "git push" to publish your local commits)
+Your branch is up to date with 'origin/develop'.
 
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
-	modified:   README.md
-	modified:   app/Filament/Tenant/Resources/PlantsResource.php
-	modified:   app/Models/Scopes/TenantScope.php
-	modified:   database/migrations/2024_08_22_151207_create_plants_table.php
-	modified:   database/seeders/ActionTypesSeeder.php
-	modified:   database/seeders/DatabaseSeeder.php
-	modified:   database/seeders/ExampleDataSeeder.php
-	modified:   database/seeders/PlantSeeder.php
-	modified:   database/seeders/SeedsSeeder.php
+	modified:   app/Filament/Pages/Dashboard.php
+	modified:   app/Providers/Filament/TenantPanelProvider.php
+	modified:   composer.json
+	modified:   composer.lock
+	modified:   project_structure.txt
+	modified:   resources/lang/es.json
+	modified:   resources/views/filament/tenant/widgets/indoor-widget.blade.php
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-	database/seeders/seeds.csv
-	generate_project_info.sh
-	project_structure.txt
+	app/Filament/Tenant/Resources/ActionsPieChartResource/
+	public/js/app/
 
 no changes added to commit (use "git add" and/or "git commit -a")

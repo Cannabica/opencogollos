@@ -24,42 +24,54 @@
     <div x-data="{ show: true }" x-show="show" 
      class="dimiss-alert first-steps bg-blue-100 p-4 mb-4 rounded-lg shadow-lg relative flex">
 
-    <div class="flex-1">
-        <p class="text-sm font-semibold mb-2">¡Bienvenido! Te sugerimos estos primeros pasos:</p>
-        <ul class="list-disc list-inside space-y-2">
-            <li>
-                <strong>Configurar tu indoor:</strong><br>
-                <a href="/tenant/indoors/create" class="underline hover:text-blue-700">
-                    /tenant/indoors/create
-                </a> - Carga dimensiones, potencia de luces, ventiladores, etc.
-            </li>
-            <li>
-                <strong>Revisa nuestras semillas ya cargadas:</strong><br>
-                <a href="/tenant/seeds" class="underline hover:text-blue-700">
-                    /tenant/seeds
-                </a> - Listado pre cargado, filtra por tipo y ratios CBD/THC
-            </li>
-            <li>
-                <strong>Cargar tus semillas:</strong><br>
-                <a href="/tenant/seeds/create" class="underline hover:text-blue-700">
-                    /tenant/seeds/create
-                </a> - Registra tipo (feminizadas, automáticas), floración y ratios CBD/THC
-            </li>
-            <li>
-                <strong>Registrar tus plantas:</strong><br>
-                <a href="/tenant/plants/create" class="underline hover:text-blue-700">
-                    /tenant/plants/create
-                </a> - Usa tus semillas registradas, agrega fechas, macetas y sustratos
-            </li>
-            <li>
-                <strong>Primer cuidado de plantas:</strong><br>
-                <a href="/tenant/actions/create" class="underline hover:text-blue-700">
-                    /tenant/actions/create
-                </a> - Registra riegos, podas o aplicaciones de productos
-            </li>
-        </ul>
-    </div>
+     <div class="flex-1">
+        <div class="mt-3">
+            <p class="text-md text-center font-semibold mb-4">¡Bienvenido! Te sugerimos estos primeros pasos:</p>
+        </div>
 
+  <div class="flex flex-wrap justify-center gap-4 overflow-x-auto">
+    <!-- Card 1 -->
+    <div class="flex-shrink card-tutorial rounded shadow p-4">
+        <a href="/tenant/indoors/create" class="hover:text-blue-700 block">
+            <img src="/images/tutorial01.png" class="w-full h-50 object-cover rounded mb-2 max-w-xs">
+            <h3 class="font-bold text-lg text-center mb-1">Configurar tu indoor</h3>
+            <p class="text-sm">Carga dimensiones, potencia de luces, ventiladores, etc.</p>
+        </a>
+    </div>
+    <!-- Card 2 -->
+    <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
+        <a href="/tenant/seeds" class="hover:text-blue-700 block">
+        <img src="/images/tutorial02.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+        <h3 class="font-bold text-lg text-center mb-1">Revisa nuestras semillas</h3>
+        <p class="text-sm">Listado pre cargado, filtra por tipo y ratios CBD/THC.</p>
+      </a>
+    </div>
+    <!-- Card 3 -->
+    <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
+        <a href="/tenant/seeds/create" class="hover:text-blue-700 block">
+            <img src="/images/tutorial03.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+            <h3 class="font-bold text-lg text-center mb-1">Cargar tus semillas</h3>
+            <p class="text-sm">Registra tipo (feminizadas, automáticas), floración y ratios CBD/THC.</p>
+      </a>
+    </div>
+    <!-- Card 4 -->
+    <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
+        <a href="/tenant/plants/create" class="hover:text-blue-700 block">
+            <img src="/images/tutorial04.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+            <h3 class="font-bold text-lg text-center mb-1">Registrar tus plantas</h3>
+            <p class="text-sm">Usa tus semillas registradas, agrega fechas, macetas y sustratos.</p>
+        </a>
+    </div>
+    <!-- Card 5 -->
+    <div class="flex-shrink-0 card-tutorial rounded shadow p-4">
+        <a href="/tenant/actions/create" class="hover:text-blue-700 block">
+            <img src="/images/tutorial05.png" class="w-full h-40 object-cover rounded mb-2 max-w-xs">
+            <h3 class="font-bold text-lg text-center mb-1">Primer cuidado de plantas</h3>
+            <p class="text-sm">Registra riegos, podas o aplicaciones de productos.</p>
+        </a>
+    </div>
+  </div>
+</div>
     {{-- Botón de cierre --}}
     <button @click="show = false" class="text-blue-900 hover:text-blue-700 ml-4 self-start">
         ✖

@@ -155,6 +155,7 @@
     "indoor_name":"Indoor: ",
     "Lamp info tooltip":"Potencia y tipo de lampara",
     "subheading_list_indoors":"Gestiona tus espacios de cultivo indoor, incluyendo dimensiones, iluminación y ventilación",
-    "carpa_cultivo":"Carpa de cultivo"
+    "carpa_cultivo":"Carpa de cultivo",
+    "subheading_analitycs":"Obtén graficos y estadisticas de tus plantas y acciones"
 
 }

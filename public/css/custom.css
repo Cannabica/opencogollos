@@ -23,17 +23,115 @@
     justify-content: center;
 }
 
-.bug-notification{
+.bug-notification {
     background-color: peru !important;
     color: black !important;
-}
-.bug-notification:is(.dark *){
-    /* blablabla selector para cuando se selecciona el tema oscuro */
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+.bug-notification:hover {
+    background-color: #e0a96d;
+}
 
-.first-steps{
+.bug-notification:is(.dark *) {
+    /* Ajustes para el modo oscuro */
+    background-color: #7a624e !important;
+    color: #fff !important;
+}
+
+.first-steps {
+    background-color: cadetblue;
+    color: black;
+    padding: 20px;
+    border-radius: 8px;
+}
+.first-steps {
+    background-color: cadetblue;
+    color: black;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.card-tutorial {
+    max-width: 300px;
+    border: 1px solid rgb(77, 128, 129);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 10px;
+    z-index: 1;
+}
+
+.card-tutorial:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para modo oscuro */
+.dark .first-steps {
+    background-color: #2c3e50; /* Un azul oscuro */
+    color: #ecf0f1; /* Color claro para el texto */
+}
+
+.dark .card-tutorial {
+    border: 1px solid #34495e; /* Borde ligeramente más oscuro */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Sombras más marcadas para resaltar en fondo oscuro */
+}
+
+.dark .card-tutorial:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.7); /* Aumenta la opacidad de la sombra en hover */
+}
+/* Estado normal */
+label.fi-btn {
+    background-color: #f0f0f0 !important;
+    border: 1px solid rgba(62, 104, 105, 0.548);
+    color: #333 !important;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Elevación al pasar el mouse */
+label.fi-btn:hover {
+    color: #333 !important;
+    background-color: #e0e0e0 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Efecto de presionado */
+label.fi-btn:active {
+    color: #2c3e50 !important;
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Estado activo para radio seleccionado */
+input[type="radio"]:checked + label.fi-btn {
     background-color: cadetblue !important;
-    color: black !important;
+    border-color: cadetblue !important;
+    box-shadow: 0 4px 8px rgba(0, 139, 139, 0.3);
 }
+
+/* Efectos en modo oscuro */
+.dark label.fi-btn {
+    background-color: #3c3c3c !important;
+    color: #ccc !important;
+    border: 1px solid #555;
+}
+
+.dark label.fi-btn:hover {
+    background-color: #444 !important;
+}
+
+.dark input[type="radio"]:checked + label.fi-btn {
+    background-color: #2c3e50 !important;
+    border-color: #2c3e50 !important;
+    color: #ecf0f1 !important;
+}
+
+
 

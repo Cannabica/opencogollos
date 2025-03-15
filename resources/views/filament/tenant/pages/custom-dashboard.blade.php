@@ -4,29 +4,41 @@
         <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
         <link href="{{ asset('css/filament/tenant/theme.css') }}" rel="stylesheet">
     @endpush
-
     <div x-data="{ show: true }" x-show="show" 
-         class="dimiss-alert bug-notification bg-yellow-200 p-4 mb-4 rounded-lg shadow-lg relative flex">
-
-        <div class="flex-1">
-            <p class="text-sm">
+     class="dimiss-alert bug-notification bg-yellow-200 p-4 mb-4 rounded-lg shadow-lg relative flex items-center">
+    
+    <div class="flex flex-col md:flex-row gap-4 flex-1">
+        <!-- Columna de texto -->
+        <div class="flex-1 flex items-center">
+            <p class="text-xl">
                 La plataforma se encuentra en una fase alfa. <b>Puede ser inestable o presentar problemas</b>.
-                Si encuentras un error, por favor <a href="https://forms.gle/ExezFvDNXfAJLbW4A" Target="_blank"  class="underline font-medium text-yellow-900 hover:text-yellow-700">repórtalo aquí</a>.
+                Si encuentras un error, por favor 
+                <a href="https://forms.gle/ExezFvDNXfAJLbW4A" target="_blank"  
+                   class="underline font-medium text-yellow-900 hover:text-yellow-700">
+                    repórtalo aquí
+                </a>.
             </p>
         </div>
-
-        {{-- Botón de cierre --}}
-        <button @click="show = false" class=" text-yellow-900 hover:text-yellow-700">
-            ✖
-        </button>
+        <!-- Columna de imagen -->
+        <div class="flex justify-center">
+            <img src="/images/bughunter.png" class="w-32 h-auto object-cover rounded">
+        </div>
     </div>
+
+    <!-- Botón de cierre -->
+    <button @click="show = false" aria-label="Cerrar alerta" 
+            class="hover:text-blue-700 ml-4 self-start">
+        ✖
+    </button>
+</div>
+
 
     <div x-data="{ show: true }" x-show="show" 
      class="dimiss-alert first-steps bg-blue-100 p-4 mb-4 rounded-lg shadow-lg relative flex">
 
      <div class="flex-1">
         <div class="mt-3">
-            <p class="text-md text-center font-semibold mb-4">¡Bienvenido! Te sugerimos estos primeros pasos:</p>
+            <p class="text-xl text-center font-semibold mb-4">¡Bienvenido! Podés comenzar por acá</p>
         </div>
 
   <div class="flex flex-wrap justify-center gap-4 overflow-x-auto">

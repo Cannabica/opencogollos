@@ -153,11 +153,11 @@ APP_ENV=local
 
 
 === Últimos 5 Commits ===
+10544df fix widgets add seeders
 04e30dc update favicon and icons, dashboard, analitycsPage
 6dd95d7 agrego grafico, upd tutorial
 6a05c97 Update custom-dashboard.blade.php
 e5d663f Merge pull request #134 from Adue-Digital/fix/indoor-form-inputs-repeats
-63a1ac5 Fix inputs repeating in indoor form
 
 
 
@@ -169,9 +169,5 @@ Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
 	modified:   project_structure.txt
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	resources/views/errors/
 
 no changes added to commit (use "git add" and/or "git commit -a")

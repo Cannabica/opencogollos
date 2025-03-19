@@ -10,8 +10,11 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     libsqlite3-dev \
     libicu-dev \
+    libzip-dev \
     unzip \
     && docker-php-ext-install pdo_sqlite intl \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install composer

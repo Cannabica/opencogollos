@@ -75,8 +75,13 @@ jobs:
           elif [[ "${{ github.ref }}" =~ ^refs/heads/hotfix/ ]]; then
             tag="v${{ steps.get_version.outputs.version }}-hotfix"
           fi
-          git tag $tag
-          git push origin $tag
+          
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "El tag $tag ya existe. No se realizará ninguna acción."
+          else
+            git tag $tag
+            git push origin $tag
+          fi
 
   docker:
     needs: [build, tag-version]

@@ -45,16 +45,9 @@ class TenantPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/tenant/theme.css')
             ->pages([
                 Dashboard::class,
-                Tenant\Pages\Notifications::class,
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('10s')
-            ->userMenuItems([
-                'notifications' => MenuItem::make()
-                    ->label('Notificaciones')
-                    ->icon('heroicon-o-bell')
-                    ->url(fn(): string => Tenant\Pages\Notifications::getUrl())
-            ])
             ->colors([
                 'primary' => [
                     50 => '230, 242, 250', // #E6F2FA

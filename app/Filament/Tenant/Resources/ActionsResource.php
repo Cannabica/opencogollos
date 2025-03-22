@@ -43,6 +43,10 @@ use Schema;
 use Filament\Notifications\Notification;
 use App\Jobs\SendDelayedProductNotification;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\Grid as FormsGrid;
+use Filament\Forms\Components\Hidden;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class ActionsResource extends Resource
@@ -96,6 +100,13 @@ class ActionsResource extends Resource
                                     ->toArray())
                                 ->helperText(__('indoor_helper'))
                                 ->reactive()
+                                ->live()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    // Limpiar la selección de plantas cuando cambia el indoor
+                                    $set('plants', []);
+                                    // Forzar actualización de la vista previa del transplante
+                                    $set('data.transplant.preview_key', uniqid());
+                                })
                                 ->default(function () {
                                     return request()->get('indoor_id');
                                 })
@@ -105,32 +116,49 @@ class ActionsResource extends Resource
                             // Select Plants based on Indoor using relationship
                             CheckboxList::make('plants')
                                 ->relationship('plants', 'name')
-                                ->options(function (callable $get) {
-                                    $indoorId = $get('indoor_id');
-                                    return $indoorId
-                                        ? Plant::where('indoor_id', $indoorId)->pluck('name', 'id')->toArray()
-                                        : [];
-                                })
-                                ->default(function ($record) {
-                                    // Si estamos editando un registro existente
-                                    if ($record) {
-                                        return $record->plants->pluck('id')->toArray();
+                                ->options(function (callable $get, ?Model $record = null) {
+                                    $indoor_id = $get('indoor_id');
+                                    Log::debug('🔍 Cargando opciones de plantas', [
+                                        'indoor_id' => $indoor_id,
+                                        'is_editing' => $record !== null,
+                                        'record_id' => $record?->id,
+                                        'form_state' => $get('data')
+                                    ]);
+
+                                    if (!$indoor_id) {
+                                        return [];
                                     }
-                                    
-                                    // Si estamos creando desde "Repetir último riego"
-                                    $selectedPlants = request()->get('selected_plants');
-                                    if ($selectedPlants) {
-                                        try {
-                                            return json_decode($selectedPlants, true) ?? [];
-                                        } catch (\Exception $e) {
-                                            return [];
-                                        }
-                                    }
-                                    return [];
+
+                                    return Plant::query()
+                                        ->where('indoor_id', $indoor_id)
+                                        ->pluck('name', 'id');
                                 })
+                                ->afterStateHydrated(function ($state, $record) {
+                                    Log::debug('🔄 Estado hidratado de plantas', [
+                                        'state' => $state,
+                                        'record_id' => $record?->id,
+                                        'plantas_actuales' => $record ? $record->plants()->pluck('id')->toArray() : []
+                                    ]);
+                                })
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                    Log::debug('📝 Estado actualizado de plantas', [
+                                        'state' => $state,
+                                        'indoor_id' => $get('indoor_id')
+                                    ]);
+                                })
+                                ->beforeStateDehydrated(function ($state, callable $get, callable $set) {
+                                    Log::debug('💾 Antes de deshidratar estado', [
+                                        'state' => $state,
+                                        'indoor_id' => $get('indoor_id')
+                                    ]);
+                                })
+                                ->live()
                                 ->columns(2)
                                 ->bulkToggleable()
                                 ->required()
+                                ->dehydrated(true)
+                                ->default([])
+                                ->columnSpanFull()
                                 ->helperText(function (callable $get) {
                                     if (!$get('indoor_id')) {
                                         return 'Selecciona un Indoor para ver las plantas disponibles';
@@ -138,8 +166,7 @@ class ActionsResource extends Resource
                                     return empty($get('plants'))
                                         ? 'Selecciona al menos una planta para continuar'
                                         : '';
-                                })
-                                ->disabled(fn($record) => $record !== null && !$record->isClean()),
+                                }),
 
                         ])
                     ,
@@ -243,7 +270,6 @@ class ActionsResource extends Resource
 
                         Section::make(__('Pruning'))
                             ->schema([
-
                                 CheckboxList::make('data.pruning.pruning_type')
                                     ->label(__('Pruning Type'))
                                     ->options([
@@ -288,36 +314,93 @@ class ActionsResource extends Resource
 
                         Section::make(__('Transplant'))
                             ->schema([
+                                FormsGrid::make(2)
+                                    ->schema([
+                                        Select::make('data.transplant.new_flowerpot')
+                                            ->label(__('Nuevo Tipo de Maceta'))
+                                            ->options([
+                                                'Geotextiles' => 'Geotextiles',
+                                                'Plásticas' => 'Plásticas',
+                                                'Bolsones' => 'Bolsones',
+                                            ])
+                                            ->required()
+                                            ->live(),
 
-                                Placeholder::make('current_pot_size')
-                                    ->label(__('Current Pot Size'))
-                                    ->hidden()
-                                    ->content(fn($record) => $record->data['transplant']['new_pot_size'] ?? __('No pot size available')),
-
-                                Select::make('data.transplant.new_pot_size')
-                                    ->label(__('Tamaño de la nueva maceta'))
+                                        Select::make('data.transplant.new_capacity')
+                                            ->label(__('Nueva Capacidad'))
                                     ->options([
-                                        'N10' => 'N10',
-                                        'N12' => 'N12',
-                                        'N14' => 'N14',
-                                        '3L' => '3L',
-                                        '5L' => '5L',
-                                        '7L' => '7L',
-                                        '10L' => '10L',
-                                        '12L' => '12L',
-                                        '15L' => '15L',
-                                        '20L' => '20L',
-                                        '30L' => '30L',
-                                        '40L' => '40L',
-                                        '50L' => '50L',
-                                        '75L' => '75L',
-                                    ])
+                                                3 => '3L',
+                                                5 => '5L',
+                                                7 => '7L',
+                                                10 => '10L',
+                                                12 => '12L',
+                                                15 => '15L',
+                                                20 => '20L',
+                                                30 => '30L',
+                                                40 => '40L',
+                                                50 => '50L',
+                                                75 => '75L',
+                                            ])
+                                            ->required()
+                                            ->live(),
+
+                                        Hidden::make('data.transplant.preview_key')
+                                            ->default(uniqid()),
+
+                                        Placeholder::make('transplant_preview')
+                                            ->label(__('Vista Previa del Transplante'))
+                                            ->content(function ($get) {
+                                                // Forzar actualización usando preview_key
+                                                $previewKey = $get('data.transplant.preview_key');
+                                                
+                                                $plants = Plant::whereIn('id', $get('plants'))->get();
+                                                if ($plants->isEmpty()) {
+                                                    return new HtmlString('
+                                                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-500 text-center">
+                                                            Selecciona plantas para ver la vista previa
+                                                        </div>
+                                                    ');
+                                                }
+
+                                                $newFlowerpot = $get('data.transplant.new_flowerpot');
+                                                $newCapacity = $get('data.transplant.new_capacity');
+
+                                                $html = "<div class='space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200'>";
+                                                $html .= "<div class='text-lg font-medium border-b pb-2 mb-3'>Resumen de Cambios</div>";
+                                                $html .= "<div class='container-flex justify-to-center'>";
+                                                
+                                                foreach ($plants as $plant) {
+                                                    $html .= "
+                                                        <div class='card-tutorial p-3 bg-white dark:bg-gray-800'>
+                                                            <div class='font-medium text-lg mb-2'>{$plant->name}</div>
+                                                            <div class='text-sm mb-2'>
+                                                                <span class='text-gray-600 dark:text-gray-400'>Actual:</span><br/>
+                                                                <span class='font-medium'>{$plant->flowerpot} ({$plant->capacity}L)</span>
+                                                            </div>";
+                                                    
+                                                    if ($newFlowerpot && $newCapacity) {
+                                                        $html .= "
+                                                            <div class='text-sm'>
+                                                                <span class='text-gray-600 dark:text-gray-400'>Nueva:</span><br/>
+                                                                <span class='font-medium text-primary-600 dark:text-primary-400'>
+                                                                    {$newFlowerpot} ({$newCapacity}L)
+                                                                </span>
+                                                            </div>";
+                                                    }
+                                                    
+                                                    $html .= "</div>";
+                                                }
+                                                
+                                                $html .= "</div></div>";
+                                                return new HtmlString($html);
+                                            })
+                                            ->columnSpanFull(),
+                                    ]),
                             ])
                             ->visible(fn(Get $get) => $get('action_type_id') == 4),
 
                         Section::make(__('Observation with photo'))
                             ->schema([
-
                                 FileUpload::make('data.observation.image')
                                     ->image()
                                     ->imageEditor(),
@@ -337,7 +420,6 @@ class ActionsResource extends Resource
 
                         Section::make(__('Change of State'))
                             ->schema([
-
                                 Select::make('data.change_state.state')
                                     ->label(__('Change State'))
                                     ->options([
@@ -347,7 +429,6 @@ class ActionsResource extends Resource
                                         'Etapa Floracion' => 'Etapa Floracion',
                                     ])
                                     ->required(),
-
                             ])
                             ->visible(fn(Get $get) => $get('action_type_id') == 7),
                     ])
@@ -356,8 +437,17 @@ class ActionsResource extends Resource
 
     public function afterCreate(): void
     {
-        // Execute the action trigger
-        $this->executeActionTrigger($this->record);
+        parent::afterCreate();
+        
+        // Recargar el registro con sus relaciones
+        $this->record->load(['plants']);
+        
+        Log::debug('Después de crear acción', [
+            'action_id' => $this->record->id,
+            'tiene_plantas' => $this->record->plants()->exists(),
+            'plantas_count' => $this->record->plants()->count(),
+            'plantas_ids' => $this->record->plants()->pluck('id')
+        ]);
     }
 
     protected function executeActionTrigger(Action $action)
@@ -522,16 +612,100 @@ class ActionsResource extends Resource
         ];
     }
 
+    public function create(bool $another = false): void
+    {
+        try {
+            $formState = $this->form->getState();
+            
+            Log::debug('🚀 Iniciando creación', [
+                'form_state' => $formState,
+                'plantas' => $formState['plants'] ?? [],
+                'indoor_id' => $formState['indoor_id'] ?? null
+            ]);
+
+            if (empty($formState['plants'])) {
+                throw new \Exception('No se han seleccionado plantas');
+            }
+
+            $record = $this->handleRecordCreation($formState);
+
+            Log::debug('✅ Creación completada', [
+                'action_id' => $record->id,
+                'plantas_count' => $record->plants()->count(),
+                'plantas_ids' => $record->plants()->pluck('id')->toArray()
+            ]);
+
+            $this->record = $record;
+
+            if ($another) {
+                $this->redirect($this->getResource()::getUrl('create'));
+            } else {
+                $this->redirect($this->getResource()::getUrl('edit', ['record' => $record]));
+            }
+
+        } catch (\Exception $e) {
+            Log::error('💥 Error en create', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
-        $record = static::getModel()::create($data);
-        
-        // Sincronizar las plantas seleccionadas
-        if (isset($data['plants'])) {
-            $record->plants()->sync($data['plants']);
+        Log::debug('🏗️ Iniciando handleRecordCreation', [
+            'data_completa' => $data,
+            'plantas' => $data['plants'] ?? [],
+            'indoor_id' => $data['indoor_id']
+        ]);
+
+        try {
+            // Crear la acción y sincronizar plantas en una transacción
+            return DB::transaction(function () use ($data) {
+                // Crear la acción
+                $record = static::getModel()::create([
+                    'action_type_id' => $data['action_type_id'],
+                    'action_date' => $data['action_date'],
+                    'indoor_id' => $data['indoor_id'],
+                    'tenant_id' => auth()->user()->tenant_id,
+                    'data' => $data['data'] ?? [],
+                ]);
+
+                Log::debug('✅ Acción base creada', [
+                    'action_id' => $record->id,
+                    'plantas_a_sincronizar' => $data['plants'] ?? []
+                ]);
+
+                // Sincronizar plantas inmediatamente si existen
+                if (!empty($data['plants'])) {
+                    $record->plants()->sync($data['plants']);
+                    
+                    // Verificar la sincronización
+                    $record->refresh();
+                    $plantCount = $record->plants()->count();
+                    
+                    Log::debug('✨ Plantas sincronizadas', [
+                        'action_id' => $record->id,
+                        'count' => $plantCount,
+                        'plantas_ids' => $record->plants()->pluck('id')->toArray()
+                    ]);
+
+                    if ($plantCount === 0) {
+                        throw new \Exception('Fallo al sincronizar plantas');
+                    }
+                }
+
+                return $record->load('plants');
+            });
+
+        } catch (\Exception $e) {
+            Log::error('💥 Error en creación', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
-        
-        return $record;
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model
@@ -544,5 +718,19 @@ class ActionsResource extends Resource
         }
         
         return $record;
+    }
+
+    // Asegurar que las plantas no se modifiquen en la edición
+    public function afterSave(): void
+    {
+        if ($this->record->wasRecentlyCreated) {
+            return; // Si es creación, no hacer nada adicional
+        }
+
+        // Si es edición, restaurar las plantas originales
+        $originalPlants = $this->record->getOriginal('plants');
+        if ($originalPlants) {
+            $this->record->plants()->sync($originalPlants);
+        }
     }
 }

@@ -32,6 +32,7 @@ use Carbon\Carbon;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\ViewColumn;
+use Filament\Forms\Components\Textarea;
 
 class PlantsResource extends Resource
 {
@@ -82,10 +83,34 @@ class PlantsResource extends Resource
 
                         Select::make('seed_id')
                             ->label(__('Seed Type'))
+                            ->searchable()
                             ->options(function () {
                                 return Seed::pluck('name', 'id');
                             })
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if ($state) {
+                                    $seed = Seed::find($state);
+                                    if ($seed) {
+                                        $set('seed_details', "Nombre: {$seed->name}\n" .
+                                            "Descripción: {$seed->description}\n" .
+                                            "Días hasta cosecha: {$seed->days_to_harvest}\n" .
+                                            "Temperatura óptima: {$seed->optimal_temperature}°C"
+                                        );
+                                    }
+                                } else {
+                                    $set('seed_details', null);
+                                }
+                            }),
+
+                        Textarea::make('seed_details')
+                            ->label(__('Detalles de la Semilla'))
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->columnSpanFull()
+                            ->rows(4)
+                            ->visible(fn ($get) => filled($get('seed_id'))),
 
                         Select::make('state')
                             ->label(__('Plant State'))
@@ -117,20 +142,6 @@ class PlantsResource extends Resource
                                 'Geotextiles' => 'Geotextiles',
                                 'Plásticas' => 'Plásticas',
                                 'Bolsones' => 'Bolsones',
-                                'N10' => 'N10',
-                                'N12' => 'N12',
-                                'N14' => 'N14',
-                                '3L' => '3L',
-                                '5L' => '5L',
-                                '7L' => '7L',
-                                '10L' => '10L',
-                                '12L' => '12L',
-                                '15L' => '15L',
-                                '20L' => '20L',
-                                '30L' => '30L',
-                                '40L' => '40L',
-                                '50L' => '50L',
-                                '75L' => '75L',
                             ])
                             ->required(),
 

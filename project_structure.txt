@@ -13,6 +13,8 @@
 │   │   ├── Controllers
 │   │   ├── Middleware
 │   │   └── Kernel.php
+│   ├── Jobs
+│   │   └── SendDelayedProductNotification.php
 │   ├── Livewire
 │   │   └── ActionShortcuts.php
 │   ├── Models
@@ -27,6 +29,8 @@
 │   │   ├── Seed.php
 │   │   ├── Tenant.php
 │   │   └── User.php
+│   ├── Notifications
+│   │   └── ProductApplicationReminder.php
 │   ├── Providers
 │   │   ├── Filament
 │   │   ├── AppServiceProvider.php
@@ -53,18 +57,21 @@
 │   ├── session.php
 │   └── view.php
 ├── artisan
+├── build.sh
 ├── cannabica_db.sqlite
 ├── composer.lock
 ├── Dockerfile
+├── entrypoint.sh
 ├── generate_project_info.sh
 ├── package-lock.json
 ├── phpunit.xml
 ├── postcss.config.js
 ├── project_structure.txt
 ├── README.md
+├── tailwind.config.js
 └── vite.config.js
 
-18 directories, 45 files
+20 directories, 50 files
 
 
 
@@ -139,9 +146,10 @@ APP_ENV=local
 
 === Dependencias de Composer ===
 {
-  "php": "^8.1",
+  "php": "^8.3",
   "codeat3/blade-phosphor-icons": "^2.2",
   "filament/filament": "^3.2",
+  "filament/notifications": "^3.3",
   "flowframe/laravel-trend": "^0.4.0",
   "guzzlehttp/guzzle": "^7.2",
   "laravel/framework": "^10.10",
@@ -153,21 +161,32 @@ APP_ENV=local
 
 
 === Últimos 5 Commits ===
-10544df fix widgets add seeders
-04e30dc update favicon and icons, dashboard, analitycsPage
-6dd95d7 agrego grafico, upd tutorial
-6a05c97 Update custom-dashboard.blade.php
-e5d663f Merge pull request #134 from Adue-Digital/fix/indoor-form-inputs-repeats
+e42fc19 new actions state plants management
+758f52b add repeat last irrigation action
+65f3915 fix graph widgets
+3c6cad3 basic notifications functionality
+050e4cb product application reminder
 
 
 
 === Estado del Repositorio ===
-On branch develop
-Your branch is up to date with 'origin/develop'.
+On branch feature/add-filament-notifications
+Your branch is ahead of 'origin/feature/add-filament-notifications' by 1 commit.
+  (use "git push" to publish your local commits)
 
 Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
+  (use "git add/rm <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
+	modified:   app/Filament/Tenant/Resources/ActionsResource.php
+	modified:   app/Filament/Tenant/Resources/ActionsResource/Pages/EditActions.php
+	modified:   app/Models/Action.php
+	modified:   cannabica_db.sqlite
+	modified:   package-lock.json
 	modified:   project_structure.txt
+	deleted:    storage/app/public/.gitignore
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	app/Filament/Tenant/Resources/Actions/
 
 no changes added to commit (use "git add" and/or "git commit -a")

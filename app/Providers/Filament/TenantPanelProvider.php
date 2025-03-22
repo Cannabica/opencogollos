@@ -22,6 +22,7 @@ use App\Filament\Pages\Dashboard;
 use App\Models\Tenant as T;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Navigation\MenuItem;
 
 class TenantPanelProvider extends PanelProvider
 {
@@ -36,15 +37,17 @@ class TenantPanelProvider extends PanelProvider
             ->font('Space Grotesk')
             ->login()
             ->favicon(asset(path: 'images/favicon.png'))
-            ->brandLogo(fn () => view('filament.admin.logo'))
-            ->darkModeBrandLogo(fn () => view('filament.admin.logo-darkmode'))
-            // ->brandName('Cannabica.app')
+            ->brandLogo(fn() => view('filament.admin.logo'))
+            ->darkModeBrandLogo(fn() => view('filament.admin.logo-darkmode'))
             ->discoverResources(in: app_path('Filament/Tenant/Resources'), for: 'App\\Filament\\Tenant\\Resources')
             ->discoverPages(in: app_path('Filament/Tenant/Pages'), for: 'App\\Filament\\Tenant\\Pages')
+            ->discoverWidgets(in: app_path('Filament/Tenant/Widgets'), for: 'App\\Filament\\Tenant\\Widgets')
             ->viteTheme('resources/css/filament/tenant/theme.css')
             ->pages([
                 Dashboard::class,
             ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('10s')
             ->colors([
                 'primary' => [
                     50 => '230, 242, 250', // #E6F2FA
@@ -111,13 +114,6 @@ class TenantPanelProvider extends PanelProvider
                     900 => '125, 54, 54',   // #7D3636
                     950 => '63, 27, 27',    // #3F1B1B
                 ],
-            ])
-            ->discoverWidgets(in: app_path('Filament/Tenant/Widgets'), for: 'App\\Filament\\Tenant\\Widgets')
-            ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
-                // Tenant\Widgets\PlantList::class,
-                Tenant\Widgets\IndoorData::class,
             ])
             ->middleware([
                 EncryptCookies::class,

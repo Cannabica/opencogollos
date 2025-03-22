@@ -4,14 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Log;
 
 class Action extends Model
 {
     use HasFactory;
-    protected $fillable = ['action_date', 'indoor_id', 'action_type_id', 'data', 'tenant_id'];
+    protected $fillable = [
+        'action_type_id',
+        'action_date',
+        'indoor_id',
+        'tenant_id',
+        'data'
+    ];
 
     protected $casts = [
         'data' => 'array',
+        'action_date' => 'datetime',
     ];
 
     public function indoor()
@@ -19,9 +28,10 @@ class Action extends Model
         return $this->belongsTo(Indoor::class);
     }
 
-    public function plants()
+    public function plants(): BelongsToMany
     {
-        return $this->belongsToMany(Plant::class, 'action_plant');
+        return $this->belongsToMany(Plant::class, 'action_plant')
+            ->withTimestamps();
     }
 
     // Atributo dinámico para contar las plantas
@@ -77,4 +87,21 @@ class Action extends Model
         }
     }
 
+    protected static function booted()
+    {
+        static::created(function ($action) {
+            Log::debug('📢 Acción creada - Evento modelo', [
+                'action_id' => $action->id,
+                'tipo' => $action->action_type_id,
+                'plantas_asociadas' => $action->plants()->count()
+            ]);
+        });
+
+        static::saved(function ($action) {
+            Log::debug('📢 Acción guardada - Evento modelo', [
+                'action_id' => $action->id,
+                'plantas_asociadas' => $action->plants()->count()
+            ]);
+        });
+    }
 }

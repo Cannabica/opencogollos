@@ -78,7 +78,7 @@ class SendDelayedProductNotification implements ShouldQueue
                         )
                         ->close(),
                     Action::make('goToAction')
-                        ->label('Aplicación anterior')
+                        ->label('Aplicación que generó el recordatorio')
                         ->button()
                         ->color('success')
                         ->url($this->actionId

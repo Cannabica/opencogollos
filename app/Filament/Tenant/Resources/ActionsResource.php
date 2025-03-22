@@ -42,6 +42,7 @@ use Filament\Forms\Components\Split;
 use Schema;
 use Filament\Notifications\Notification;
 use App\Jobs\SendDelayedProductNotification;
+use Illuminate\Database\Eloquent\Model;
 
 
 class ActionsResource extends Resource
@@ -70,13 +71,20 @@ class ActionsResource extends Resource
             ->schema([
                 Split::make([
                     Section::make(__('action_basic_data'))
-
                         ->description(__('action_basic_description'))
                         ->schema([
+                            Placeholder::make('warning')
+                                ->label(__(''))
+                                ->content(fn($record) => $record !== null
+                                    ? new HtmlString('<div class="text-warning-600">' . __('Los datos básicos no se pueden modificar una vez creada la acción') . '</div>')
+                                    : null)
+                                ->visible(fn($record) => $record !== null),
+
                             DatePicker::make('action_date')
                                 ->label(__('Action Date'))
                                 ->default(Carbon::now())
-                                ->required(),
+                                ->required()
+                                ->disabled(fn($record) => $record !== null),
 
 
 
@@ -88,10 +96,11 @@ class ActionsResource extends Resource
                                     ->toArray())
                                 ->helperText(__('indoor_helper'))
                                 ->reactive()
-                                ->default(fn() => Indoor::where('tenant_id', auth()->user()->tenant_id)->count() === 1
-                                    ? Indoor::where('tenant_id', auth()->user()->tenant_id)->value('id')
-                                    : null)
-                                ->required(),
+                                ->default(function () {
+                                    return request()->get('indoor_id');
+                                })
+                                ->required()
+                                ->disabled(fn($record) => $record !== null),
 
                             // Select Plants based on Indoor using relationship
                             CheckboxList::make('plants')
@@ -102,26 +111,68 @@ class ActionsResource extends Resource
                                         ? Plant::where('indoor_id', $indoorId)->pluck('name', 'id')->toArray()
                                         : [];
                                 })
+                                ->default(function ($record) {
+                                    // Si estamos editando un registro existente
+                                    if ($record) {
+                                        return $record->plants->pluck('id')->toArray();
+                                    }
+                                    
+                                    // Si estamos creando desde "Repetir último riego"
+                                    $selectedPlants = request()->get('selected_plants');
+                                    if ($selectedPlants) {
+                                        try {
+                                            return json_decode($selectedPlants, true) ?? [];
+                                        } catch (\Exception $e) {
+                                            return [];
+                                        }
+                                    }
+                                    return [];
+                                })
                                 ->columns(2)
                                 ->bulkToggleable()
                                 ->required()
+                                ->helperText(function (callable $get) {
+                                    if (!$get('indoor_id')) {
+                                        return 'Selecciona un Indoor para ver las plantas disponibles';
+                                    }
+                                    return empty($get('plants'))
+                                        ? 'Selecciona al menos una planta para continuar'
+                                        : '';
+                                })
+                                ->disabled(fn($record) => $record !== null && !$record->isClean()),
 
                         ])
                     ,
                     Section::make(__('action_action_type_data'))
-
+                        ->disabled(fn($record) => $record !== null)
                         ->description(__('action_action_type_description'))
                         ->schema([
+                            Placeholder::make('warning')
+                                ->label(__(''))
+                                ->content(fn($record) => $record !== null
+                                    ? new HtmlString('<div class="text-warning-600">' . __('El tipo de acción no se puede modificar una vez guardada la acción') . '</div>')
+                                    : null)
+                                ->visible(fn($record) => $record !== null),
+
                             ToggleButtons::make(name: 'action_type_id')
                                 ->label(__('Action Type'))
-                                ->options(
-                                    ActionType::pluck('name', 'id')->toArray()
-                                )
-                                // ->helperText(__('action_type_helper'))
+                                ->options(ActionType::pluck('name', 'id')->toArray())
+                                ->icons([
+                                    1 => 'heroicon-o-cloud',        // Riego
+                                    2 => 'heroicon-o-scissors',     // Poda
+                                    3 => 'heroicon-o-beaker',       // Aplique producto
+                                    4 => 'heroicon-o-arrow-path',   // Transplante
+                                    5 => 'heroicon-o-camera',       // Observación con foto
+                                    6 => 'heroicon-o-x-circle',     // Muerte de la planta
+                                    7 => 'heroicon-o-arrow-path-rounded-square', // Cambio de estado
+                                ])
                                 ->reactive()
                                 ->columns(2)
                                 ->gridDirection('row')
                                 ->required()
+                                ->default(function () {
+                                    return request()->get('action_type_id');
+                                }),
                         ])
                         ->grow(),
                 ])->from('md'),
@@ -152,27 +203,39 @@ class ActionsResource extends Resource
                         Section::make(__('Irrigation'))
                             ->description(__('Irrigation_type_description'))
                             ->schema([
-
                                 Select::make('data.irrigation.irrigation_type')
                                     ->label(__('Irrigation Type'))
                                     ->options([
                                         'liters' => __('fixed_liters'),
                                         'timer' => __("timer_irrigation")
                                     ])
+                                    ->default(function () {
+                                        return request()->get('irrigation_type');
+                                    })
                                     ->reactive(),
 
                                 TextInput::make('data.irrigation.liters')
-                                    ->label(__(__('fixed_liters'), ))
+                                    ->label(__(__('fixed_liters')))
                                     ->numeric()
                                     ->suffix(label: 'lts')
+                                    ->default(function () {
+                                        return request()->get('irrigation_type') === 'liters' 
+                                            ? request()->get('irrigation_value') 
+                                            : null;
+                                    })
                                     ->helperText(new HtmlString(__('fixed_liters_helper')))
-                                    ->rules(['gt:0']) //how to add custom text to this rule?
+                                    ->rules(['gt:0'])
                                     ->visible(fn($get) => $get('data.irrigation.irrigation_type') === 'liters'),
 
                                 TextInput::make('data.irrigation.timer')
                                     ->label(__('timer_irrigation'))
                                     ->helperText(new HtmlString(__('timed_irrigation_helper')))
                                     ->numeric()
+                                    ->default(function () {
+                                        return request()->get('irrigation_type') === 'timer' 
+                                            ? request()->get('irrigation_value') 
+                                            : null;
+                                    })
                                     ->suffix(label: 'min')
                                     ->visible(fn($get) => $get('data.irrigation.irrigation_type') === 'timer'),
                             ])
@@ -303,17 +366,19 @@ class ActionsResource extends Resource
 
         if (class_exists($actionClass)) {
             $actionInstance = new $actionClass();
-            
+
             foreach ($action->plants as $plant) {
                 $actionInstance->trigger($plant);
             }
 
             // Si es una aplicación de producto y tiene recordatorio
-            if ($action->action_type_id === 3 && 
-                isset($action->data['product_application']['reminder_time']) && 
-                $action->data['product_application']['reminder_time'] !== 'none') {
-                
-                $delay = match($action->data['product_application']['reminder_time']) {
+            if (
+                $action->action_type_id === 3 &&
+                isset($action->data['product_application']['reminder_time']) &&
+                $action->data['product_application']['reminder_time'] !== 'none'
+            ) {
+
+                $delay = match ($action->data['product_application']['reminder_time']) {
                     '5s' => 5,
                     '1m' => 60,
                     '1d' => 86400,
@@ -335,7 +400,7 @@ class ActionsResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with('plants')->withCount('plants'))
+            ->modifyQueryUsing(fn(Builder $query) => $query->with('plants')->withCount('plants'))
             ->searchPlaceholder(__('actions_searchable_placeholder'))
             ->columns(components: [
                 Grid::make([
@@ -455,5 +520,29 @@ class ActionsResource extends Resource
             'create' => Pages\CreateActions::route('/create'),
             'edit' => Pages\EditActions::route('/{record}/edit'),
         ];
+    }
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        $record = static::getModel()::create($data);
+        
+        // Sincronizar las plantas seleccionadas
+        if (isset($data['plants'])) {
+            $record->plants()->sync($data['plants']);
+        }
+        
+        return $record;
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $record->update($data);
+        
+        // Sincronizar las plantas seleccionadas
+        if (isset($data['plants'])) {
+            $record->plants()->sync($data['plants']);
+        }
+        
+        return $record;
     }
 }

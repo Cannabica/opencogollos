@@ -22,6 +22,7 @@ use App\Filament\Pages\Dashboard;
 use App\Models\Tenant as T;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Navigation\MenuItem;
 
 class TenantPanelProvider extends PanelProvider
 {
@@ -38,12 +39,24 @@ class TenantPanelProvider extends PanelProvider
             ->favicon(asset(path: 'images/favicon.png'))
             ->brandLogo(fn () => view('filament.admin.logo'))
             ->darkModeBrandLogo(fn () => view('filament.admin.logo-darkmode'))
-            // ->brandName('Cannabica.app')
             ->discoverResources(in: app_path('Filament/Tenant/Resources'), for: 'App\\Filament\\Tenant\\Resources')
             ->discoverPages(in: app_path('Filament/Tenant/Pages'), for: 'App\\Filament\\Tenant\\Pages')
             ->viteTheme('resources/css/filament/tenant/theme.css')
             ->pages([
                 Dashboard::class,
+                Tenant\Pages\Notifications::class,
+            ])
+            ->widgets([
+                Tenant\Widgets\IndoorData::class,
+                Tenant\Widgets\ProductNotificationsWidget::class,
+            ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('10s')
+            ->userMenuItems([
+                'notifications' => MenuItem::make()
+                    ->label('Notificaciones')
+                    ->icon('heroicon-o-bell')
+                    ->url(fn(): string => Tenant\Pages\Notifications::getUrl())
             ])
             ->colors([
                 'primary' => [
@@ -111,13 +124,6 @@ class TenantPanelProvider extends PanelProvider
                     900 => '125, 54, 54',   // #7D3636
                     950 => '63, 27, 27',    // #3F1B1B
                 ],
-            ])
-            ->discoverWidgets(in: app_path('Filament/Tenant/Widgets'), for: 'App\\Filament\\Tenant\\Widgets')
-            ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
-                // Tenant\Widgets\PlantList::class,
-                Tenant\Widgets\IndoorData::class,
             ])
             ->middleware([
                 EncryptCookies::class,

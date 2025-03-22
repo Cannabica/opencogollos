@@ -7,6 +7,7 @@ use Filament\Actions;
 use App\Models\Action;
 use App\Models\Plant;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Notifications\Notification;
 
 class CreateActions extends CreateRecord
 {
@@ -48,6 +49,43 @@ class CreateActions extends CreateRecord
                 $actionInstance->trigger($plant, $constructorArgs);
             }
         }
+    }
+
+    protected function getCreatedNotification(): ?Notification
+    {
+        $record = $this->getRecord();
+        
+        if ($record->action_type_id == 3) {
+            $applicationType = $record->data['product_application']['application_type'] ?? 'desconocido';
+            $plantsCount = $record->plants_count;
+            $reminderTime = $record->data['product_application']['reminder_time'] ?? 'none';
+            
+            // Programar la notificación retrasada
+            if ($reminderTime !== 'none') {
+                $delay = match($reminderTime) {
+                    '5s' => now()->addSeconds(5),
+                    '1m' => now()->addMinute(),
+                    '1d' => now()->addDay(),
+                    default => null
+                };
+
+                if ($delay) {
+                    \App\Jobs\SendDelayedProductNotification::dispatch(
+                        $applicationType,
+                        $plantsCount,
+                        auth()->user()->tenant_id
+                    )->delay($delay);
+                }
+            }
+            
+            // Notificación inmediata
+            return Notification::make()
+                ->title('Nueva aplicación de producto')
+                ->success()
+                ->body("Se ha aplicado un producto de tipo {$applicationType} a {$plantsCount} planta(s)");
+        }
+        
+        return null;
     }
 
 }

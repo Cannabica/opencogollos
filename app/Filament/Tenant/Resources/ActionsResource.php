@@ -47,11 +47,18 @@ use Filament\Forms\Components\Grid as FormsGrid;
 use Filament\Forms\Components\Hidden;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Filament\Tenant\Resources\Actions\Components\PlantSelector;
+use App\Filament\Tenant\Resources\Actions\Rules\ActionValidationRules;
+use App\Filament\Tenant\Resources\Actions\Services\ActionRecordService;
+use App\Filament\Tenant\Resources\Actions\Traits\HandlesActionTypes;
 
 
 class ActionsResource extends Resource
 {
+    use HandlesActionTypes;
+
     protected static ?string $model = Action::class;
+    protected ActionRecordService $actionService;
 
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
 
@@ -67,6 +74,11 @@ class ActionsResource extends Resource
     public static function getLabel(): string
     {
         return __('Action');
+    }
+
+    public function __construct()
+    {
+        $this->actionService = new ActionRecordService();
     }
 
     public static function form(Form $form): Form
@@ -113,61 +125,11 @@ class ActionsResource extends Resource
                                 ->required()
                                 ->disabled(fn($record) => $record !== null),
 
-                            // Select Plants based on Indoor using relationship
-                            CheckboxList::make('plants')
-                                ->relationship('plants', 'name')
-                                ->options(function (callable $get, ?Model $record = null) {
-                                    $indoor_id = $get('indoor_id');
-                                    Log::debug('🔍 Cargando opciones de plantas', [
-                                        'indoor_id' => $indoor_id,
-                                        'is_editing' => $record !== null,
-                                        'record_id' => $record?->id,
-                                        'form_state' => $get('data')
-                                    ]);
+                            // Selector de plantas modularizado
+                            PlantSelector::make(),
 
-                                    if (!$indoor_id) {
-                                        return [];
-                                    }
-
-                                    return Plant::query()
-                                        ->where('indoor_id', $indoor_id)
-                                        ->pluck('name', 'id');
-                                })
-                                ->afterStateHydrated(function ($state, $record) {
-                                    Log::debug('🔄 Estado hidratado de plantas', [
-                                        'state' => $state,
-                                        'record_id' => $record?->id,
-                                        'plantas_actuales' => $record ? $record->plants()->pluck('id')->toArray() : []
-                                    ]);
-                                })
-                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                    Log::debug('📝 Estado actualizado de plantas', [
-                                        'state' => $state,
-                                        'indoor_id' => $get('indoor_id')
-                                    ]);
-                                })
-                                ->beforeStateDehydrated(function ($state, callable $get, callable $set) {
-                                    Log::debug('💾 Antes de deshidratar estado', [
-                                        'state' => $state,
-                                        'indoor_id' => $get('indoor_id')
-                                    ]);
-                                })
-                                ->live()
-                                ->columns(2)
-                                ->bulkToggleable()
-                                ->required()
-                                ->dehydrated(true)
-                                ->default([])
-                                ->columnSpanFull()
-                                ->helperText(function (callable $get) {
-                                    if (!$get('indoor_id')) {
-                                        return 'Selecciona un Indoor para ver las plantas disponibles';
-                                    }
-                                    return empty($get('plants'))
-                                        ? 'Selecciona al menos una planta para continuar'
-                                        : '';
-                                }),
-
+                            // Campo oculto para mantener el estado
+                            Hidden::make('_plants_state'),
                         ])
                     ,
                     Section::make(__('action_action_type_data'))
@@ -356,7 +318,7 @@ class ActionsResource extends Resource
                                                 $plants = Plant::whereIn('id', $get('plants'))->get();
                                                 if ($plants->isEmpty()) {
                                                     return new HtmlString('
-                                                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-500 text-center">
+                                                        <div class="p-4 rounded-lg border border-gray-200 text-gray-500 text-center">
                                                             Selecciona plantas para ver la vista previa
                                                         </div>
                                                     ');
@@ -365,7 +327,7 @@ class ActionsResource extends Resource
                                                 $newFlowerpot = $get('data.transplant.new_flowerpot');
                                                 $newCapacity = $get('data.transplant.new_capacity');
 
-                                                $html = "<div class='space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200'>";
+                                                $html = "<div class='space-y-4 p-4 rounded-lg border border-gray-200'>";
                                                 $html .= "<div class='text-lg font-medium border-b pb-2 mb-3'>Resumen de Cambios</div>";
                                                 $html .= "<div class='container-flex justify-to-center'>";
                                                 
@@ -403,7 +365,45 @@ class ActionsResource extends Resource
                             ->schema([
                                 FileUpload::make('data.observation.image')
                                     ->image()
-                                    ->imageEditor(),
+                                    ->multiple()
+                                    ->maxFiles(5)
+                                    ->directory('actions')
+                                    ->disk('public')
+                                    ->acceptedFileTypes([
+                                        'image/jpeg',
+                                        'image/png',
+                                        'image/gif',
+                                        'image/webp'
+                                    ])
+                                    ->storeFileNamesIn('data.observation.original_filenames')
+                                    ->storeFiles(true)
+                                    ->downloadable()
+                                    ->openable()
+                                    ->previewable()
+                                    ->reorderable()
+                                    ->appendFiles()
+                                    ->panelLayout('grid')
+                                    ->imagePreviewHeight('150')
+                                    ->rules(['nullable', 'array'])
+                                    ->maxSize(5120)
+                                    ->uploadingMessage('Subiendo imágenes...')
+                                    ->loadingIndicatorPosition('left')
+                                    ->removeUploadedFileButtonPosition('right')
+                                    ->afterStateHydrated(function ($state, $component) {
+                                        if (is_null($state)) {
+                                            $component->state([]);
+                                            return;
+                                        }
+                                        
+                                        if (is_string($state)) {
+                                            $component->state([$state]);
+                                            return;
+                                        }
+                                        
+                                        if (is_array($state)) {
+                                            $component->state(array_values(array_filter($state)));
+                                        }
+                                    }),
 
                                 Textarea::make('data.observation.comments')
                                     ->label(__('Comments')),
@@ -432,7 +432,8 @@ class ActionsResource extends Resource
                             ])
                             ->visible(fn(Get $get) => $get('action_type_id') == 7),
                     ])
-            ])->columns(1);
+            ])->columns(1)
+            ->statePath('data');
     }
 
     public function afterCreate(): void
@@ -654,70 +655,16 @@ class ActionsResource extends Resource
 
     protected function handleRecordCreation(array $data): Model
     {
-        Log::debug('🏗️ Iniciando handleRecordCreation', [
-            'data_completa' => $data,
-            'plantas' => $data['plants'] ?? [],
-            'indoor_id' => $data['indoor_id']
-        ]);
+        // Asegurarnos de que tenemos todos los datos
+        $data['_plants_state'] = $data['_plants_state'] ?? null;
+        $data['plants'] = $data['plants'] ?? [];
 
-        try {
-            // Crear la acción y sincronizar plantas en una transacción
-            return DB::transaction(function () use ($data) {
-                // Crear la acción
-                $record = static::getModel()::create([
-                    'action_type_id' => $data['action_type_id'],
-                    'action_date' => $data['action_date'],
-                    'indoor_id' => $data['indoor_id'],
-                    'tenant_id' => auth()->user()->tenant_id,
-                    'data' => $data['data'] ?? [],
-                ]);
-
-                Log::debug('✅ Acción base creada', [
-                    'action_id' => $record->id,
-                    'plantas_a_sincronizar' => $data['plants'] ?? []
-                ]);
-
-                // Sincronizar plantas inmediatamente si existen
-                if (!empty($data['plants'])) {
-                    $record->plants()->sync($data['plants']);
-                    
-                    // Verificar la sincronización
-                    $record->refresh();
-                    $plantCount = $record->plants()->count();
-                    
-                    Log::debug('✨ Plantas sincronizadas', [
-                        'action_id' => $record->id,
-                        'count' => $plantCount,
-                        'plantas_ids' => $record->plants()->pluck('id')->toArray()
-                    ]);
-
-                    if ($plantCount === 0) {
-                        throw new \Exception('Fallo al sincronizar plantas');
-                    }
-                }
-
-                return $record->load('plants');
-            });
-
-        } catch (\Exception $e) {
-            Log::error('💥 Error en creación', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            throw $e;
-        }
+        return $this->actionService->handleRecordCreation($data);
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $record->update($data);
-        
-        // Sincronizar las plantas seleccionadas
-        if (isset($data['plants'])) {
-            $record->plants()->sync($data['plants']);
-        }
-        
-        return $record;
+        return $this->actionService->handleRecordUpdate($record, $data);
     }
 
     // Asegurar que las plantas no se modifiquen en la edición

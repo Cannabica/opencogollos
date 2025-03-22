@@ -37,18 +37,15 @@ class TenantPanelProvider extends PanelProvider
             ->font('Space Grotesk')
             ->login()
             ->favicon(asset(path: 'images/favicon.png'))
-            ->brandLogo(fn () => view('filament.admin.logo'))
-            ->darkModeBrandLogo(fn () => view('filament.admin.logo-darkmode'))
+            ->brandLogo(fn() => view('filament.admin.logo'))
+            ->darkModeBrandLogo(fn() => view('filament.admin.logo-darkmode'))
             ->discoverResources(in: app_path('Filament/Tenant/Resources'), for: 'App\\Filament\\Tenant\\Resources')
             ->discoverPages(in: app_path('Filament/Tenant/Pages'), for: 'App\\Filament\\Tenant\\Pages')
+            ->discoverWidgets(in: app_path('Filament/Tenant/Widgets'), for: 'App\\Filament\\Tenant\\Widgets')
             ->viteTheme('resources/css/filament/tenant/theme.css')
             ->pages([
                 Dashboard::class,
                 Tenant\Pages\Notifications::class,
-            ])
-            ->widgets([
-                Tenant\Widgets\IndoorData::class,
-                Tenant\Widgets\ProductNotificationsWidget::class,
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('10s')

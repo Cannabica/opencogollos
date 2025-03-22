@@ -8,6 +8,7 @@ use App\Models\Action;
 use App\Models\Plant;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;
+use Filament\Actions\Action as FilamentAction;
 
 class CreateActions extends CreateRecord
 {
@@ -87,4 +88,26 @@ class CreateActions extends CreateRecord
         return null;
     }
 
+    protected function getFormActions(): array
+    {
+        return [
+            FilamentAction::make('create')
+                ->label(__('Guardar'))
+                ->icon('heroicon-o-check')
+                ->submit('create'),
+            
+            FilamentAction::make('createAnother')
+                ->label(__('Guardar y crear otro'))
+                ->icon('heroicon-o-plus')
+                ->action(function () {
+                    $this->create(another: true);
+                }),
+            
+            FilamentAction::make('cancel')
+                ->label(__('Cancelar'))
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url($this->getResource()::getUrl('index')),
+        ];
+    }
 }

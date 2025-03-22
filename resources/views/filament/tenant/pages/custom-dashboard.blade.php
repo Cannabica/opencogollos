@@ -3,6 +3,19 @@
     @push('styles')
         <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
         <link href="{{ asset('css/filament/tenant/theme.css') }}" rel="stylesheet">
+        <style>
+            /* Asegurar que el botón flotante esté siempre visible */
+            .fixed {
+                position: fixed;
+                z-index: 50;
+            }
+            
+            /* Añadir efecto de hover suave */
+            .hover\:shadow-xl:hover {
+                transition: all 0.2s ease-in-out;
+                transform: translateY(-2px);
+            }
+        </style>
     @endpush
     <div x-data="{ show: true }" x-show="show" 
      class="dimiss-alert bug-notification bg-yellow-200 p-4 mb-4 rounded-lg shadow-lg relative flex items-center">
@@ -198,4 +211,41 @@
         @endforeach
 
     </div>
+
+    {{-- Botón flotante de repetir riego --}}
+    @php
+        $lastIrrigation = \App\Models\Action::where('tenant_id', auth()->user()->tenant_id)
+            ->where('action_type_id', 1)
+            ->latest()
+            ->first();
+    @endphp
+
+    @if($lastIrrigation)
+        <div class="fixed bottom-6 right-6 z-50">
+            <a href="{{ \App\Filament\Tenant\Resources\ActionsResource::getUrl('create', [
+                'indoor_id' => $lastIrrigation->indoor_id,
+                'action_type_id' => 1,
+                'irrigation_type' => $lastIrrigation->data['irrigation']['irrigation_type'] ?? '',
+                'irrigation_value' => isset($lastIrrigation->data['irrigation']['irrigation_type']) 
+                    ? ($lastIrrigation->data['irrigation']['irrigation_type'] === 'liters' 
+                        ? ($lastIrrigation->data['irrigation']['liters'] ?? '')
+                        : ($lastIrrigation->data['irrigation']['timer'] ?? ''))
+                    : '',
+                'selected_plants' => json_encode($lastIrrigation->plants->pluck('id')->toArray())
+            ]) }}"
+               class="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-4 text-white hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21C15.866 21 19 17.866 19 14C19 10.5067 15.9333 6.71333 13.4667 4.26667C12.6667 3.46667 11.3333 3.46667 10.5333 4.26667C8.06667 6.71333 5 10.5067 5 14C5 17.866 8.13401 21 12 21Z" 
+                          stroke="currentColor" 
+                          stroke-width="2" 
+                          stroke-linecap="round" 
+                          stroke-linejoin="round"
+                          fill="currentColor"
+                          fill-opacity="0.2"/>
+                </svg>
+                <span class="text-sm font-medium">Repetir <br> último riego</span>
+            </a>
+        </div>
+    @endif
+
 </x-filament::page>

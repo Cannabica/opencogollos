@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Action;
 use App\Models\Plant;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Actions\Action as FilamentAction;
+use Filament\Actions\DeleteAction;
 
 class EditActions extends EditRecord
 {
@@ -44,7 +46,24 @@ class EditActions extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make()
+                ->icon('heroicon-o-trash'),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            FilamentAction::make('save')
+                ->label(__('Guardar'))
+                ->icon('heroicon-o-check')
+                ->submit('save'),
+            
+            FilamentAction::make('cancel')
+                ->label(__('Cancelar'))
+                ->icon('heroicon-o-x-mark')
+                ->color('gray')
+                ->url($this->getResource()::getUrl('index')),
         ];
     }
 }

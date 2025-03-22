@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Log;
 
 class Action extends Model
 {
@@ -26,10 +28,9 @@ class Action extends Model
         return $this->belongsTo(Indoor::class);
     }
 
-    public function plants()
+    public function plants(): BelongsToMany
     {
         return $this->belongsToMany(Plant::class, 'action_plant')
-            ->withPivot([])
             ->withTimestamps();
     }
 
@@ -89,14 +90,15 @@ class Action extends Model
     protected static function booted()
     {
         static::created(function ($action) {
-            \Log::debug('Acción creada - evento modelo', [
+            Log::debug('📢 Acción creada - Evento modelo', [
                 'action_id' => $action->id,
-                'tipo' => $action->action_type_id
+                'tipo' => $action->action_type_id,
+                'plantas_asociadas' => $action->plants()->count()
             ]);
         });
 
         static::saved(function ($action) {
-            \Log::debug('Acción guardada - evento modelo', [
+            Log::debug('📢 Acción guardada - Evento modelo', [
                 'action_id' => $action->id,
                 'plantas_asociadas' => $action->plants()->count()
             ]);

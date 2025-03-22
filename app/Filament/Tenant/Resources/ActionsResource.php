@@ -40,6 +40,7 @@ use Filament\Tables\Columns\Layout\Grid;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\Split;
 use Schema;
+use Filament\Notifications\Notification;
 
 
 class ActionsResource extends Resource
@@ -193,7 +194,6 @@ class ActionsResource extends Resource
 
                         Section::make(__('Product Application'))
                             ->schema([
-
                                 Select::make('data.product_application.application_type')
                                     ->label(__('Application Type'))
                                     ->options([
@@ -201,20 +201,29 @@ class ActionsResource extends Resource
                                         'flora' => 'Producto para etapa de floracion',
                                         'plantula' => 'Producto para etapa de plantula',
                                         'plague' => 'Anti-plaga',
-                                        // 'soap' => 'Lavado con jabon potasico',
                                         'other' => 'Otro'
                                     ])
+                                    ->required(),
+
+                                Select::make('data.product_application.reminder_time')
+                                    ->label('Recordatorio adicional')
+                                    ->options([
+                                        'none' => 'Sin recordatorio',
+                                        '5s' => 'En 5 segundos',
+                                        '1m' => 'En 1 minuto',
+                                        '1d' => 'En 1 día'
+                                    ])
+                                    ->default('none')
                                     ->required(),
 
                                 Textarea::make('data.product_application.observation')
                                     ->label(__('Observations'))
                                     ->placeholder(__('Observations_product_application')),
 
-
                                 Textarea::make('data.product_application.comments')
                                     ->label(__('Comments')),
                             ])
-                            ->visible(fn(Get $get) => $get('action_type_id') == 3),
+                            ->visible(condition: fn(Get $get) => $get('action_type_id') == 3),
 
                         Section::make(__('Transplant'))
                             ->schema([

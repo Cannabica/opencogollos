@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Action;
 use App\Models\Plant;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Actions\Action as FilamentAction;
+use Filament\Actions\DeleteAction;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Http\TemporaryUploadedFile;
 
 class EditActions extends EditRecord
 {
@@ -15,16 +19,60 @@ class EditActions extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        //dd($data);
-        $record->update($data);
+        if (!isset($data['data']['observation'])) {
+            $data['data']['observation'] = [
+                'image' => [],
+                'comments' => null,
+                'original_filenames' => []
+            ];
+        }
 
+        // Asegurarse de que image sea un array
+        if (!isset($data['data']['observation']['image'])) {
+            $data['data']['observation']['image'] = [];
+        }
+
+        // Filtrar cualquier valor vacío del array de imágenes
+        if (is_array($data['data']['observation']['image'])) {
+            $data['data']['observation']['image'] = array_filter($data['data']['observation']['image']);
+        }
+
+        // Si no hay imágenes, asegurarse de que sea un array vacío en lugar de [{}]
+        if (empty($data['data']['observation']['image'])) {
+            $data['data']['observation']['image'] = [];
+        }
+
+        $record->update($data);
         return $record;
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        if (!isset($data['data']['observation'])) {
+            $data['data']['observation'] = [
+                'image' => [],
+                'comments' => null,
+                'original_filenames' => [],
+            ];
+            return $data;
+        }
+
+        // Asegurar que los datos de imagen sean consistentes
+        if (!isset($data['data']['observation']['image'])) {
+            $data['data']['observation']['image'] = [];
+        } elseif (is_string($data['data']['observation']['image'])) {
+            $data['data']['observation']['image'] = [$data['data']['observation']['image']];
+        }
+
+        return $data;
     }
 
     protected function afterSave(): void
     {
         // Execute the action trigger
         $this->executeActionTrigger($this->record);
+        $this->redirect($this->getResource()::getUrl('index'));
+
     }
 
     protected function executeActionTrigger($action)
@@ -44,7 +92,24 @@ class EditActions extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make()
+                ->icon('heroicon-o-trash'),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            FilamentAction::make('save')
+                ->label(__('Guardar'))
+                ->icon('heroicon-o-check')
+                ->submit('save'),
+            
+            FilamentAction::make('cancel')
+                ->label(__('Cancelar'))
+                ->icon('heroicon-o-x-mark')
+                ->color('gray')
+                ->url($this->getResource()::getUrl('index')),
         ];
     }
 }

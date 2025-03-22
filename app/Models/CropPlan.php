@@ -60,6 +60,11 @@ class CropPlan extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function indoors()
+    {
+        return $this->hasMany(Indoor::class);
+    }
+
     protected static function booted()
     {
         static::creating(function ($cropPlan) {

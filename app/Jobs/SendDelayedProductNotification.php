@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Notifications\ProductApplicationReminder;
 use Illuminate\Support\Facades\Log;
 use Filament\Notifications\Notification as FilamentNotification;
+use Filament\Notifications\Actions\Action;
+use Livewire\Component;
 
 class SendDelayedProductNotification implements ShouldQueue
 {
@@ -19,12 +21,14 @@ class SendDelayedProductNotification implements ShouldQueue
     public function __construct(
         protected string $applicationType,
         protected int $plantsCount,
-        protected int $tenantId
+        protected int $tenantId,
+        protected ?int $actionId = null
     ) {
         Log::info('SendDelayedProductNotification constructor', [
             'applicationType' => $this->applicationType,
             'plantsCount' => $this->plantsCount,
-            'tenantId' => $this->tenantId
+            'tenantId' => $this->tenantId,
+            'actionId' => $this->actionId
         ]);
     }
 
@@ -35,7 +39,7 @@ class SendDelayedProductNotification implements ShouldQueue
         ]);
 
         $users = User::where('tenant_id', $this->tenantId)->get();
-        
+
         Log::info('SendDelayedProductNotification handle - Found users', [
             'userCount' => $users->count()
         ]);
@@ -55,12 +59,47 @@ class SendDelayedProductNotification implements ShouldQueue
             // Enviar notificación de Filament para la campana
             FilamentNotification::make()
                 ->success()
-                ->title('Recordatorio de aplicación de producto')
-                ->body("Se aplicó un producto de tipo {$this->applicationType} a {$this->plantsCount} planta(s)")
+                ->title('Recordatorio de aplicación pendiente')
+                ->body("Hay que realizar una aplicación de {$this->applicationType} para {$this->plantsCount} plantas")
                 ->persistent()
+                ->actions([
+                    Action::make('postpone')
+                        ->label('Posponer 24h')
+                        ->button()
+                        ->color('gray')
+                        ->url(
+                            "/tenant/actions/postpone-notification?" . http_build_query([
+                                'type' => $this->applicationType,
+                                'count' => $this->plantsCount,
+                                'tenant' => $this->tenantId,
+                                'action' => $this->actionId
+                            ]),
+                            shouldOpenInNewTab: false
+                        )
+                        ->close(),
+                    Action::make('goToAction')
+                        ->label('Aplicación anterior')
+                        ->button()
+                        ->color('success')
+                        ->url($this->actionId
+                            ? "/tenant/actions/{$this->actionId}/edit"
+                            : "/tenant/actions")
+                ])
                 ->sendToDatabase($user);
         }
 
         Log::info('SendDelayedProductNotification handle - Completed');
     }
-} 
+}
+
+class NotificationHandler extends Component
+{
+    public function postponeNotification($applicationType, $plantsCount, $tenantId): void
+    {
+        dispatch(new SendDelayedProductNotification(
+            $applicationType,
+            $plantsCount,
+            $tenantId
+        ))->delay(now()->addSeconds(10));
+    }
+}

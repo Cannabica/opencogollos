@@ -60,7 +60,6 @@ class CreateActions extends CreateRecord
             $plantsCount = $record->plants_count;
             $reminderTime = $record->data['product_application']['reminder_time'] ?? 'none';
             
-            // Programar la notificación retrasada
             if ($reminderTime !== 'none') {
                 $delay = match($reminderTime) {
                     '5s' => now()->addSeconds(5),
@@ -73,12 +72,12 @@ class CreateActions extends CreateRecord
                     \App\Jobs\SendDelayedProductNotification::dispatch(
                         $applicationType,
                         $plantsCount,
-                        auth()->user()->tenant_id
+                        auth()->user()->tenant_id,
+                        $record->id
                     )->delay($delay);
                 }
             }
             
-            // Notificación inmediata
             return Notification::make()
                 ->title('Nueva aplicación de producto')
                 ->success()

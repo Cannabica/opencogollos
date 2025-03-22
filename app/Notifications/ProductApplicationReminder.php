@@ -42,8 +42,8 @@ class ProductApplicationReminder extends Notification implements ShouldQueue
         ]);
 
         return [
-            'title' => 'Recordatorio de aplicación de producto',
-            'message' => "Se aplicó un producto de tipo {$this->applicationType} a {$this->plantsCount} planta(s)",
+            'title' => 'Recordatorio de aplicación pendiente',
+            'message' => "Hay que volver a realizar una aplicación de producto",
             'icon' => 'heroicon-o-exclamation-triangle',
             'iconColor' => 'warning',
             'actions' => [],

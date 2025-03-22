@@ -41,6 +41,7 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\Split;
 use Schema;
 use Filament\Notifications\Notification;
+use App\Jobs\SendDelayedProductNotification;
 
 
 class ActionsResource extends Resource
@@ -208,14 +209,11 @@ class ActionsResource extends Resource
                                 Select::make('data.product_application.reminder_time')
                                     ->label('Recordatorio adicional')
                                     ->options([
-                                        'none' => 'Sin recordatorio',
                                         '5s' => 'En 5 segundos',
                                         '1m' => 'En 1 minuto',
                                         '1d' => 'En 1 día'
                                     ])
-                                    ->default('none')
-                                    ->required(),
-
+                                    ->default('none'),
                                 Textarea::make('data.product_application.observation')
                                     ->label(__('Observations'))
                                     ->placeholder(__('Observations_product_application')),
@@ -301,16 +299,35 @@ class ActionsResource extends Resource
 
     protected function executeActionTrigger(Action $action)
     {
-        // Get the action class
         $actionClass = $action->action_type->action_class;
 
-        // If the class exists, create an instance and trigger it for each plant
         if (class_exists($actionClass)) {
             $actionInstance = new $actionClass();
             
-            // Execute the trigger for each related plant
             foreach ($action->plants as $plant) {
                 $actionInstance->trigger($plant);
+            }
+
+            // Si es una aplicación de producto y tiene recordatorio
+            if ($action->action_type_id === 3 && 
+                isset($action->data['product_application']['reminder_time']) && 
+                $action->data['product_application']['reminder_time'] !== 'none') {
+                
+                $delay = match($action->data['product_application']['reminder_time']) {
+                    '5s' => 5,
+                    '1m' => 60,
+                    '1d' => 86400,
+                    default => 0
+                };
+
+                if ($delay > 0) {
+                    dispatch(new SendDelayedProductNotification(
+                        $action->data['product_application']['application_type'],
+                        $action->plants()->count(),
+                        $action->tenant_id,
+                        url(ActionsResource::getUrl('edit', ['record' => $action->id]))  // URL de edición de la acción
+                    ))->delay(now()->addSeconds($delay));
+                }
             }
         }
     }

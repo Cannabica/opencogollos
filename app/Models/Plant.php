@@ -34,7 +34,9 @@ class Plant extends Model
 
     public function actions()
     {
-        return $this->belongsToMany(Action::class, 'action_plant');
+        return $this->belongsToMany(Action::class, 'action_plant')
+                    ->withTimestamps()
+                    ->withPivot(['id']);
     }
 
     public static function boot()

@@ -27,7 +27,7 @@ class IndoorResource extends Resource
 {
     protected static ?string $model = Indoor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
+    protected static ?string $navigationIcon = 'heroicon-o-home';
 
     public static function getPluralLabel(): string
     {
@@ -46,6 +46,22 @@ class IndoorResource extends Resource
                     ->label(__('Name'))
                     ->required(),
 
+                    Select::make('crop_plan_id')
+                    ->label(__('Crop Plan'))
+                    ->relationship(
+                        'cropPlan',
+                        'name',
+                        fn (Builder $query) => $query->where('tenant_id', auth()->user()->tenant_id)
+                    )
+                    ->preload()
+                    ->searchable()
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->required(),
+                    ])
+                    ->required(),
+
+                    
                 Fieldset::make(__('Dimensions'))
                     ->schema([
 
@@ -175,12 +191,17 @@ class IndoorResource extends Resource
                             ])
                             ->columns(3),
 
-                    ])
+                    ]),
+
 
             ]);
     }
     public static function table(Table $table): Table
     {
+        $createAction = Tables\Actions\CreateAction::make()
+            ->icon('heroicon-o-plus')
+            ->label(__('Add Indoor'));
+
         return $table
             ->columns([
                 TextColumn::make('name')
@@ -239,19 +260,32 @@ class IndoorResource extends Resource
                     })
                     ->searchable(false)
                     ->tooltip('Fan sizes in inches'),
+
+                TextColumn::make('cropPlan.name')
+                    ->label(__('Crop Plan'))
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->icon('heroicon-o-eye'),
+                Tables\Actions\EditAction::make()
+                    ->icon('heroicon-o-pencil'),
+                Tables\Actions\DeleteAction::make()
+                    ->icon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->icon('heroicon-o-trash'),
                 ]),
-            ]);
+            ])
+            ->headerActions([$createAction])
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession();
     }
 
     public static function getRelations(): array
@@ -267,6 +301,7 @@ class IndoorResource extends Resource
             'index' => Pages\ListIndoors::route('/'),
             'create' => Pages\CreateIndoor::route('/create'),
             'edit' => Pages\EditIndoor::route('/{record}/edit'),
+            'view' => Pages\ViewIndoor::route('/{record}'),
         ];
     }
 }

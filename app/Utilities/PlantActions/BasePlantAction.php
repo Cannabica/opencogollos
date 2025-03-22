@@ -3,6 +3,7 @@
 namespace App\Utilities\PlantActions;
 
 use App\Models\Plant;
+use Illuminate\Support\Facades\DB;
 
 class BasePlantAction
 {
@@ -17,6 +18,16 @@ class BasePlantAction
     {
         // Por defecto, no requiere argumentos adicionales
         return [];
+    }
+
+    public function createActionWithPlants($data, $plants)
+    {
+        return DB::transaction(function() use ($data, $plants) {
+            $action = Action::create($data);
+            $action->plants()->sync($plants);
+            // Ejecutar trigger solo después de confirmar la sincronización
+            return $action;
+        });
     }
 
 }

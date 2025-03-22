@@ -9,11 +9,26 @@ use Filament\Resources\Pages\EditRecord;
 class EditIndoor extends EditRecord
 {
     protected static string $resource = IndoorResource::class;
+    
+    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\ViewAction::make()
+                ->icon('heroicon-o-eye'),
+            Actions\DeleteAction::make()
+                ->icon('heroicon-o-trash'),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction()
+                ->icon('heroicon-o-check'),
+            $this->getCancelFormAction()
+                ->icon('heroicon-o-x-mark'),
         ];
     }
 }

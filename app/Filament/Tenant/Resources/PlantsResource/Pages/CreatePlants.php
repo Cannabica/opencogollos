@@ -6,10 +6,22 @@ use App\Filament\Tenant\Resources\PlantsResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Actions\Action;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class CreatePlants extends CreateRecord
 {
     protected static string $resource = PlantsResource::class;
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        Log::info('Datos recibidos en CreatePlants:', [
+            'datos_formulario' => $data,
+            'tenant_id' => auth()->user()->tenant_id
+        ]);
+
+        return static::getModel()::create($data);
+    }
 
     protected function getRedirectUrl(): string
     {

@@ -88,6 +88,7 @@ class ActionsResource extends Resource
                 Split::make([
                     Section::make(__('action_basic_data'))
                         ->description(__('action_basic_description'))
+                        ->extraAttributes(['class' => 'first-step'])
                         ->schema([
                             Placeholder::make('warning')
                                 ->label(__(''))
@@ -135,6 +136,7 @@ class ActionsResource extends Resource
                     Section::make(__('action_action_type_data'))
                         ->disabled(fn($record) => $record !== null)
                         ->description(__('action_action_type_description'))
+                        ->extraAttributes(['class' => 'second-step'])
                         ->schema([
                             Placeholder::make('warning')
                                 ->label(__(''))
@@ -168,6 +170,7 @@ class ActionsResource extends Resource
 
                 Section::make(__('action_data'))
                     ->description(__('action_data_description'))
+                    ->extraAttributes(['class' => 'third-step'])
                     ->schema([
                         Placeholder::make('Disclaimer')
                             ->content(function (Get $get) {
@@ -491,70 +494,64 @@ class ActionsResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn(Builder $query) => $query->with('plants')->withCount('plants'))
+            ->modifyQueryUsing(fn(Builder $query) => $query
+                ->with('plants')
+                ->withCount('plants')
+                ->whereHas('indoor', function ($query) {
+                    $query->where('tenant_id', auth()->user()->tenant_id);
+                })
+            )
             ->searchPlaceholder(__('actions_searchable_placeholder'))
-            ->columns(components: [
-                Grid::make([
-                    'default' => 1,
-                    'sm' => 3,
-                    'xl' => 6,
-                    '2xl' => 8,
-                ])
-                    ->schema([
+            ->columns([
+                TextColumn::make('action_date')
+                    ->label(__('Fecha'))
+                    ->dateTime('d/m/Y')
+                    ->description(__('Registrado el'))
+                    ->sortable()
+                    ->searchable()
+                    ->size('sm'),
 
-                        // Columna para mostrar la fecha de la acción
-                        TextColumn::make('action_date')
-                            ->label(__('Fecha'))
-                            ->dateTime('d/m/Y')
-                            ->description(description: __('Registrado el'), position: 'above')
-                            ->grow(false)
-                            ->columnSpan(1)
-                            ->sortable(), // Permite ordenar por fecha
+                TextColumn::make('plants_count')
+                    ->label(__('Plantas'))
+                    ->badge()
+                    ->alignCenter()
+                    ->getStateUsing(fn($record) => $record->plants()->count() . ' ' . __('Plantas'))
+                    ->sortable()
+                    ->size('sm'),
 
-                        // Columna para mostrar la cantidad de plantas afectadas
-                        TextColumn::make('plants_count')
-                            ->label(__('Plantas afectadas'))
-                            ->grow(false)
-                            ->alignCenter()
-                            ->description(description: __(key: 'Plantas'), position: 'bellow')
-                            ->getStateUsing(fn($record) => $record->plants()->count())
-                            ->sortable()
-                            ->columnSpan(1),
+                TextColumn::make('detalle_accion')
+                    ->label(__('Detalle'))
+                    ->description(fn($record) => $record->detalle_accion)
+                    ->wrap()
+                    ->searchable()
+                    ->size('sm'),
 
-                        // Columna para mostrar el detalle de la acción
-                        TextColumn::make('detalle_accion')
-                            ->label(__('Detalle de acción'))
-                            ->description(description: __(key: 'Detalle:'), position: 'above')
-                            ->getStateUsing(fn($record) => $record->detalle_accion)
-                            ->columnSpan([
-                                'sm' => 2,
-                                'xl' => 3,
-                                '2xl' => 4,
-                            ])
-                            ->sortable(),
-
-                        BadgeColumn::make('action_type')
-                            ->formatStateUsing(fn($record) => str_replace('Registrar ', '', $record->action_type->name))
-                            ->wrap()
-                            ->columnSpan(1)
-                            ->alignment('center') // Alineación horizontal
-                            ->verticalAlignment('center') // Alineación vertical
-                            ->colors(colors: [
-                                'tertiary' => static fn($record): bool => $record->action_type->name === 'Registrar Poda',
-                                'accent' => static fn($record): bool => $record->action_type->name === 'Registrar Transplante',
-                                'primary' => static fn($record): bool => $record->action_type->name === 'Registrar Riego',
-                                'dark' => static fn($record): bool => $record->action_type->name === 'Registrar Aplique producto',
-                                'warning' => static fn($record): bool => $record->action_type->name === 'Registrar Observación con foto',
-                                'danger' => static fn($record): bool => $record->action_type->name === 'Registrar Muerte de la planta',
-                                'gray' => static fn($record): bool => $record->action_type->name === 'Registrar Cambio de Estado',
-                            ]),
-
-
+                BadgeColumn::make('action_type')
+                    ->label(__('Tipo'))
+                    ->formatStateUsing(fn($record) => str_replace('Registrar ', '', $record->action_type->name))
+                    ->icon(fn($record) => match($record->action_type->name) {
+                        'Registrar Poda' => 'heroicon-o-scissors',
+                        'Registrar Transplante' => 'heroicon-o-arrow-path',
+                        'Registrar Riego' => 'heroicon-o-cloud',
+                        'Registrar Aplique producto' => 'heroicon-o-beaker',
+                        'Registrar Observación con foto' => 'heroicon-o-camera',
+                        'Registrar Muerte de la planta' => 'heroicon-o-x-circle',
+                        'Registrar Cambio de Estado' => 'heroicon-o-arrow-path-rounded-square',
+                        default => null
+                    })
+                    ->colors([
+                        'tertiary' => fn($record) => $record->action_type->name === 'Registrar Poda',
+                        'accent' => fn($record) => $record->action_type->name === 'Registrar Transplante',
+                        'primary' => fn($record) => $record->action_type->name === 'Registrar Riego',
+                        'dark' => fn($record) => $record->action_type->name === 'Registrar Aplique producto',
+                        'warning' => fn($record) => $record->action_type->name === 'Registrar Observación con foto',
+                        'danger' => fn($record) => $record->action_type->name === 'Registrar Muerte de la planta',
+                        'gray' => fn($record) => $record->action_type->name === 'Registrar Cambio de Estado',
                     ])
+                    ->size('sm'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-
                 Filter::make('created_at')
                     ->form([
                         DatePicker::make('created_from'),
@@ -584,17 +581,28 @@ class ActionsResource extends Resource
                         7 => __('Cambio de Estado'),
                         // Agrega más opciones según los tipos de acción que tengas
                     ])
-
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->iconButton(),
+                Tables\Actions\EditAction::make()
+                    ->iconButton(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                ])->iconButton(),
+            ])
+            ->striped()
+            ->paginated([
+                'default' => 10,
+                'sm' => 10,
+                'md' => 15,
+                'lg' => 20,
+            ])
+            ->recordClasses(fn ($record) => 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800')
+            ->recordUrl(fn ($record) => route('filament.tenant.resources.actions.edit', ['record' => $record]))
+            ->defaultPaginationPageOption(10);
     }
 
     public static function getRelations(): array

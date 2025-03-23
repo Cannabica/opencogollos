@@ -110,7 +110,7 @@
     "rest_fert_tooltip": "Se avisará las plantas que hayan recibido aplicaciones de productos/fertilizantes en periodos menos a este valor",
     "stop_fert_tooltip" : "Se sugerirá dejar de fertilizar plantas proximas a fecha de corte estimado",
 
-    "subheading_cropplan": "Los planes de cultivo están pensados para guiar el ciclo de tu indoor, se utilizan para determinar alertas y comportamientos sugeridos en la plataforma",
+    "subheading_cropplan": "Los planes de cultivo son guías completas que definen las condiciones ideales para cada etapa de crecimiento (Germinación, Plántula, Vegetativo y Floración). Incluyen parámetros de iluminación, temperatura, humedad y recomendaciones para riego, podas y fertilización. Estas configuraciones se utilizan para generar alertas personalizadas y sugerencias de mantenimiento durante todo el ciclo de vida de tus plantas.",
 
     "helper_rest_pruning" : "Identificar plantas podadas en un intervalo de tiempo menor al establecido aquí en días. Esta función previene podas frecuentes que podrían dañar las plantas",
     "helper_rest_fert" : "Identificar apliques de productos en un intervalo de tiempo menor al establecido aquí en días",
@@ -124,7 +124,7 @@
     "base_floor_description": "Esta sección sirve como la base de tu mezcla, aportando estructura y retención de agua",
     "Soil_Enrichment_description" : "Esta sección agrega nutrientes esenciales y mejora la vida microbiana del suelo",
 
-    "actions_Subheading": "Aquí puedes registrar y gestionar acciones relacionadas con tus plantas. Usa la barra de búsqueda o los filtros para encontrar registros específicos.",
+    "actions_Subheading": "El registro detallado de acciones es fundamental para el éxito de tu cultivo. Aquí puedes documentar riegos, podas, fertilizaciones y otros cuidados esenciales. Un buen seguimiento te ayudará a optimizar el crecimiento de tus plantas y prevenir problemas.",
     "actions_searchable_placeholder": "Buscar por tipo de acción, fecha o detalle",
     "fixed_liters":"Cantidad de agua entregada al recipiente",
     "timer_irrigation":"Tiempo de apertura de riego",

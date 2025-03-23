@@ -13,8 +13,15 @@ class PlantStatesByIndoorWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $indoors = Indoor::with('plants')->get();
-        $states = Plant::distinct('state')->pluck('state')->filter();
+        $indoors = Indoor::where('tenant_id', auth()->user()->tenant_id)
+            ->with('plants')
+            ->get();
+        $states = Plant::whereHas('indoor', function($query) {
+                $query->where('tenant_id', auth()->user()->tenant_id);
+            })
+            ->distinct('state')
+            ->pluck('state')
+            ->filter();
         
         $datasets = $states->map(function ($state) use ($indoors) {
             return [

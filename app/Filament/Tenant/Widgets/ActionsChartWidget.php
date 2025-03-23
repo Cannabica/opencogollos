@@ -7,12 +7,13 @@ use App\Models\Action;
 use App\Models\ActionType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use function Filament\tenant;
 
 class ActionsChartWidget extends ChartWidget
 {
     protected static ?string $heading = 'Evolución de cuidados';
 
-    protected int | string | array $columnSpan = 2;
+    protected int | string | array $columnSpan = 1;
 
     public ?string $filter = '';
 
@@ -50,7 +51,13 @@ class ActionsChartWidget extends ChartWidget
         });
 
         // Obtener las acciones agrupadas por tipo y fecha
-        $actions = Action::select(
+        $actions = Action::query()
+            ->whereHas('plants', function($query) {
+                $query->whereHas('indoor', function($q) {
+                    $q->where('tenant_id', auth()->user()->tenant_id);
+                });
+            })
+            ->select(
                 'action_type_id',
                 DB::raw('DATE(action_date) as date'),
                 DB::raw('COUNT(*) as count')
@@ -114,7 +121,7 @@ class ActionsChartWidget extends ChartWidget
     {
         return [
             'responsive' => true,
-            'maintainAspectRatio' => true,
+            'maintainAspectRatio' => false,
             'interaction' => [
                 'mode' => 'nearest',
                 'intersect' => false
@@ -132,7 +139,7 @@ class ActionsChartWidget extends ChartWidget
                     ],
                     'ticks' => [
                         'color' => '#999',
-                        'stepSize' => 1,
+                        'stepSize' => 3,
                         'precision' => 0,
                     ]
                 ],

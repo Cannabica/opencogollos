@@ -18,10 +18,15 @@ class TenantScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-         // Obtener el tenant_id del usuario logueado
-         $user = Auth::user();
+        // Si no hay usuario autenticado (durante seeding), no aplicar el scope
+        if (!auth()->user()) {
+            return;
+        }
 
-         if ($user) {
+        // Obtener el tenant_id del usuario logueado
+        $user = Auth::user();
+
+        if ($user) {
             $tenantId = $user->tenant_id;
             // Aplicar el filtro: solo mostrar seeds con el tenant_id del usuario o null
             if ($this->byIndoor) {
@@ -30,10 +35,18 @@ class TenantScope implements Scope
                 $builder->where('tenant_id', $tenantId)
                     ->orWhereNull('tenant_id');
             }
-
-         } else {
+        } else {
             // Si no hay usuario logueado, no mostrar nada
             $builder->where('tenant_id', null);
-         }
+        }
+
+        if ($model instanceof \App\Models\Seed) {
+            $builder->where(function ($query) {
+                $query->where('tenant_id', auth()->user()->tenant_id)
+                      ->orWhereNull('tenant_id'); // Permite ver semillas globales
+            });
+        } else {
+            $builder->where('tenant_id', auth()->user()->tenant_id);
+        }
     }
 }

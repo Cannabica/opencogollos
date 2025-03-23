@@ -10,7 +10,7 @@ class CropPlanSeeder extends Seeder
     public function run()
     {
         CropPlan::create([
-            'tenant_id' => 1,
+            'tenant_id' => null,
             'name' => 'Plan de Cultivo Estándar',
             
             // Datos Generales

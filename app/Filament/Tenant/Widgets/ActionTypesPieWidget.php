@@ -37,6 +37,11 @@ class ActionTypesPieWidget extends ChartWidget
 
         // Obtener las acciones agrupadas por tipo
         $actions = Action::select('action_type_id', DB::raw('COUNT(*) as count'))
+            ->whereHas('plants', function($query) {
+                $query->whereHas('indoor', function($q) {
+                    $q->where('tenant_id', auth()->user()->tenant_id);
+                });
+            })
             ->whereBetween('action_date', [
                 $startDate->startOfDay()->toDateTimeString(),
                 $endDate->endOfDay()->toDateTimeString()

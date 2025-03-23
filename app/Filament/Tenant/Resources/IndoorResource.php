@@ -46,12 +46,15 @@ class IndoorResource extends Resource
                     ->label(__('Name'))
                     ->required(),
 
-                    Select::make('crop_plan_id')
+                Select::make('crop_plan_id')
                     ->label(__('Crop Plan'))
                     ->relationship(
                         'cropPlan',
                         'name',
-                        fn (Builder $query) => $query->where('tenant_id', auth()->user()->tenant_id)
+                        fn(Builder $query) => $query->where(function ($query) {
+                            $query->where('tenant_id', auth()->user()->tenant_id)
+                                ->orWhereNull('tenant_id');
+                        })
                     )
                     ->preload()
                     ->searchable()
@@ -61,7 +64,7 @@ class IndoorResource extends Resource
                     ])
                     ->required(),
 
-                    
+
                 Fieldset::make(__('Dimensions'))
                     ->schema([
 
@@ -161,7 +164,7 @@ class IndoorResource extends Resource
                     ]),
 
                 Hidden::make('tenant_id')
-                    ->default(fn () => auth()->user()->tenant_id),
+                    ->default(fn() => auth()->user()->tenant_id),
 
                 Section::make(__('Automatic irrigation equipment'))
                     ->description('')
@@ -199,93 +202,156 @@ class IndoorResource extends Resource
     public static function table(Table $table): Table
     {
         $createAction = Tables\Actions\CreateAction::make()
-            ->icon('heroicon-o-plus')
+            ->icon('heroicon-o-plus-circle')
             ->label(__('Add Indoor'));
 
         return $table
+            ->contentGrid([
+                'default' => 1,
+                'sm' => 1,
+                'md' => 2,
+                'lg' => 2,
+            ])
             ->columns([
-                TextColumn::make('name')
-                    ->label(__('Name')),
+                Tables\Columns\Layout\Stack::make([
+                    Tables\Columns\Layout\Panel::make([
+                        // Información básica
+                        TextColumn::make('name')
+                            ->label(__('Name'))
+                            ->icon('heroicon-o-building-office-2')
+                            ->size(TextColumn\TextColumnSize::Large)
+                            ->weight('bold')
+                            ->searchable()
+                            ->sortable()
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'py-3 text-primary-600']),
 
-                // Conteo de Plantas
-                TextColumn::make('plants_count')
-                    ->label(__('Plants'))
-                    ->counts('plants')
-                    ->sortable(),
+                        // Estadísticas principales
+                        Tables\Columns\Layout\Grid::make(['default' => 1,'sm' => 2, 'md' => 2])
+                            ->schema([
+                                TextColumn::make('plants_count')
+                                    ->label(__('Plants in Indoor'))
+                                    ->icon('heroicon-o-squares-plus')
+                                    ->counts('plants')
+                                    ->badge()
+                                    ->color('success')
+                                    ->size(TextColumn\TextColumnSize::Large)
+                                    ->alignCenter(),
 
-                // Dimensiones
-                TextColumn::make('dimensions')
-                    ->label(__('Dimensions'))
-                    ->state(function (Indoor $record): string {
-                        return "{$record->width}x{$record->large} cm";
-                    })
-                    ->searchable(false),
+                                TextColumn::make('cropPlan.name')
+                                    ->label(__('Active Plan'))
+                                    ->icon('heroicon-o-clipboard-document-check')
+                                    ->badge()
+                                    ->color('primary')
+                                    ->size(TextColumn\TextColumnSize::Large)
+                                    ->alignCenter(),
+                            ])
+                            ->extraAttributes(['class' => 'gap-3 py-2']),
 
-                // Lámparas
-                TextColumn::make('lamps_info')
-                    ->label(__('Lamps'))
-                    ->limit(30)
-                    ->state(function (Indoor $record): string {
-                        if (empty($record->lamps))
-                            return 'No lamps';
 
-                        $lampsCount = count($record->lamps);
-                        $lampDetails = collect($record->lamps)
-                            ->map(function ($lamp) {
-                                return "{$lamp['power']}w {$lamp['technology']}";
-                            })
-                            ->join(', ');
 
-                        return $lampsCount . ' ' . str($lampsCount === 1 ? 'lámpara' : 'lámparas') . ' (' . $lampDetails . ')';
-                    })
-                    ->searchable(false)
-                    ->wrap()
-                    ->tooltip(__('Lamp info tooltip')),
+                        // Sección de equipamiento
+                        Tables\Columns\Layout\Grid::make(['default' => 1, 'sm' => 2])
+                            ->schema([
+                                // Especificaciones técnicas
+                               
+                                // Sistema de iluminación
+                                TextColumn::make('lighting_system')
+                                    ->label(__('Lighting System'))
+                                    ->icon('heroicon-o-sun')
+                                    ->state(function ($record): string {
+                                        if (empty($record->lamps)) {
+                                            return __('No lighting system installed');
+                                        }
 
-                // Ventiladores
-                TextColumn::make('fans_info')
-                    ->label(__('Fans'))
-                    ->state(function (Indoor $record): string {
-                        if (empty($record->fans))
-                            return 'No fans';
+                                        $lamps = collect($record->lamps)->map(function ($lamp) {
+                                            $specs = "{$lamp['power']}W {$lamp['technology']}";
+                                            return $specs;
+                                        });
 
-                        $fansCount = count($record->fans);
-                        $fansDetails = collect($record->fans)
-                            ->map(function ($fan) {
-                                return "{$fan['inches']}\"";
-                            })
-                            ->join(', ');
+                                        return $lamps->join(", ");
+                                    })
+                                    ->listWithLineBreaks()
+                                    ->extraAttributes(['class' => 'indoor-info-section']),
 
-                        return $fansCount . ' ' . str($fansCount === 1 ? 'ventilador' : 'ventiladores') . ' (' . $fansDetails . ')';
-                    })
-                    ->searchable(false)
-                    ->tooltip('Fan sizes in inches'),
+                                // Sistema de ventilación
+                                TextColumn::make('ventilation_system')
+                                    ->label(__('Ventilation System'))
+                                    ->icon('heroicon-o-arrow-path')
+                                    ->state(function ($record): string {
+                                        if (empty($record->fans)) {
+                                            return __('No ventilation system installed');
+                                        }
 
-                TextColumn::make('cropPlan.name')
-                    ->label(__('Crop Plan'))
-                    ->searchable()
-                    ->sortable(),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->icon('heroicon-o-eye'),
-                Tables\Actions\EditAction::make()
-                    ->icon('heroicon-o-pencil'),
-                Tables\Actions\DeleteAction::make()
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->icon('heroicon-o-trash'),
+                                        // Agrupar ventiladores por tamaño
+                                        $groupedFans = collect($record->fans)
+                                            ->groupBy('inches')
+                                            ->map(function ($fans, $inches) {
+                                            $count = count($fans);
+                                            return "{$inches}\"";
+                                        })
+                                            ->values()
+                                            ->join(", ");
+
+                                        return __('Fans: :fans', ['fans' => $groupedFans]);
+                                    })
+                                    ->listWithLineBreaks()
+                                    ->extraAttributes(['class' => 'indoor-info-section']),
+                            ])
+                            ->extraAttributes(['class' => 'gap-3 py-2']),
+
+                        // Sistemas de control y monitoreo
+                        Tables\Columns\Layout\Grid::make(['default' => 1, 'sm' => 2])
+                            ->schema([
+                                TextColumn::make('specifications')
+                                ->label(__('Technical Specifications'))
+                                ->icon('heroicon-o-cube')
+                                ->state(function ($record): string {
+                                    return "Dimensiones: {$record->large}×{$record->width}×{$record->height}";
+                                })
+                                ->extraAttributes(['class' => 'indoor-info-section']),
+
+                                TextColumn::make('monitoring_systems')
+                                    ->label(__('Control Systems'))
+                                    ->icon('heroicon-o-chart-bar-square')
+                                    ->state(function ($record): string {
+                                        $systems = [];
+                                        if ($record->hygometer)
+                                            $systems[] = "Higrometro";
+                                        if ($record->humidifier)
+                                            $systems[] = "Humidificador";
+
+                                        return empty($systems)
+                                            ? __('No control systems installed')
+                                            : implode(", ", $systems);
+                                    })
+                                    ->listWithLineBreaks()
+                                    ->extraAttributes(['class' => 'indoor-info-section']),
+
+
+                            ])
+                            ->extraAttributes(['class' => 'gap-3 py-2']),
+                    ])
+                        ->collapsible(false),
                 ]),
             ])
-            ->headerActions([$createAction])
-            ->persistSearchInSession()
-            ->persistColumnSearchesInSession();
+            ->defaultSort('name', 'asc')
+            ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->icon('heroicon-o-eye')
+                    ->button()
+                    ->size('sm')
+                    ->color('secondary'),
+                Tables\Actions\EditAction::make()
+                    ->icon('heroicon-o-pencil-square')
+                    ->button()
+                    ->size('sm'),
+                Tables\Actions\DeleteAction::make()
+                    ->icon('heroicon-o-trash')
+                    ->button()
+                    ->size('sm')
+                    ->color('accent'),
+            ]);
     }
 
     public static function getRelations(): array

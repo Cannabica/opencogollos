@@ -25,6 +25,8 @@ use Filament\Forms\Components\Grid;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\HtmlString;
+use Illuminate\Database\Eloquent\Collection;
+use Filament\Notifications\Notification;
 
 
 
@@ -535,11 +537,94 @@ class CropPlanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => 
+                        // Solo permitir editar si el plan pertenece al tenant o si es superadmin
+                        auth()->user()->tenant_id === $record->tenant_id || 
+                        auth()->user()->tenant_id === null
+                    )
+                    ->before(function ($record) {
+                        if (is_null($record->tenant_id) && auth()->user()->tenant_id !== null) {
+                            \Log::warning('Intento de edición de plan de cultivo global:', [
+                                'user_id' => auth()->id(),
+                                'tenant_id' => auth()->user()->tenant_id,
+                                'crop_plan_id' => $record->id
+                            ]);
+                            Notification::make()
+                                ->warning()
+                                ->title('Acción no permitida')
+                                ->body('No tienes permiso para editar planes de cultivo globales. Puedes crear una copia para tu catálogo.')
+                                ->send();
+                            
+                            return false;
+                        }
+                    }),
+                Tables\Actions\Action::make('duplicate')
+                    ->label('Copiar')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->visible(fn ($record) => 
+                        // Permitir duplicar si el plan es del superadmin (tenant_id = null)
+                        $record->tenant_id === null && auth()->user()->tenant_id !== null
+                    )
+                    ->action(action: function ($record) {
+                        $newPlan = $record->replicate();
+                        $newPlan->tenant_id = auth()->user()->tenant_id;
+                        $newPlan->name = $record->name . ' (Copia)';
+                        $newPlan->save();
+                    })
+                    ->successNotificationTitle('Plan de cultivo copiado exitosamente'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->before(function (Collection $records) {
+                            // Verificar si hay planes globales
+                            $hasGlobalPlans = $records->contains(fn ($record) => 
+                                is_null($record->tenant_id)
+                            );
+
+                            if ($hasGlobalPlans && auth()->user()->tenant_id !== null) {
+                                \Log::warning('Intento de eliminación de planes globales bloqueado:', [
+                                    'user_id' => auth()->id(),
+                                    'tenant_id' => auth()->user()->tenant_id
+                                ]);
+
+                                Notification::make()
+                                    ->warning()
+                                    ->title('Acción no permitida')
+                                    ->body('No tienes permiso para eliminar planes de cultivo globales. Deselecciona los planes globales para continuar.')
+                                    ->send();
+                                
+                                return false;
+                            }
+
+                            \Log::info('Intento de eliminación masiva de planes de cultivo:', [
+                                'user_id' => auth()->id(),
+                                'tenant_id' => auth()->user()->tenant_id,
+                                'crop_plans' => $records->map(fn($record) => [
+                                    'id' => $record->id,
+                                    'name' => $record->name,
+                                    'is_global' => is_null($record->tenant_id),
+                                    'tenant_id' => $record->tenant_id
+                                ])->toArray()
+                            ]);
+                        })
+                        ->after(function (Collection $records) {
+                            \Log::info('Eliminación masiva de planes de cultivo completada:', [
+                                'user_id' => auth()->id(),
+                                'tenant_id' => auth()->user()->tenant_id,
+                                'attempted_records' => $records->count()
+                            ]);
+                        })
+                        ->failureNotification(function (Collection $records, \Exception $e) {
+                            \Log::error('Error en eliminación masiva de planes de cultivo:', [
+                                'user_id' => auth()->id(),
+                                'tenant_id' => auth()->user()->tenant_id,
+                                'error' => $e->getMessage(),
+                                'attempted_records' => $records->count()
+                            ]);
+                            return 'No se pudieron eliminar algunos planes de cultivo';
+                        }),
                 ]),
             ]);
     }

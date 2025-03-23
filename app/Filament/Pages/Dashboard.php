@@ -65,7 +65,10 @@ class Dashboard extends BaseDashboard
     public function getPlants(int $indoorId): \Illuminate\Database\Eloquent\Collection
     {
         return Plant::query()
-            ->where('indoor_id', $indoorId) // Filtra por el ID del indoor proporcionado.
+            ->whereHas('indoor', function ($query) {
+                $query->where('tenant_id', auth()->user()->tenant_id);
+            })
+            ->where('indoor_id', $indoorId)
             ->get();
     }
 

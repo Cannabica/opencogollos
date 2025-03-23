@@ -14,13 +14,14 @@ class CropPlanScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-         // Obtener el tenant_id del usuario logueado
-         $user = Auth::user();
-         $tenantId = $user->tenant_id;
- 
-         // Aplicar el filtro: solo mostrar seeds con el tenant_id del usuario o null
-         $builder->where('tenant_id', $tenantId)
-                 ->orWhereNull('tenant_id');
-    
+        $user = Auth::user();
+        
+        if ($user && $user->tenant_id !== null) {
+            // Usuarios tenant ven sus planes y los del superadmin
+            $builder->where(function ($query) use ($user) {
+                $query->where('tenant_id', $user->tenant_id)
+                      ->orWhereNull('tenant_id');
+            });
+        }
     }
 }

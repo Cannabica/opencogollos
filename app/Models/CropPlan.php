@@ -65,14 +65,42 @@ class CropPlan extends Model
         return $this->hasMany(Indoor::class);
     }
 
+    public function isGlobal()
+    {
+        return is_null($this->tenant_id);
+    }
+
     protected static function booted()
     {
         static::creating(function ($cropPlan) {
-            if (auth()->check() && auth()->user()->tenant_id) {
+            if (auth()->check()) {
+                // Si es superadmin, tenant_id será null
                 $cropPlan->tenant_id = auth()->user()->tenant_id;
             }
         });
 
-        static::addGlobalScope(new TenantScope);
+        static::deleting(function ($cropPlan) {
+            if (is_null($cropPlan->tenant_id) && auth()->check() && auth()->user()->tenant_id !== null) {
+                throw new \Illuminate\Validation\ValidationException(
+                    validator([], []),
+                    response()->json([
+                        'message' => 'No se pueden eliminar planes de cultivo globales'
+                    ])
+                );
+            }
+        });
+
+        static::updating(function ($cropPlan) {
+            if (is_null($cropPlan->tenant_id) && auth()->check() && auth()->user()->tenant_id !== null) {
+                throw new \Illuminate\Validation\ValidationException(
+                    validator([], []),
+                    response()->json([
+                        'message' => 'No se pueden modificar planes de cultivo globales'
+                    ])
+                );
+            }
+        });
+
+        static::addGlobalScope(new CropPlanScope);
     }
 }

@@ -43,6 +43,14 @@ class PlantsResource extends Resource
 
     protected static ?string $tenantOwnershipRelationshipName = 'indoor';
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereHas('indoor', function ($query) {
+                $query->where('tenant_id', auth()->user()->tenant_id);
+            });
+    }
+
     public static function getPluralLabel(): string
     {
         return __('Plants');
@@ -66,16 +74,17 @@ class PlantsResource extends Resource
 
                         Select::make('indoor_id')
                             ->label(__('Indoor'))
-
                             ->options(function () {
-                                return Indoor::pluck('name', 'id'); //TODO Scope Tenant
+                                return Indoor::where('tenant_id', auth()->user()->tenant_id)
+                                    ->pluck('name', 'id');
                             })
                             ->default(function () {
-                                if (Indoor::count() == 1)
-                                    return Indoor::first()->id;
-                                return null;
+                                if (Indoor::where('tenant_id', auth()->user()->tenant_id)->count() == 1) {
+                                    return Indoor::where('tenant_id', auth()->user()->tenant_id)->first()->id;
+                                }
                             })
-                            ->required(),
+                            ->required()
+                            ->searchable(),
 
                         TextInput::make('name')
                             ->label(__('Name'))
@@ -85,7 +94,10 @@ class PlantsResource extends Resource
                             ->label(__('Seed Type'))
                             ->searchable()
                             ->options(function () {
-                                return Seed::pluck('name', 'id');
+                                return Seed::where(function($query) {
+                                    $query->whereNull('tenant_id')
+                                          ->orWhere('tenant_id', auth()->user()->tenant_id);
+                                })->pluck('name', 'id');
                             })
                             ->required()
                             ->live()
@@ -94,13 +106,27 @@ class PlantsResource extends Resource
                                     $seed = Seed::find($state);
                                     if ($seed) {
                                         $set('seed_details', "Nombre: {$seed->name}\n" .
-                                            "Descripción: {$seed->description}\n" .
-                                            "Días hasta cosecha: {$seed->days_to_harvest}\n" .
-                                            "Temperatura óptima: {$seed->optimal_temperature}°C"
+                                            "Tipo: {$seed->seed_type}\n" .
+                                            "THC: {$seed->ratio_thc}% - CBD: {$seed->ratio_cbd}%\n" .
+                                            "Tiempo de floración: {$seed->flowering_time} días\n" .
+                                            "Proveedor: {$seed->provider}"
                                         );
                                     }
                                 } else {
                                     $set('seed_details', null);
+                                }
+                            })
+                            ->afterStateHydrated(function ($state, Forms\Set $set) {
+                                if ($state) {
+                                    $seed = Seed::find($state);
+                                    if ($seed) {
+                                        $set('seed_details', "Nombre: {$seed->name}\n" .
+                                            "Tipo: {$seed->seed_type}\n" .
+                                            "THC: {$seed->ratio_thc}% - CBD: {$seed->ratio_cbd}%\n" .
+                                            "Tiempo de floración: {$seed->flowering_time} días\n" .
+                                            "Proveedor: {$seed->provider}"
+                                        );
+                                    }
                                 }
                             }),
 
@@ -220,137 +246,37 @@ class PlantsResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-
-            // ->columns([
-            //     Stack::make([
-            //         // Columns
-            //     ]),
-            // ])
-            // ->contentGrid([
-            //     'md' => 2,
-            //     'xl' => 3,
-            // ]);
-
-
             ->columns([
-                // opcion 1 custom view, muy artesanal todo
-                // ViewColumn::make('view')->view('filament.tables.columns.status-plant'),
-
-                //opcion 2, le metemos chimi a la customización de la tabla
-
                 Stack::make([
-
-                    TextColumn::make('name')
-                        ->formatStateUsing(function ($state, $record) {
-                            return "{$record->name}";
-                        })
+                    ViewColumn::make('plant_card')
+                        ->view('filament.tables.columns.plant-card')
                         ->alignCenter()
-                        ->size(size: TextColumn\TextColumnSize::Large)
-                        ->weight(FontWeight::Bold),
+                        ->state(function ($record) {
+                            $stateIcons = [
+                                'Etapa de Germinación' => 'heroicon-o-sparkles',
+                                'Etapa de Plantula' => 'heroicon-o-arrow-up-circle',
+                                'Etapa Vegetativa' => 'heroicon-o-sun',
+                                'Etapa Floracion' => 'heroicon-o-star',
+                                'Muerta' => 'heroicon-o-x-circle',
+                            ];
 
-                    TextColumn::make('seedType.name')
-                        ->formatStateUsing(
-                            fn($state, $record) =>
-                            $record->seedType?->name
-                            ? "Semilla: {$record->seedType->name} ( {$record->seedType->seed_type} ) "
-                            : 'No disponible'
-                        ),
+                            $stateBadgeClass = strtolower(str_replace(['Etapa de ', 'Etapa '], '', $record->state));
+                            $stateBadgeClass = str_replace(' ', '-', $stateBadgeClass);
 
-                    TextColumn::make('germination_date')
-                        ->formatStateUsing(
-                            callback: fn($state, $record) =>
-                            $record->germination_date
-                            ? __('days_of_life') . ' ' . now()->diffInDays($record->germination_date)
-                            : 'Fecha no disponible'
-                        ),
-
-                    // ViewColumn::make('view')->view('filament.tables.columns.status-plant')
-                    // ->searchable(),
-
-                    TextColumn::make('seedType.ratio_thc')
-                        ->searchable()
-                        ->formatStateUsing(
-                            fn($state, $record) =>
-
-                            ($record->seedType?->ratio_thc !== null) && ($record->seedType?->ratio_cbd !== null)
-                            ? 'THC: ' . $record->seedType->ratio_thc . '% - CBD: ' . $record->seedType->ratio_cbd . '%'
-                            : 'No disponible'
-                        ),
-
-
-                    TextColumn::make('state')
-                        ->badge()
-                        ->color(fn(string $state): string => match ($state) {
-                            'Etapa de Germinación' => 'secondary',
-                            'Etapa de Plantula' => 'primary',
-                            'Etapa Vegetativa' => 'tertiary',
-                            'Etapa Floracion' => 'accent',
-                            'Muerta', 'muerta' => 'gray',
-                        }),
-
-                    // TextColumn::make('indoor_id')
-                    // ->getStateUsing(fn($record) => __('indoor_id').': '.$record->indoor()->where('indoor_id', $record->indoor_id)),
-                    // ->formatStateUsing(
-                    //     fn($state, $record) =>
-                    //     $record->indoor_id
-                    //     $record->actions()->where('action_type_id', 2)->count()
-                    //     ? "Indoor: {$record->indoor_id}"
-                    //     : 'No disponible'
-                    // ),
-
-
-                    TextColumn::make('indoor_id')
-                        ->size(TextColumn\TextColumnSize::ExtraSmall)
-                        ->color('success')
-                        ->weight(FontWeight::ExtraLight)
-                        ->formatStateUsing(function ($state, $record) {
-                            // Obtener la última acción de tipo "change_state" asociada a esta planta
-                            $lastChangeStateAction = $record->actions()
-                                ->where('action_type_id', 7) // ID del tipo "change_state"
-                                ->orderByDesc('action_date') // Ordenar por fecha de la acción
-                                ->first();
-
-                            // Determinar la base para el cálculo (última acción o fecha de germinación)
-                            $baseDate = $lastChangeStateAction?->action_date ?? $record->germination_date;
-
-                            return $baseDate
-                                ? 'Esta planta está hace ' . now()->diffInDays($baseDate) . ' días en la misma etapa'
-                                : 'No disponible';
-                        }),
-
-
-                    TextColumn::make('indoor.name')
-                        ->label(__('Indoor Name'))
-                        ->formatStateUsing(function ($state, $record) {
-                            return __('indoor_name') . ' ' . $record->indoor?->name ?? __('Not Available');
+                            return [
+                                'stateIcon' => $stateIcons[$record->state] ?? 'heroicon-o-question-mark-circle',
+                                'stateBadgeClass' => $stateBadgeClass,
+                                'daysInState' => now()->diffInDays($record->actions()
+                                    ->where('action_type_id', 7)
+                                    ->orderByDesc('action_date')
+                                    ->first()?->action_date ?? $record->germination_date),
+                                'totalDays' => now()->diffInDays($record->germination_date),
+                                'actionsCount' => $record->actions()->count(),
+                                'pruningsCount' => $record->actions()->where('action_type_id', 2)->count(),
+                            ];
                         })
-                        ->size(TextColumn\TextColumnSize::Small)
-                        ->weight(FontWeight::Light),
-
-                    TextColumn::make('flowerpot')
-                        ->formatStateUsing(function ($record) {
-                            return __('recipient') . ': ' . $record->flowerpot . ' ' . $record->capacity ?? 'Desconocido';
-                        }),
-
-                    TextColumn::make('actions_count')
-                        ->label('Total de Acciones')
-                        ->getStateUsing(fn($record) => __('actions_registered_for_plant') . ': ' . $record->actions()->count()),
-
-                    TextColumn::make('prunings_count')
-                        ->label('Podas Realizadas')
-                        ->getStateUsing(fn($record) => __('prunes_count_for_plant') . ': ' . $record->actions()->where('action_type_id', 2)->count()),
-
                 ])
-                    ->space(2),
-
-
-                // por defecto la tabla fiera
-                // TextColumn::make('name')
-                //     ->label(__('Name')),
-                // TextColumn::make('seedType.name')
-                //     ->label(__('Seed Type')),
-                // TextColumn::make('germination_date')
-                //     ->label(__('Germination Date')),
+                ->space(2),
             ])
             ->contentGrid([
                 'md' => 2,
@@ -384,6 +310,7 @@ class PlantsResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

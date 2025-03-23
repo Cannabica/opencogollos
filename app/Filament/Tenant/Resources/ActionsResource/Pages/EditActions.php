@@ -17,6 +17,26 @@ class EditActions extends EditRecord
 {
     protected static string $resource = ActionsResource::class;
 
+    public function getRecord(): Model
+    {
+        $record = parent::getRecord();
+
+        $action = Action::query()
+            ->whereHas('plants', function($query) {
+                $query->whereHas('indoor', function($q) {
+                    $q->where('tenant_id', auth()->user()->tenant_id);
+                });
+            })
+            ->find($record->id);
+
+        if (!$action) {
+            $this->redirect($this->getResource()::getUrl('index'));
+            return $record;
+        }
+
+        return $action;
+    }
+
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         if (!isset($data['data']['observation'])) {

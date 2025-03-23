@@ -23,7 +23,8 @@ class RegisterPruning extends BasePlantAction
             $return = '<p>Las siguientes plantas fueron podadas hace menos de 15 días:</p>';
             $return .= '<ul>';
             foreach ($action->plants as $plant) {
-                $return .= '<li> - '.$plant->name.' ('.$plant->indoor->name.')'.'</li>';
+                $indoorName = $plant->indoor ? $plant->indoor->name : 'Sin ubicación';
+                $return .= '<li> - '.$plant->name.' ('.$indoorName.')'.'</li>';
             }
             $return .= '</ul>';
             return $return;

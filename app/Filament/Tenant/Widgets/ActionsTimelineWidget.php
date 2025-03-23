@@ -34,6 +34,11 @@ class ActionsTimelineWidget extends ChartWidget
         $endDate = now();
 
         $actions = Action::with(['plants', 'action_type'])
+            ->whereHas('plants', function($query) {
+                $query->whereHas('indoor', function($q) {
+                    $q->where('tenant_id', auth()->user()->tenant_id);
+                });
+            })
             ->whereBetween('action_date', [
                 $startDate->startOfDay()->toDateTimeString(),
                 $endDate->endOfDay()->toDateTimeString()

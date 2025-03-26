@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\User;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -36,6 +37,8 @@ class TenantPanelProvider extends PanelProvider
             ->path('tenant')
             ->font('Space Grotesk')
             ->login()
+            ->authGuard('tenant')        
+            ->default()              
             ->favicon(asset(path: 'images/favicon.png'))
             ->brandLogo(fn() => view('filament.admin.logo'))
             ->darkModeBrandLogo(fn() => view('filament.admin.logo-darkmode'))
@@ -128,6 +131,7 @@ class TenantPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->authGuard('web');
     }
 }

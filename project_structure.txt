@@ -1,6 +1,8 @@
 === Estructura del Proyecto ===
 .
 ├── app
+│   ├── Actions
+│   │   └── Fortify
 │   ├── Console
 │   │   └── Kernel.php
 │   ├── Exceptions
@@ -60,87 +62,110 @@
 ├── build.sh
 ├── cannabica_db.sqlite
 ├── composer.lock
+├── dev.sh
+├── docker-compose.dev.yml
 ├── Dockerfile
-├── entrypoint.sh
 ├── generate_project_info.sh
 ├── package-lock.json
 ├── phpunit.xml
 ├── postcss.config.js
 ├── project_structure.txt
 ├── README.md
+├── setup_deploy.sh
 ├── tailwind.config.js
 └── vite.config.js
 
-20 directories, 50 files
+22 directories, 52 files
 
 
 
-=== Proveedor del Panel de Filament ===
-<?php
+=== Configuración de Docker ===
+Dockerfile encontrado:
+FROM php:8.3-fpm
 
-namespace App\Providers\Filament;
+# Set Environment Variables
+ENV DEBIAN_FRONTEND=noninteractive
 
-use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
-use Filament\Panel;
-use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
-use Filament\Widgets;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
+# Install system dependencies and extensions
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpq-dev \
+    libicu-dev \
+    libzip-dev \
+    unzip \
+    nginx \
+    && docker-php-ext-install pdo_pgsql intl \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install zip \
+    && rm -rf /var/lib/apt/lists/*
 
-class SuperadminPanelProvider extends PanelProvider
-{
-    public function panel(Panel $panel): Panel
-    {
-        return $panel
-            ->default()
-            ->id('superadmin')
-            ->path('superadmin')
-            ->login()
-            ->colors([
-                'primary' => Color::hex('#006400'),
-            ])
-            ->font(family: 'Nunito')
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([
-                Pages\Dashboard::class,
-            ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-            ])
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-            ]);
-    }
-}
+# Install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy nginx configuration
+COPY docker/nginx/default.conf /etc/nginx/sites-available/default
+
+# Copy composer files first
+COPY composer.json composer.lock ./
+
+# Install dependencies
+RUN composer install --no-scripts --no-autoloader
+
+# Copy application files
+COPY . .
+
+# Generate optimized autoload files and cache configuration
+RUN composer dump-autoload --optimize \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
+# Set up entrypoint script
+COPY docker/scripts/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Create storage directory and set permissions
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+# Configure PHP-FPM
+RUN echo "pm.max_children = 50" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "pm.start_servers = 5" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "pm.min_spare_servers = 5" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "pm.max_spare_servers = 35" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen = /var/run/php-fpm.sock" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.owner = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.group = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.mode = 0660" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Expose port
+EXPOSE 80
+
+# Start server using entrypoint script
+CMD ["/usr/local/bin/entrypoint.sh"]
 
 
 === Variables de Entorno Relevantes ===
 APP_NAME=Cannabica #OJO Acá que rompe la sesion si se cambia el app name
 APP_ENV=local
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=cannabica
+DB_USERNAME=cannabica
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
 
 
 
@@ -160,33 +185,66 @@ APP_ENV=local
 
 
 
+=== Configuración de PostgreSQL ===
+PostgreSQL está instalado
+psql (PostgreSQL) 14.17 (Ubuntu 14.17-0ubuntu0.22.04.1)
+
+
+
+=== Estado de Docker ===
+Docker está instalado
+Docker version 27.3.1, build ce12230
+Contenedores en ejecución:
+CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS                    PORTS                                               NAMES
+bab2d46e28ec   openindoor-app   "docker-php-entrypoi…"   27 minutes ago   Up 27 minutes (healthy)   9000/tcp, 0.0.0.0:8000->80/tcp, [::]:8000->80/tcp   openindoor-app-1
+4e7c3b1f7bba   postgres:15      "docker-entrypoint.s…"   27 minutes ago   Up 27 minutes (healthy)   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp           openindoor-db-1
+
+
+
 === Últimos 5 Commits ===
+e70c23d Merge pull request #148 from Cannabica/feature/front-funtionalities-onboarding
+bff2d55 feat(ui): mejorar diseño y responsividad del dashboard
+9335572 Merge pull request #147 from Cannabica/feature/add-filament-notifications
+40758d4 fix image upload, edit
 e42fc19 new actions state plants management
-758f52b add repeat last irrigation action
-65f3915 fix graph widgets
-3c6cad3 basic notifications functionality
-050e4cb product application reminder
 
 
 
 === Estado del Repositorio ===
-On branch feature/add-filament-notifications
-Your branch is ahead of 'origin/feature/add-filament-notifications' by 1 commit.
-  (use "git push" to publish your local commits)
+On branch develop
+Your branch is up to date with 'origin/develop'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   .github/workflows/main.yml
+	modified:   .gitignore
+	modified:   Dockerfile
+	modified:   cannabica_db.sqlite
+	new file:   database/seeders/SuperAdminSeeder.php
+	new file:   docker/nginx/default.conf
+	new file:   docker/scripts/entrypoint.sh
+	modified:   generate_project_info.sh
+	modified:   project_structure.txt
+	modified:   public/css/custom.css
+	new file:   setup_deploy.sh
 
 Changes not staged for commit:
   (use "git add/rm <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
-	modified:   app/Filament/Tenant/Resources/ActionsResource.php
-	modified:   app/Filament/Tenant/Resources/ActionsResource/Pages/EditActions.php
-	modified:   app/Models/Action.php
-	modified:   cannabica_db.sqlite
-	modified:   package-lock.json
+	modified:   Dockerfile
+	modified:   app/Http/Middleware/Authenticate.php
+	modified:   app/Providers/Filament/SuperadminPanelProvider.php
+	modified:   app/Providers/Filament/TenantPanelProvider.php
+	modified:   app/Providers/RouteServiceProvider.php
+	modified:   config/auth.php
+	modified:   database/seeders/SuperAdminSeeder.php
+	modified:   docker/nginx/default.conf
+	modified:   docker/scripts/entrypoint.sh
+	deleted:    entrypoint.sh
 	modified:   project_structure.txt
-	deleted:    storage/app/public/.gitignore
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-	app/Filament/Tenant/Resources/Actions/
+	dev.sh
+	docker-compose.dev.yml
 
-no changes added to commit (use "git add" and/or "git commit -a")

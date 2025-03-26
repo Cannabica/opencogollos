@@ -1,0 +1,250 @@
+=== Estructura del Proyecto ===
+.
+├── app
+│   ├── Actions
+│   │   └── Fortify
+│   ├── Console
+│   │   └── Kernel.php
+│   ├── Exceptions
+│   │   └── Handler.php
+│   ├── Filament
+│   │   ├── Pages
+│   │   ├── Resources
+│   │   └── Tenant
+│   ├── Http
+│   │   ├── Controllers
+│   │   ├── Middleware
+│   │   └── Kernel.php
+│   ├── Jobs
+│   │   └── SendDelayedProductNotification.php
+│   ├── Livewire
+│   │   └── ActionShortcuts.php
+│   ├── Models
+│   │   ├── Scopes
+│   │   ├── Action.php
+│   │   ├── ActionType.php
+│   │   ├── Batch.php
+│   │   ├── CropPlan.php
+│   │   ├── Indoor.php
+│   │   ├── Plant.php
+│   │   ├── PlantState.php
+│   │   ├── Seed.php
+│   │   ├── Tenant.php
+│   │   └── User.php
+│   ├── Notifications
+│   │   └── ProductApplicationReminder.php
+│   ├── Providers
+│   │   ├── Filament
+│   │   ├── AppServiceProvider.php
+│   │   ├── AuthServiceProvider.php
+│   │   ├── BroadcastServiceProvider.php
+│   │   ├── EventServiceProvider.php
+│   │   └── RouteServiceProvider.php
+│   └── Utilities
+│       └── PlantActions
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── broadcasting.php
+│   ├── cache.php
+│   ├── cors.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── hashing.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── sanctum.php
+│   ├── services.php
+│   ├── session.php
+│   └── view.php
+├── artisan
+├── build.sh
+├── cannabica_db.sqlite
+├── composer.lock
+├── dev.sh
+├── docker-compose.dev.yml
+├── Dockerfile
+├── generate_project_info.sh
+├── package-lock.json
+├── phpunit.xml
+├── postcss.config.js
+├── project_structure.txt
+├── README.md
+├── setup_deploy.sh
+├── tailwind.config.js
+└── vite.config.js
+
+22 directories, 52 files
+
+
+
+=== Configuración de Docker ===
+Dockerfile encontrado:
+FROM php:8.3-fpm
+
+# Set Environment Variables
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies and extensions
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpq-dev \
+    libicu-dev \
+    libzip-dev \
+    unzip \
+    nginx \
+    && docker-php-ext-install pdo_pgsql intl \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy nginx configuration
+COPY docker/nginx/default.conf /etc/nginx/sites-available/default
+
+# Copy composer files first
+COPY composer.json composer.lock ./
+
+# Install dependencies
+RUN composer install --no-scripts --no-autoloader
+
+# Copy application files
+COPY . .
+
+# Generate optimized autoload files and cache configuration
+RUN composer dump-autoload --optimize \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
+# Set up entrypoint script
+COPY docker/scripts/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Create storage directory and set permissions
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+# Configure PHP-FPM
+RUN echo "pm.max_children = 50" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "pm.start_servers = 5" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "pm.min_spare_servers = 5" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "pm.max_spare_servers = 35" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen = /var/run/php-fpm.sock" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.owner = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.group = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.mode = 0660" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Expose port
+EXPOSE 80
+
+# Start server using entrypoint script
+CMD ["/usr/local/bin/entrypoint.sh"]
+
+
+=== Variables de Entorno Relevantes ===
+APP_NAME=Cannabica #OJO Acá que rompe la sesion si se cambia el app name
+APP_ENV=local
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=cannabica
+DB_USERNAME=cannabica
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+
+
+=== Dependencias de Composer ===
+{
+  "php": "^8.3",
+  "codeat3/blade-phosphor-icons": "^2.2",
+  "filament/filament": "^3.2",
+  "filament/notifications": "^3.3",
+  "flowframe/laravel-trend": "^0.4.0",
+  "guzzlehttp/guzzle": "^7.2",
+  "laravel/framework": "^10.10",
+  "laravel/sanctum": "^3.3",
+  "laravel/tinker": "^2.8",
+  "leandrocfe/filament-apex-charts": "^3.1"
+}
+
+
+
+=== Configuración de PostgreSQL ===
+PostgreSQL está instalado
+psql (PostgreSQL) 14.17 (Ubuntu 14.17-0ubuntu0.22.04.1)
+
+
+
+=== Estado de Docker ===
+Docker está instalado
+Docker version 27.3.1, build ce12230
+Contenedores en ejecución:
+CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS                    PORTS                                               NAMES
+bab2d46e28ec   openindoor-app   "docker-php-entrypoi…"   27 minutes ago   Up 27 minutes (healthy)   9000/tcp, 0.0.0.0:8000->80/tcp, [::]:8000->80/tcp   openindoor-app-1
+4e7c3b1f7bba   postgres:15      "docker-entrypoint.s…"   27 minutes ago   Up 27 minutes (healthy)   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp           openindoor-db-1
+
+
+
+=== Últimos 5 Commits ===
+e70c23d Merge pull request #148 from Cannabica/feature/front-funtionalities-onboarding
+bff2d55 feat(ui): mejorar diseño y responsividad del dashboard
+9335572 Merge pull request #147 from Cannabica/feature/add-filament-notifications
+40758d4 fix image upload, edit
+e42fc19 new actions state plants management
+
+
+
+=== Estado del Repositorio ===
+On branch develop
+Your branch is up to date with 'origin/develop'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   .github/workflows/main.yml
+	modified:   .gitignore
+	modified:   Dockerfile
+	modified:   cannabica_db.sqlite
+	new file:   database/seeders/SuperAdminSeeder.php
+	new file:   docker/nginx/default.conf
+	new file:   docker/scripts/entrypoint.sh
+	modified:   generate_project_info.sh
+	modified:   project_structure.txt
+	modified:   public/css/custom.css
+	new file:   setup_deploy.sh
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Dockerfile
+	modified:   app/Http/Middleware/Authenticate.php
+	modified:   app/Providers/Filament/SuperadminPanelProvider.php
+	modified:   app/Providers/Filament/TenantPanelProvider.php
+	modified:   app/Providers/RouteServiceProvider.php
+	modified:   config/auth.php
+	modified:   database/seeders/SuperAdminSeeder.php
+	modified:   docker/nginx/default.conf
+	modified:   docker/scripts/entrypoint.sh
+	deleted:    entrypoint.sh
+	modified:   project_structure.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	dev.sh
+	docker-compose.dev.yml
+

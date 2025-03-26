@@ -54,6 +54,7 @@ class SuperadminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->authGuard('web');
     }
 }

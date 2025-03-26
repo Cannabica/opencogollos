@@ -323,6 +323,9 @@ input[type="radio"]:checked + label.fi-btn {
     border: 1px solid #ff9800;
     box-shadow: 0 2px 4px rgba(255, 152, 0, 0.1);
 }
+.dashboard-alert.warning div div img{
+    max-width: 100px;
+}
 
 /* Tema oscuro para el aviso de desarrollo */
 .dark .dashboard-alert.warning {

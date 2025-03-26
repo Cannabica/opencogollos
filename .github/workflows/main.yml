@@ -1,0 +1,173 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*', 'hotfix/*' ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  VPS_IP: ${{ secrets.VPS_IP }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  APP_KEY: ${{ secrets.APP_KEY }}
+  ADMIN_EMAIL: frankie@cannabica.app
+  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+  APP_ENV: production
+  APP_DEBUG: false
+  CACHE_DRIVER: file
+  SESSION_DRIVER: file
+  QUEUE_CONNECTION: sync
+  SEED_EXAMPLE_DATA: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Install Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Directory Permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Create Database
+        run: |
+          mkdir -p database
+          touch database/cannabica_db.sqlite
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Run Database Migrations
+        run: php artisan migrate --force
+
+  tag-version:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get version from composer.json
+        id: get_version
+        run: echo "version=$(php -r "echo json_decode(file_get_contents('composer.json'))->version;")" >> $GITHUB_OUTPUT
+
+      - name: Create tag based on branch
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            tag="v${{ steps.get_version.outputs.version }}"
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            tag="v${{ steps.get_version.outputs.version }}-beta"
+          elif [[ "${{ github.ref }}" =~ ^refs/heads/feature/ ]]; then
+            tag="v${{ steps.get_version.outputs.version }}-alpha"
+          elif [[ "${{ github.ref }}" =~ ^refs/heads/hotfix/ ]]; then
+            tag="v${{ steps.get_version.outputs.version }}-hotfix"
+          fi
+          
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "El tag $tag ya existe. No se realizará ninguna acción."
+          else
+            git tag $tag
+            git push origin $tag
+          fi
+
+  docker:
+    needs: [build, tag-version]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:${{ github.sha }}
+
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cannabica_deploy
+          chmod 600 ~/.ssh/cannabica_deploy
+          echo "Host ${{ env.VPS_IP }}
+            User ${{ env.VPS_USER }}
+            IdentityFile ~/.ssh/cannabica_deploy
+            StrictHostKeyChecking no" > ~/.ssh/config
+
+      - name: Generate Production Environment File
+        run: |
+          cp .env.example .env.production
+          sed -i "s|APP_ENV=.*|APP_ENV=${{ env.APP_ENV }}|g" .env.production
+          sed -i "s|APP_DEBUG=.*|APP_DEBUG=${{ env.APP_DEBUG }}|g" .env.production
+          sed -i "s|APP_KEY=.*|APP_KEY=${{ env.APP_KEY }}|g" .env.production
+          sed -i "s|DB_CONNECTION=.*|DB_CONNECTION=pgsql|g" .env.production
+          sed -i "s|DB_HOST=.*|DB_HOST=db|g" .env.production
+          sed -i "s|DB_PORT=.*|DB_PORT=5432|g" .env.production
+          sed -i "s|DB_DATABASE=.*|DB_DATABASE=cannabica|g" .env.production
+          sed -i "s|DB_USERNAME=.*|DB_USERNAME=cannabica|g" .env.production
+          sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|g" .env.production
+          sed -i "s|CACHE_DRIVER=.*|CACHE_DRIVER=${{ env.CACHE_DRIVER }}|g" .env.production
+          sed -i "s|SESSION_DRIVER=.*|SESSION_DRIVER=${{ env.SESSION_DRIVER }}|g" .env.production
+          sed -i "s|QUEUE_CONNECTION=.*|QUEUE_CONNECTION=${{ env.QUEUE_CONNECTION }}|g" .env.production
+          echo "ADMIN_EMAIL=${{ env.ADMIN_EMAIL }}" >> .env.production
+          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env.production
+          echo "SEED_EXAMPLE_DATA=${{ env.SEED_EXAMPLE_DATA }}" >> .env.production
+
+      - name: Copy Environment File to Server
+        run: |
+          scp .env.production ${{ env.VPS_USER }}@${{ env.VPS_IP }}:/var/www/cannabica/.env
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ env.VPS_USER }}@${{ env.VPS_IP }} "cd /var/www/cannabica && \
+          DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} \
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+          docker-compose pull && \
+          docker-compose up -d"

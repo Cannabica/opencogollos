@@ -1,66 +1,170 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Cannabica Indoor SaaS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de gestión para cultivos indoor basado en Laravel y Filament.
 
-## About Laravel
+## Requisitos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3 o superior
+- Composer
+- Node.js 18 o superior
+- SQLite3
+- Docker (opcional)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Instalación Local
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Clonar el repositorio:
+```bash
+git clone <repository-url>
+cd indoor-saas
+```
 
-## Learning Laravel
+2. Instalar dependencias:
+```bash
+composer install
+npm install
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+3. Configurar el entorno:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+4. Configurar la base de datos SQLite:
+```bash
+# En el archivo .env
+DB_CONNECTION=sqlite
+DB_DATABASE=../database/cannabica_db.sqlite
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Crear el archivo de base de datos
+touch database/cannabica_db.sqlite
+```
 
-## Laravel Sponsors
+5. Ejecutar migraciones y seeders:
+```bash
+php artisan migrate --seed
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+6. Compilar assets:
+```bash
+npm run build
+```
 
-### Premium Partners
+7. Iniciar el servidor:
+```bash
+php artisan serve
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Instalación con Docker
 
-## Contributing
+### Método Automatizado (Recomendado)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+El proyecto incluye un script `build.sh` que automatiza el proceso de construcción:
 
-## Code of Conduct
+```bash
+# Dar permisos de ejecución al script
+chmod +x build.sh
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Ejecutar el script de construcción
+./build.sh
+```
 
-## Security Vulnerabilities
+El script realiza las siguientes acciones:
+1. Crea un contenedor temporal para instalar dependencias de Composer
+2. Crea un contenedor temporal para instalar dependencias NPM y construir assets
+3. Construye la imagen final del proyecto
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Ejecutar el Contenedor (Desarrollo Local)
 
-## License
+```bash
+docker run --rm -d --name cannabica-app \
+    -v $(pwd)/cannabica_db.sqlite:/var/www/database/cannabica_db.sqlite \
+    -v $(pwd)/.env:/var/www/.env \
+    -p 8000:8088 cannabica-app
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Este comando:
+- Monta la base de datos SQLite local
+- Monta el archivo .env para configuración
+- Mapea el puerto 8000 local al 8088 del contenedor
+- Ejecuta en modo detached (-d)
+
+### Detalles del Contenedor
+
+El contenedor utiliza un script `entrypoint.sh` que:
+1. Espera 2 segundos para asegurar que todos los servicios estén listos
+2. Ejecuta las migraciones y seeders de la base de datos
+3. Inicia el servidor Laravel en el puerto 8088
+
+## CI/CD Pipeline
+
+El proyecto utiliza GitHub Actions para la integración y despliegue continuo. El pipeline se activa en:
+
+- Push a `main`, `develop`, `feature/*`, y `hotfix/*`
+- Pull requests a `main` y `develop`
+
+### Etapas del Pipeline
+
+1. **Build**
+   - Configuración de PHP 8.3 y extensiones
+   - Instalación de dependencias
+   - Configuración del entorno
+   - Construcción de assets frontend
+   - Migraciones de base de datos
+
+2. **Versionado**
+   - Genera tags automáticos basados en la rama:
+     - `main` → `vX.Y.Z`
+     - `develop` → `vX.Y.Z-beta`
+     - `feature/*` → `vX.Y.Z-alpha`
+     - `hotfix/*` → `vX.Y.Z-hotfix`
+
+3. **Docker**
+   - Se ejecuta solo en push a `main` o `develop`
+   - Construye y publica la imagen en Docker Hub
+   - Tags: `latest` y SHA del commit
+
+## Credenciales de Prueba
+
+### Panel de Superadmin
+- URL: `/superadmin`
+- Email: test@example.com
+- Password: password
+
+### Panel de Tenant
+- URL: `/tenant`
+- Email: user@tenant.com
+- Password: password
+
+## Comandos Útiles
+
+### Base de Datos
+```bash
+# Recrear base de datos y seedear
+php artisan migrate:fresh --seed
+
+# Ejecutar migraciones y seeders por separado
+php artisan migrate:fresh
+php artisan db:seed
+
+# Ejecutar un seeder específico
+php artisan db:seed --class=NombreDelSeeder
+```
+
+## Salud del Sistema
+
+El contenedor Docker incluye un health check que verifica el estado del servicio cada 30 segundos en:
+```
+http://localhost:8088/health
+```
+
+### Monitoreo del Contenedor
+```bash
+# Ver logs del contenedor
+docker logs cannabica-app
+
+# Ver estado del contenedor
+docker ps -a | grep cannabica-app
+
+# Entrar al contenedor
+docker exec -it cannabica-app bash

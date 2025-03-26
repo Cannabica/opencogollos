@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=cannabica
+      - DB_USERNAME=cannabica
+      - DB_PASSWORD=cannabica_dev
+      - ADMIN_EMAIL=REDACTADO
+      - ADMIN_PASSWORD=admin123
+      - SEED_EXAMPLE_DATA=false
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    command: bash -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && /usr/local/bin/entrypoint.sh"
+
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=cannabica
+      - POSTGRES_USER=cannabica
+      - POSTGRES_PASSWORD=cannabica_dev
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cannabica"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data_dev: 

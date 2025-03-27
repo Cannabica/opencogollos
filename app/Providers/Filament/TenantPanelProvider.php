@@ -37,7 +37,7 @@ class TenantPanelProvider extends PanelProvider
             ->path('tenant')
             ->font('Space Grotesk')
             ->login()
-            ->authGuard('tenant')        
+            ->authGuard('web')        
             ->default()              
             ->favicon(asset(path: 'images/favicon.png'))
             ->brandLogo(fn() => view('filament.admin.logo'))

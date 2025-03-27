@@ -46,7 +46,7 @@ class PlantSeeder extends Seeder
 
             $this->command->info("Indoors disponibles: " . $indoors->pluck('name')->implode(', '));
 
-            $capacidades = ['N10', 'N12', 'N14', '3L', '5L', '7L', '10L', '12L', '15L', '20L', '30L', '40L', '50L', '75L'];
+            $capacidades = [3, 5, 7, 10, 12, 15, 20, 30, 40, 50, 75];
             $macetas = ['Geotextiles', 'Plásticas', 'Bolsones'];
             $etapas = ['Etapa de Germinación', 'Etapa de Plantula', 'Etapa Vegetativa', 'Etapa Floracion'];
             $adjetivos = [

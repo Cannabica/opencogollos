@@ -1,0 +1,108 @@
+name: Production Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '!*-staging'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Deploy to production
+        env:
+          DOCKER_HOST: ${{ secrets.PROD_DOCKER_HOST }}
+          DOCKER_TLS_VERIFY: 1
+          DOCKER_CERT_PATH: ${{ secrets.PROD_DOCKER_CERT_PATH }}
+          DOCKER_COMPOSE_TLS_VERSION: TLSv1_2
+          PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_APP_DIR: ${{ secrets.PROD_APP_DIR }}
+          PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          PROD_DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          PROD_DB_USER: ${{ secrets.PROD_DB_USER }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_APP_ENV: production
+          PROD_APP_DEBUG: false
+          PROD_APP_URL: ${{ secrets.PROD_APP_URL }}
+          PROD_APP_KEY: ${{ secrets.PROD_APP_KEY }}
+          PROD_MAIL_HOST: ${{ secrets.PROD_MAIL_HOST }}
+          PROD_MAIL_PORT: ${{ secrets.PROD_MAIL_PORT }}
+          PROD_MAIL_USERNAME: ${{ secrets.PROD_MAIL_USERNAME }}
+          PROD_MAIL_PASSWORD: ${{ secrets.PROD_MAIL_PASSWORD }}
+          PROD_MAIL_ENCRYPTION: ${{ secrets.PROD_MAIL_ENCRYPTION }}
+          PROD_MAIL_FROM_ADDRESS: ${{ secrets.PROD_MAIL_FROM_ADDRESS }}
+          PROD_MAIL_FROM_NAME: ${{ secrets.PROD_MAIL_FROM_NAME }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Función para enviar mensajes a Telegram
+          send_telegram_message() {
+            local message="$1"
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -H "Content-Type: application/json" \
+              -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"${message}\", \"parse_mode\": \"HTML\"}" > /dev/null
+          }
+          
+          # Guardar la versión anterior para rollback
+          PREVIOUS_VERSION=$(ssh -i <(echo "$PROD_SSH_KEY") -o StrictHostKeyChecking=no $PROD_SSH_USER@$PROD_SSH_HOST "cd $PROD_APP_DIR && docker-compose -f docker-compose.prod.yml config | grep image | awk '{print \$2}'")
+          
+          # Notificar inicio de despliegue
+          send_telegram_message "🚀 <b>Iniciando despliegue a producción</b>\nVersión: <code>${{ github.ref_name }}</code>"
+          
+          # Desplegar nueva versión
+          ssh -i <(echo "$PROD_SSH_KEY") -o StrictHostKeyChecking=no $PROD_SSH_USER@$PROD_SSH_HOST "cd $PROD_APP_DIR && \
+            docker-compose -f docker-compose.prod.yml pull && \
+            docker-compose -f docker-compose.prod.yml up -d --force-recreate"
+          
+          # Esperar a que los contenedores estén listos
+          sleep 30
+          
+          # Health check
+          HEALTH_CHECK_URL="$PROD_APP_URL/health"
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -f "$HEALTH_CHECK_URL"; then
+              echo "Health check passed"
+              # Notificar despliegue exitoso
+              send_telegram_message "✅ <b>Despliegue a producción completado</b>\nVersión: <code>${{ github.ref_name }}</code>"
+              exit 0
+            fi
+            echo "Health check failed, retrying in 10 seconds..."
+            sleep 10
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          done
+          
+          # Si llegamos aquí, el health check falló
+          echo "Health check failed after $MAX_RETRIES attempts"
+          
+          # Notificar fallo
+          send_telegram_message "❌ <b>Fallo en el despliegue a producción</b>\nVersión: <code>${{ github.ref_name }}</code>\nIniciando rollback..."
+          
+          # Rollback
+          echo "Initiating rollback to version $PREVIOUS_VERSION"
+          ssh -i <(echo "$PROD_SSH_KEY") -o StrictHostKeyChecking=no $PROD_SSH_USER@$PROD_SSH_HOST "cd $PROD_APP_DIR && \
+            docker-compose -f docker-compose.prod.yml down && \
+            docker tag $PREVIOUS_VERSION openindoor:latest && \
+            docker-compose -f docker-compose.prod.yml up -d"
+          
+          # Notificar rollback completado
+          send_telegram_message "🔄 <b>Rollback completado</b>\nVersión anterior: <code>$PREVIOUS_VERSION</code>"
+          
+          exit 1 

@@ -1,0 +1,184 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:latest
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Production VPS
+        env:
+          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:latest
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          # Crear archivo .env.production en el servidor
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} '
+            # Crear directorio si no existe
+            mkdir -p ${DEPLOY_PATH}
+
+            # Crear archivo .env.production
+            cat > ${DEPLOY_PATH}/.env.production << EOL
+            APP_NAME=Cannabica
+            APP_ENV=production
+            APP_KEY=${APP_KEY}
+            APP_DEBUG=false
+            APP_URL=${{ secrets.APP_URL }}
+
+            LOG_CHANNEL=stack
+            LOG_DEPRECATIONS_CHANNEL=null
+            LOG_LEVEL=error
+
+            DB_CONNECTION=pgsql
+            DB_HOST=db
+            DB_PORT=5432
+            DB_DATABASE=${{ secrets.DB_DATABASE }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${DB_PASSWORD}
+
+            BROADCAST_DRIVER=log
+            CACHE_DRIVER=file
+            FILESYSTEM_DISK=local
+            QUEUE_CONNECTION=sync
+            SESSION_DRIVER=file
+            SESSION_LIFETIME=120
+
+            MEMCACHED_HOST=127.0.0.1
+
+            REDIS_HOST=127.0.0.1
+            REDIS_PASSWORD=null
+            REDIS_PORT=6379
+
+            MAIL_MAILER=smtp
+            MAIL_HOST=${{ secrets.MAIL_HOST }}
+            MAIL_PORT=${{ secrets.MAIL_PORT }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            MAIL_ENCRYPTION=${{ secrets.MAIL_ENCRYPTION }}
+            MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
+            MAIL_FROM_NAME="\${APP_NAME}"
+
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION=${{ secrets.AWS_DEFAULT_REGION }}
+            AWS_BUCKET=${{ secrets.AWS_BUCKET }}
+            AWS_USE_PATH_STYLE_ENDPOINT=false
+
+            PUSHER_APP_ID=${{ secrets.PUSHER_APP_ID }}
+            PUSHER_APP_KEY=${{ secrets.PUSHER_APP_KEY }}
+            PUSHER_APP_SECRET=${{ secrets.PUSHER_APP_SECRET }}
+            PUSHER_HOST=${{ secrets.PUSHER_HOST }}
+            PUSHER_PORT=${{ secrets.PUSHER_PORT }}
+            PUSHER_SCHEME=${{ secrets.PUSHER_SCHEME }}
+            PUSHER_APP_CLUSTER=${{ secrets.PUSHER_APP_CLUSTER }}
+
+            VITE_APP_NAME="\${APP_NAME}"
+            VITE_PUSHER_APP_KEY="\${PUSHER_APP_KEY}"
+            VITE_PUSHER_HOST="\${PUSHER_HOST}"
+            VITE_PUSHER_PORT="\${PUSHER_PORT}"
+            VITE_PUSHER_SCHEME="\${PUSHER_SCHEME}"
+            VITE_PUSHER_APP_CLUSTER="\${PUSHER_APP_CLUSTER}"
+
+            # Variables específicas de la aplicación
+            ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+            ADMIN_PASSWORD=${ADMIN_PASSWORD}
+            SEED_EXAMPLE_DATA=false
+            EOL
+
+            # Crear docker-compose.prod.yml
+            cat > ${DEPLOY_PATH}/docker-compose.prod.yml << EOL
+            version: "3.8"
+
+            services:
+              app:
+                image: ${DOCKER_IMAGE}
+                ports:
+                  - "${{ secrets.APP_PORT }}:80"
+                environment:
+                  - APP_ENV=production
+                  - APP_DEBUG=false
+                  - DB_CONNECTION=pgsql
+                  - DB_HOST=db
+                  - DB_PORT=5432
+                  - DB_DATABASE=${{ secrets.DB_DATABASE }}
+                  - DB_USERNAME=${{ secrets.DB_USERNAME }}
+                  - DB_PASSWORD=${DB_PASSWORD}
+                  - ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+                  - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+                  - SEED_EXAMPLE_DATA=false
+                depends_on:
+                  db:
+                    condition: service_healthy
+                command: bash -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && /usr/local/bin/entrypoint.sh"
+                restart: unless-stopped
+                networks:
+                  - app_network
+
+              db:
+                image: postgres:15
+                environment:
+                  - POSTGRES_DB=${{ secrets.DB_DATABASE }}
+                  - POSTGRES_USER=${{ secrets.DB_USERNAME }}
+                  - POSTGRES_PASSWORD=${DB_PASSWORD}
+                volumes:
+                  - postgres_data_prod:/var/lib/postgresql/data
+                healthcheck:
+                  test: ["CMD-SHELL", "pg_isready -U ${{ secrets.DB_USERNAME }}"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 5
+                restart: unless-stopped
+                networks:
+                  - app_network
+
+            volumes:
+              postgres_data_prod:
+
+            networks:
+              app_network:
+                driver: bridge
+            EOL
+
+            # Ejecutar despliegue
+            cd ${DEPLOY_PATH} && \
+            docker-compose -f docker-compose.prod.yml pull && \
+            docker-compose -f docker-compose.prod.yml up -d && \
+            docker system prune -f
+          '
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key 

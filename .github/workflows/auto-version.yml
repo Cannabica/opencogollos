@@ -1,0 +1,86 @@
+name: Auto Version and Downmerge
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest version
+        id: get_version
+        run: |
+          # Obtener el último tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          
+          # Extraer componentes
+          if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(-.*)?$ ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            PRERELEASE="${BASH_REMATCH[4]}"
+          fi
+          
+          # Incrementar el patch version
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}-staging"
+          
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions@github.com'
+          git tag ${{ steps.get_version.outputs.NEW_VERSION }}
+          git push origin ${{ steps.get_version.outputs.NEW_VERSION }}
+
+  downmerge:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest version
+        id: get_version
+        run: |
+          # Obtener el último tag de staging
+          LATEST_STAGING=$(git tag --sort=-v:refname | grep -m 1 "staging$" || echo "v0.0.0-staging")
+          
+          # Extraer la versión base (sin -staging)
+          BASE_VERSION=${LATEST_STAGING%-staging}
+          
+          # Crear nuevo tag para producción
+          NEW_VERSION="${BASE_VERSION}"
+          
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions@github.com'
+          git tag ${{ steps.get_version.outputs.NEW_VERSION }}
+          git push origin ${{ steps.get_version.outputs.NEW_VERSION }}
+
+      - name: Downmerge to develop
+        run: |
+          git checkout develop
+          git merge main --no-edit
+          git push origin develop 

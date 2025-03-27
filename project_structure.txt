@@ -196,17 +196,17 @@ Docker está instalado
 Docker version 27.3.1, build ce12230
 Contenedores en ejecución:
 CONTAINER ID   IMAGE            COMMAND                  CREATED          STATUS                    PORTS                                               NAMES
-bab2d46e28ec   openindoor-app   "docker-php-entrypoi…"   27 minutes ago   Up 27 minutes (healthy)   9000/tcp, 0.0.0.0:8000->80/tcp, [::]:8000->80/tcp   openindoor-app-1
-4e7c3b1f7bba   postgres:15      "docker-entrypoint.s…"   27 minutes ago   Up 27 minutes (healthy)   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp           openindoor-db-1
+68400a0e6ffd   openindoor-app   "docker-php-entrypoi…"   11 minutes ago   Up 10 minutes (healthy)   9000/tcp, 0.0.0.0:8000->80/tcp, [::]:8000->80/tcp   openindoor-app-1
+5d1b22473a91   postgres:15      "docker-entrypoint.s…"   11 minutes ago   Up 10 minutes (healthy)   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp           openindoor-db-1
 
 
 
 === Últimos 5 Commits ===
+315a439 prueba deploy
 e70c23d Merge pull request #148 from Cannabica/feature/front-funtionalities-onboarding
 bff2d55 feat(ui): mejorar diseño y responsividad del dashboard
 9335572 Merge pull request #147 from Cannabica/feature/add-filament-notifications
 40758d4 fix image upload, edit
-e42fc19 new actions state plants management
 
 
 
@@ -214,37 +214,11 @@ e42fc19 new actions state plants management
 On branch develop
 Your branch is up to date with 'origin/develop'.
 
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-	modified:   .github/workflows/main.yml
-	modified:   .gitignore
-	modified:   Dockerfile
-	modified:   cannabica_db.sqlite
-	new file:   database/seeders/SuperAdminSeeder.php
-	new file:   docker/nginx/default.conf
-	new file:   docker/scripts/entrypoint.sh
-	modified:   generate_project_info.sh
-	modified:   project_structure.txt
-	modified:   public/css/custom.css
-	new file:   setup_deploy.sh
-
 Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
+  (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
-	modified:   Dockerfile
-	modified:   app/Http/Middleware/Authenticate.php
-	modified:   app/Providers/Filament/SuperadminPanelProvider.php
 	modified:   app/Providers/Filament/TenantPanelProvider.php
-	modified:   app/Providers/RouteServiceProvider.php
-	modified:   config/auth.php
-	modified:   database/seeders/SuperAdminSeeder.php
 	modified:   docker/nginx/default.conf
-	modified:   docker/scripts/entrypoint.sh
-	deleted:    entrypoint.sh
 	modified:   project_structure.txt
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	dev.sh
-	docker-compose.dev.yml
-
+no changes added to commit (use "git add" and/or "git commit -a")

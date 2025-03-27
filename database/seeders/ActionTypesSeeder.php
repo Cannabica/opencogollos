@@ -32,7 +32,7 @@ class ActionTypesSeeder extends Seeder
         ];
         
         foreach ($actionsTypes as $type) {
-            DB::table(table: 'action_types')->insert([
+            DB::table(table: 'action_types')->insert([ 
                 'name' => $type['name'],
                 'action_class' => $type['action_class'],
                 'created_at' => now(),

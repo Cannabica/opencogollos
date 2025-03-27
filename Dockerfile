@@ -23,9 +23,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy nginx configuration
-COPY docker/nginx/default.conf /etc/nginx/sites-available/default
-
 # Copy composer files first
 COPY composer.json composer.lock ./
 

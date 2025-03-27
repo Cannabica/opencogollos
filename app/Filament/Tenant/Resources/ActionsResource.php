@@ -263,9 +263,9 @@ class ActionsResource extends Resource
                                 Select::make('data.product_application.reminder_time')
                                     ->label('Recordatorio adicional')
                                     ->options([
-                                        '5s' => 'En 5 segundos',
-                                        '1m' => 'En 1 minuto',
-                                        '1d' => 'En 1 día'
+                                        '1d' => 'En 1 día',
+                                        '7d' => 'En 7 días',
+                                        '14d' => 'En 14 días'
                                     ])
                                     ->default('none'),
                                 Textarea::make('data.product_application.observation')
@@ -473,9 +473,9 @@ class ActionsResource extends Resource
             ) {
 
                 $delay = match ($action->data['product_application']['reminder_time']) {
-                    '5s' => 5,
-                    '1m' => 60,
                     '1d' => 86400,
+                    '7d' => 604800,
+                    '14d' => 1209600,
                     default => 0
                 };
 

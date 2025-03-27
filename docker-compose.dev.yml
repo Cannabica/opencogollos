@@ -18,7 +18,7 @@ services:
       - DB_PASSWORD=cannabica_dev
       - ADMIN_EMAIL=REDACTADO
       - ADMIN_PASSWORD=admin123
-      - SEED_EXAMPLE_DATA=false
+      - SEED_EXAMPLE_DATA=true
     volumes:
       - .:/var/www/html
       - /var/www/html/vendor
@@ -29,17 +29,19 @@ services:
     command: bash -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && /usr/local/bin/entrypoint.sh"
 
   db:
-    image: postgres:15
+    build:
+      context: .
+      dockerfile: docker/db/Dockerfile
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=cannabica
-      - POSTGRES_USER=cannabica
-      - POSTGRES_PASSWORD=cannabica_dev
+      - DB_DATABASE=cannabica
+      - DB_USERNAME=cannabica
+      - DB_PASSWORD=cannabica_dev
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cannabica"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-cannabica}"]
       interval: 10s
       timeout: 5s
       retries: 5

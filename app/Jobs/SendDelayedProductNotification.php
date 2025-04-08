@@ -22,7 +22,8 @@ class SendDelayedProductNotification implements ShouldQueue
         protected string $applicationType,
         protected int $plantsCount,
         protected int $tenantId,
-        protected ?int $actionId = null
+        protected ?int $actionId = null,
+        protected ?int $notificationId = null
     ) {
         Log::info('SendDelayedProductNotification constructor', [
             'applicationType' => $this->applicationType,
@@ -56,7 +57,6 @@ class SendDelayedProductNotification implements ShouldQueue
                 $this->plantsCount
             ));
 
-            // Enviar notificación de Filament para la campana
             FilamentNotification::make()
                 ->success()
                 ->title('Recordatorio de aplicación pendiente')
@@ -67,16 +67,30 @@ class SendDelayedProductNotification implements ShouldQueue
                         ->label('Posponer 24h')
                         ->button()
                         ->color('gray')
-                        ->url(
-                            "/tenant/actions/postpone-notification?" . http_build_query([
-                                'type' => $this->applicationType,
-                                'count' => $this->plantsCount,
-                                'tenant' => $this->tenantId,
-                                'action' => $this->actionId
-                            ]),
-                            shouldOpenInNewTab: false
-                        )
-                        ->close(),
+                        ->action(function () {
+                            if ($this->notificationId) {
+                                Livewire::dispatch('markNotificationAsRead', ['id' => $this->notificationId]);
+                            }
+                            if (empty($this->applicationType) || empty($this->plantsCount) ||
+                                empty($this->tenantId) || empty($this->actionId)) {
+                                Log::error('Missing required notification parameters', [
+                                    'applicationType' => $this->applicationType,
+                                    'plantsCount' => $this->plantsCount,
+                                    'tenantId' => $this->tenantId,
+                                    'actionId' => $this->actionId
+                                ]);
+                                return '#';
+                            }
+
+                            return redirect()->route('actions.postpone-notification', [
+                                'type' => (string)$this->applicationType,
+                                'count' => (int)$this->plantsCount,
+                                'tenant' => (int)$this->tenantId,
+                                'action' => (int)$this->actionId
+                            ]);
+                        })
+                        ->close()
+                        ->extraAttributes([]),
                     Action::make('goToAction')
                         ->label('Aplicación que generó el recordatorio')
                         ->button()
@@ -94,12 +108,14 @@ class SendDelayedProductNotification implements ShouldQueue
 
 class NotificationHandler extends Component
 {
-    public function postponeNotification($applicationType, $plantsCount, $tenantId): void
+    public function postponeNotification($applicationType, $plantsCount, $tenantId, $notificationId = null): void
     {
         dispatch(new SendDelayedProductNotification(
             $applicationType,
             $plantsCount,
-            $tenantId
+            $tenantId,
+            null,
+            $notificationId
         ))->delay(now()->addSeconds(10));
     }
 }

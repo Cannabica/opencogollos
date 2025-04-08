@@ -2,18 +2,21 @@
 
 namespace App\Filament\Tenant\Widgets;
 
-use Filament\Widgets\Widget;
+use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Contracts\View\View;
+use Filament\Widgets\Concerns\CanPoll;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
-class ProductNotificationsWidget extends Widget
+class ProductNotificationsWidget extends Component
 {
+    use CanPoll, InteractsWithPageFilters;
+    
     protected static string $view = 'filament.tenant.widgets.product-notifications-widget';
-
     protected int | string | array $columnSpan = 'full';
 
     public Collection $notifications;
@@ -87,16 +90,17 @@ class ProductNotificationsWidget extends Widget
         }
     }
 
-    public function markAsRead($notificationId): void
+    #[Livewire\Attributes\On('markNotificationAsRead')]
+    public function handleMarkAsRead($id): void
     {
-        Log::info('ProductNotificationsWidget markAsRead', [
-            'notificationId' => $notificationId
+        Log::info('ProductNotificationsWidget handleMarkAsRead', [
+            'notificationId' => $id
         ]);
 
         try {
             $notification = Auth::user()
                 ->notifications()
-                ->find($notificationId);
+                ->find($id);
 
             if ($notification) {
                 $notification->markAsRead();
@@ -109,8 +113,8 @@ class ProductNotificationsWidget extends Widget
                 $this->loadNotifications();
                 $this->emit('notificationMarkedAsRead');
             } else {
-                Log::warning('ProductNotificationsWidget markAsRead - Notification not found', [
-                    'notificationId' => $notificationId
+                Log::warning('ProductNotificationsWidget handleMarkAsRead - Notification not found', [
+                    'notificationId' => $id
                 ]);
             }
         } catch (\Exception $e) {

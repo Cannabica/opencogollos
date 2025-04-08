@@ -1,7 +1,11 @@
 FROM php:8.3-fpm
 
 # Set Environment Variables
+ARG HOST_UID=1000
+ARG HOST_GID=1000
 ENV DEBIAN_FRONTEND=noninteractive
+ENV APP_USER_ID=${HOST_UID}
+ENV APP_GROUP_ID=${HOST_GID}
 
 # Install system dependencies and extensions
 RUN apt-get update && apt-get install -y \
@@ -12,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
     nginx \
+    procps \
     && docker-php-ext-install pdo_pgsql intl \
     && docker-php-ext-configure zip \
     && docker-php-ext-install zip \
@@ -42,21 +47,18 @@ RUN composer dump-autoload --optimize \
 COPY docker/scripts/entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Create storage directory and set permissions
-RUN mkdir -p storage/framework/{sessions,views,cache} \
+# Create storage directories and set permissions
+RUN groupadd -g ${HOST_GID} appuser || true && \
+    useradd -u ${HOST_UID} -g ${HOST_GID} -d /home/appuser -m appuser || true && \
+    mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && mkdir -p /var/log/php-fpm \
+    && touch /var/log/php-fpm/error.log \
+    && chown -R ${HOST_UID}:${HOST_GID} storage /var/log/php-fpm \
+    && find storage -type d -exec chmod 775 {} \; \
+    && find storage -type f -exec chmod 664 {} \; \
+    && chmod -R 755 /var/log/php-fpm
 
-# Configure PHP-FPM
-RUN echo "pm.max_children = 50" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo "pm.start_servers = 5" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo "pm.min_spare_servers = 5" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo "pm.max_spare_servers = 35" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo "listen = /var/run/php-fpm.sock" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo "listen.owner = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo "listen.group = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
-    && echo "listen.mode = 0660" >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \

@@ -13,6 +13,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class ExampleDataSeeder extends Seeder
 {
@@ -65,6 +66,7 @@ class ExampleDataSeeder extends Seeder
         'Compost'
     ];
 
+
     private function createTenantSpecificSeed($tenantId): Seed
     {
         return Seed::create([
@@ -108,34 +110,62 @@ class ExampleDataSeeder extends Seeder
             ]
         ];
 
-        foreach ($tenantConfigs as $index => $config) {
-            // Crear tenant
-            $tenant = Tenant::withoutGlobalScope(TenantScope::class)->create([
-                'id' => $index + 1,
-                'name' => $config['name'],
-                'email' => $config['email'],
-                'active' => 1,
-            ]);
+        foreach ($tenantConfigs as $config) {
+            // Verificar si el tenant ya existe
+            $tenant = Tenant::withoutGlobalScope(TenantScope::class)
+                ->whereRaw('LOWER(email) = ?', [strtolower($config['email'])])
+                ->first();
 
             if (!$tenant) {
-                $this->command->error("Error al crear el tenant {$config['name']}");
-                continue;
-            }
-            $this->command->info("Tenant creado: " . $tenant->name);
+                
+                // Crear tenant con el siguiente ID disponible
+                $tenant = Tenant::withoutGlobalScope(TenantScope::class)->create([
+                    'name' => $config['name'],
+                    'email' => $config['email'],
+                    'active' => 1,
+                ]);
 
-            // Crear usuario
-            $user = User::withoutGlobalScope(TenantScope::class)->create([
-                'name' => $config['user_name'],
-                'email' => $config['user_email'],
-                'tenant_id' => $tenant->id,
-                'password' => Hash::make('password'),
-            ]);
+                if (!$tenant) {
+                    $this->command->error("Error al crear el tenant {$config['name']}");
+                    continue;
+                }
+                $this->command->info("Tenant creado: " . $tenant->name . " con ID: " . $tenant->id);
+            } else {
+                $this->command->info("Tenant existente encontrado: " . $tenant->name);
+            }
+
+            // Verificar si el usuario ya existe
+            $user = User::withoutGlobalScope(TenantScope::class)
+                ->where('email', $config['user_email'])
+                ->first();
 
             if (!$user) {
-                $this->command->error("Error al crear el usuario para {$config['name']}");
+                // Crear usuario solo si no existe
+                $user = User::withoutGlobalScope(TenantScope::class)->create([
+                    'name' => $config['user_name'],
+                    'email' => $config['user_email'],
+                    'tenant_id' => $tenant->id,
+                    'password' => Hash::make('password'),
+                ]);
+
+                if (!$user) {
+                    $this->command->error("Error al crear el usuario para {$config['name']}");
+                    continue;
+                }
+                $this->command->info("Usuario creado: " . $user->name);
+            } else {
+                $this->command->info("Usuario existente encontrado: " . $user->name);
+            }
+
+            // Verificar si ya existen indoors para este tenant
+            $existingIndoors = Indoor::withoutGlobalScope(TenantScope::class)
+                ->where('tenant_id', $tenant->id)
+                ->count();
+
+            if ($existingIndoors > 0) {
+                $this->command->info("Ya existen indoors para el tenant {$tenant->name}, saltando creación de indoors...");
                 continue;
             }
-            $this->command->info("Usuario creado: " . $user->name);
 
             // Crear indoors con configuraciones aleatorias
             $numIndoors = rand(2, 5);

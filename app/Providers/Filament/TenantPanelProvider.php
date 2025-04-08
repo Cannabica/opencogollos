@@ -24,6 +24,7 @@ use App\Models\Tenant as T;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Navigation\MenuItem;
+use App\Filament\Tenant\Widgets\ProductNotificationsWidget;
 
 class TenantPanelProvider extends PanelProvider
 {

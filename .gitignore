@@ -19,3 +19,6 @@ yarn-error.log
 /.vscode
 *.sqlite
 *.sqlite-journal
+.env.local
+default.local.conf
+

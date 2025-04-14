@@ -49,6 +49,7 @@ class TenantPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/tenant/theme.css')
             ->pages([
                 Dashboard::class,
+                \App\Filament\Tenant\Pages\TenantPage::class,
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('10s')

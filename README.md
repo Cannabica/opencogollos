@@ -240,6 +240,22 @@ docker exec -it cannabica-app bash
 ```
 
 
+```
+'name' => 'Tenant Example',
+'email' => 'tenant@example.com',
+'user_name' => 'User Tenant',
+'user_email' => 'user@tenant.com',
+'name' => 'Green Gardens Co.',
+'email' => 'admin@greengardens.com',
+'user_name' => 'Green Gardens Manager',
+'user_email' => 'manager@greengardens.com',
+'name' => 'Urban Cultivators',
+'email' => 'contact@urbancultivators.com',
+'user_name' => 'Urban Cultivator Admin',
+'user_email' => 'admin@urbancultivators.com',
+```            
+
+
 - [Cafecito](https://cafecito.app/cannabica_app)
 
 - [Cannabica.ar](https://cannabica.ar)	

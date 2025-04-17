@@ -239,6 +239,7 @@ docker ps -a | grep cannabica-app
 docker exec -it cannabica-app bash
 ```
 
+jwt-auth secret [bfbqLGNbMZdpatfqj2FK6LlXuxYCU5qJekwD9NE4hfszY9BHyPD8lxxXb7hU5y1n] set successfully.
 
 ```
 'name' => 'Tenant Example',

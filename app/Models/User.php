@@ -13,9 +13,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Filament\Panel;
 
-class User extends Authenticatable implements FilamentUser, HasTenants
+use Tymon\JWTAuth\Contracts\JWTSubject;
+
+class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 
     public function canAccessTenant(Model $tenant): bool
     {

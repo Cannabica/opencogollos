@@ -2,18 +2,21 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Services\TenantTokenService;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+Route::middleware('tenant.token')->group(function () {
+    // All tenant API routes go here
+    Route::get('/test', function (Request $request) {
+        return response()->json(['message' => 'Token valid for tenant: '.$request->tenant->name]);
+    });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    Route::post('/renew-token', function (Request $request) {
+        $newToken = app(TenantTokenService::class)->renewToken($request->bearerToken());
+        
+        if (!$newToken) {
+            return response()->json(['error' => 'Token cannot be renewed'], 400);
+        }
+
+        return response()->json(['token' => $newToken]);
+    });
 });

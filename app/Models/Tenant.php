@@ -10,7 +10,12 @@ class Tenant extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'active'];
+    protected $fillable = ['name', 'email', 'active', 'owner_id'];
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
 
     public function users()
     {
@@ -20,5 +25,10 @@ class Tenant extends Model
     public function indoors()
     {
         return $this->hasMany(Indoor::class);
+    }
+
+    public function apiTokens()
+    {
+        return $this->hasMany(ApiToken::class);
     }
 }

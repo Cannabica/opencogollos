@@ -29,7 +29,7 @@ class TenantTokenService
     public function renewToken(string $tokenHash): ?string
     {
         try {
-            $apiToken = ApiToken::where('token', $tokenHash)->first();
+            $apiToken = ApiToken::where('token_hash', $tokenHash)->first();
             if (!$apiToken) {
                 \Log::error('No token found for hash', ['token_hash' => $tokenHash]);
                 return null;

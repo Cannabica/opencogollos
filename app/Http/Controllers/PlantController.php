@@ -20,9 +20,19 @@ class PlantController extends Controller
     public function show(Request $request, $id)
     {
         $tenant = $request->tenant;
-        $plant = Plant::whereHas('indoor', function($query) use ($tenant) {
-            $query->where('tenant_id', $tenant->id);
-        })->with(['seedType', 'indoor', 'actions'])->findOrFail($id);
+        $plant = Plant::with(['seedType', 'indoor', 'actions'])->find($id);
+        
+        if (!$plant) {
+            return response()->json([
+                'error' => 'Plant not found'
+            ], 404);
+        }
+
+        if ($plant->indoor->tenant_id !== $tenant->id) {
+            return response()->json([
+                'error' => 'Forbidden - Plant belongs to another tenant'
+            ], 403);
+        }
 
         return response()->json($plant);
     }

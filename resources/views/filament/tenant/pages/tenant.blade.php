@@ -127,7 +127,7 @@
                                <td class="px-6 py-4 whitespace-nowrap">{{ $token->renew_count }}</td>
                                <td class="px-6 py-4 whitespace-nowrap">
                                    @if($token->last_renewed_at)
-                                       {{ $token->last_renewed_at->format('d/m/Y H:i') }}
+                                       {{ \Carbon\Carbon::parse($token->last_renewed_at)->format('d/m/Y H:i') }}
                                    @else
                                        <span class="text-gray-400 italic">Nunca</span>
                                    @endif

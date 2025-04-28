@@ -62,8 +62,9 @@ class Kernel extends HttpKernel
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         'signed' => \App\Http\Middleware\ValidateSignature::class,
+        'tenant.token' => \App\Http\Middleware\TenantTokenMiddleware::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'tenant.token' => \App\Http\Middleware\TenantTokenMiddleware::class,
+        'verify.telegram.tenant' => \App\Http\Middleware\VerifyTelegramTenant::class,
     ];
 }

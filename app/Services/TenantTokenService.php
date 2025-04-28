@@ -4,34 +4,32 @@ namespace App\Services;
 
 use App\Models\Tenant;
 use App\Models\ApiToken;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 
 class TenantTokenService
 {
-    public function generateToken(Tenant $tenant, string $reference = null): string
+    public function generateToken(Tenant $tenant, string $reference = null, array $abilities = ['*']): string
     {
         if ($tenant->apiTokens()->count() >= 5) {
             throw new \RuntimeException('No se pueden crear más de 5 tokens activos');
         }
 
-        $token = bin2hex(random_bytes(16)); // Generates a 32-character hex token
+        $plainTextToken = Str::random(40);
 
         $tenant->apiTokens()->create([
-            'token_hash' => hash('sha256', $token),
-            'token' => $token,
-            'expires_at' => Carbon::now()->addDays(7),
-            'renew_count' => 0,
-            'reference' => !empty($reference) ? $reference : null
+            'token_hash' => hash('sha256', $plainTextToken),
+            'expires_at' => Carbon::now()->addYear(),
+            'reference' => $reference
         ]);
 
-        return $token;
+        return $plainTextToken;
     }
 
     public function renewToken(string $tokenHash): ?string
     {
         try {
-            $apiToken = ApiToken::where('token_hash', $tokenHash)->first();
+            $apiToken = ApiToken::where('token', $tokenHash)->first();
             if (!$apiToken) {
                 \Log::error('No token found for hash', ['token_hash' => $tokenHash]);
                 return null;
@@ -45,40 +43,20 @@ class TenantTokenService
                 return null;
             }
 
-            if ($apiToken->renew_count >= 10) {
-                \Log::error('Token renewal limit reached', ['token_id' => $apiToken->id]);
-                return null;
-            }
-            $apiToken = $tenant->apiTokens()
-                ->where('token_hash', $tokenHash)
-                ->first();
-
-            if (!$apiToken) {
-                \Log::error('API token not found in database', ['token_hash' => $tokenHash]);
-                return null;
-            }
-
-            if ($apiToken->renew_count >= 10) {
-                \Log::error('Token renewal limit reached', ['token_id' => $apiToken->id]);
-                return null;
-            }
-
-            $newToken = bin2hex(random_bytes(16)); // Generates 32-character hex token
+            $plainTextToken = Str::random(40);
 
             $apiToken->update([
-                'token_hash' => hash('sha256', $newToken),
-                'token' => $newToken,
-                'expires_at' => Carbon::now()->addDays(7),
-                'renew_count' => $apiToken->renew_count + 1,
-                'last_renewed_at' => now()
+                'token_hash' => hash('sha256', $plainTextToken),
+                'expires_at' => Carbon::now()->addYear(),
+                'last_renewed_at' => now(),
+                'renew_count' => $apiToken->renew_count + 1
             ]);
 
             \Log::debug('Token renewed successfully', [
-                'token_id' => $apiToken->id,
-                'renew_count' => $apiToken->renew_count
+                'token_id' => $apiToken->id
             ]);
 
-            return $newToken;
+            return $plainTextToken;
         } catch (\Exception $e) {
             \Log::error('Token renewal failed', [
                 'error' => $e->getMessage(),

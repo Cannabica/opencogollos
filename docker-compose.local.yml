@@ -15,7 +15,9 @@ services:
       - mailpit
 
   php:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
     user: "1000:1000"
     env_file: .env.local
     environment:
@@ -25,6 +27,7 @@ services:
       - APP_DEBUG=true
     expose:
       - "9000"
+      - "8000"
     volumes:
       - .:/var/www/html
       - ./vendor:/var/www/html/vendor

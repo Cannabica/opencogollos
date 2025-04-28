@@ -22,3 +22,13 @@ yarn-error.log
 .env.local
 default.local.conf
 
+.modes
+.workflows
+.templates
+.roo
+.roo-code
+.processes
+.roomodes
+build_mode_summary.js
+build_roomodes.js
+create_build.js

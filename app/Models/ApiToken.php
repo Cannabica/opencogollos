@@ -12,7 +12,6 @@ class ApiToken extends Model
     protected $fillable = [
         'tenant_id',
         'token_hash',
-        'token',
         'expires_at',
         'renew_count',
         'last_renewed_at',

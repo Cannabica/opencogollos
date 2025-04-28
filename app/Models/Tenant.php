@@ -10,12 +10,7 @@ class Tenant extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'active', 'owner_id'];
-
-    public function owner()
-    {
-        return $this->belongsTo(User::class, 'owner_id');
-    }
+    protected $fillable = ['name', 'email', 'active'];
 
     public function users()
     {

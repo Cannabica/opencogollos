@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Faker\Factory;
 
 class ExampleDataSeeder extends Seeder
 {
@@ -48,24 +49,55 @@ class ExampleDataSeeder extends Seeder
         3, 5, 7, 10, 12, 15, 20, 30, 40, 50, 75
     ];
 
-    private $baseFloorOptions = [
-        'Tierra negra',
-        'Sustrato profesional',
-        'Coco',
-        'Perlita',
-        'Humus',
-        'Vermiculita'
+    private $suelos = ['Turba', 'Guano', 'Estiércol', 'Polvo de roca', 'Arena', 'Fibra de coco', 'Abono naturales', 'Corteza de pino', 'Perlita', 'Vermiculita'];
+    private $enriquecimientos = ['Posos de café y/o te', 'Cascaras de huevo', 'Humus de lombriz', 'Pieles de frutas y verd', 'Abono', 'Fibra de coco', 'Perlita', 'Vermiculita', 'Arena', 'Harina de huesos', 'Harina de sangre', 'Roca fosfórica', 'Cal'];
+
+
+    private $adjetivos = [
+        'Chamuyero',
+        'Pibe',
+        'Tumbero',
+        'Fumanchu',
+        'Quemero',
+        'Fierrero',
+        'Trucho',
+        'Gatero',
+        'Sarasa',
+        'Mina',
+        'Transa',
+        'Faso',
+        'Porro',
+        'Japi',
+        'Pistola',
+        'Cogollo',
+        'Cana',
+        'Yuta',
+        'Merca',
+        'Fumarola'
     ];
 
-    private $soilEnrichmentOptions = [
-        'Micorrizas',
-        'Trichodermas',
-        'Guano de murciélago',
-        'Harina de pescado',
-        'Bokashi',
-        'Compost'
+    private $plantas = [
+        'María Juana',
+        'Crippa',
+        'Faso Sativa',
+        'Indica Trucha',
+        'Haze Paternal',
+        'Skunk de La Boca',
+        'Gorilla Glue de Palermo',
+        'OG Kush Porteña',
+        'Durban Poison de Mataderos',
+        'Churro Diesel',
+        'Mango Kush Cordobesa',
+        'AK-47 Rosarina',
+        'Blue Dream Chacarita',
+        'White Widow Santafesina',
+        'Peyote Cumbiero',
+        'Hongos del Subte',
+        'Acido del Conurbano',
+        'Mistongo Húmedo',
+        'Quemero Criollo',
+        'Porro Patrio'
     ];
-
 
     private function createTenantSpecificSeed($tenantId): Seed
     {
@@ -86,7 +118,9 @@ class ExampleDataSeeder extends Seeder
      */
     public function run(): void
     {
+    
         $this->command->info('Iniciando ExampleDataSeeder...');
+        $faker = Factory::create('es_ES');
 
         // Crear múltiples tenants
         $tenantConfigs = [
@@ -167,10 +201,54 @@ class ExampleDataSeeder extends Seeder
                 continue;
             }
 
+            // Crear un crop plan para el tenant primero con valores por defecto
+            $cropPlan = DB::table('crop_plans')->insertGetId([
+                'name' => 'Plan de Cultivo ' . $tenant->name,
+                'tenant_id' => $tenant->id,
+                'rest_pruning' => 7,
+                'rest_fert' => 14,
+                'stop_fert' => 7,
+                'irrigation' => 2,
+                'germination_since' => 0,
+                'germination_until' => 14,
+                'germination_light' => 18,
+                'germination_darkness' => 6,
+                'germination_humidity_since' => 70,
+                'germination_humidity_until' => 80,
+                'germination_temp_since' => 22,
+                'germination_temp_until' => 26,
+                'plantula_since' => 15,
+                'plantula_until' => 30,
+                'plantula_light' => 18,
+                'plantula_darkness' => 6,
+                'plantula_humidity_since' => 60,
+                'plantula_humidity_until' => 70,
+                'plantula_temp_since' => 20,
+                'plantula_temp_until' => 25,
+                'vegetative_since' => 31,
+                'vegetative_until' => 60,
+                'vegetative_light' => 18,
+                'vegetative_darkness' => 6,
+                'vegetative_humidity_since' => 50,
+                'vegetative_humidity_until' => 60,
+                'vegetative_temp_since' => 20,
+                'vegetative_temp_until' => 25,
+                'flowering_since' => 61,
+                'flowering_until' => 90,
+                'flowering_light' => 12,
+                'flowering_darkness' => 12,
+                'flowering_humidity_since' => 40,
+                'flowering_humidity_until' => 50,
+                'flowering_temp_since' => 18,
+                'flowering_temp_until' => 24,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
             // Crear indoors con configuraciones aleatorias
             $numIndoors = rand(2, 5);
             for ($i = 0; $i < $numIndoors; $i++) {
-                $indoorConfig = $this->generateRandomIndoorConfig();
+                $indoorConfig = $this->generateRandomIndoorConfig($cropPlan);
                 $indoor = Indoor::withoutGlobalScope(TenantScope::class)->create(array_merge(
                     $indoorConfig,
                     ['tenant_id' => $tenant->id]
@@ -205,6 +283,8 @@ class ExampleDataSeeder extends Seeder
 
                 // Crear plantas usando semillas disponibles
                 $numPlants = rand(5, 15);
+
+
                 for ($k = 0; $k < $numPlants; $k++) {
                     // Seleccionar una semilla aleatoria de las disponibles
                     $randomSeed = $availableSeeds->random();
@@ -215,16 +295,21 @@ class ExampleDataSeeder extends Seeder
                         continue;
                     }
                     
+                    $suelosSeleccionados = $faker->randomElements($this->suelos, rand(3, 10));
+                    $enriquecimientosSeleccionados = $faker->randomElements($this->enriquecimientos, rand(3, 10));
+
+
                     $plant = Plant::withoutGlobalScope(TenantScope::class)->create([
-                        'name' => $randomSeed->name . ' #' . rand(1, 999),
+                        'name' => $faker->randomElement($this->adjetivos) . ' ' .
+                        $faker->randomElement($this->plantas) . ' #' . rand(1, 999),
                         'indoor_id' => $indoor->id,
                         'seed_id' => $randomSeed->id,
                         'state' => Arr::random($this->plantStates),
                         'germination_date' => Carbon::now()->subDays(rand(10, 120)),
                         'flowerpot' => Arr::random($this->potTypes),
                         'capacity' => Arr::random($this->potCapacities),
-                        'base_floor' => Arr::random($this->baseFloorOptions, rand(2, 4)),
-                        'soil_enrichment' => Arr::random($this->soilEnrichmentOptions, rand(2, 4)),
+                        'base_floor' => json_encode($suelosSeleccionados),
+                        'soil_enrichment' => json_encode($enriquecimientosSeleccionados)
                     ]);
 
                     if ($plant) {
@@ -238,7 +323,7 @@ class ExampleDataSeeder extends Seeder
         }
     }
 
-    private function generateRandomIndoorConfig(): array
+    private function generateRandomIndoorConfig(int $cropPlanId = null): array
     {
         $large = rand(4, 15);
         $width = rand(3, 10);
@@ -259,6 +344,7 @@ class ExampleDataSeeder extends Seeder
         }, range(1, $numLamps));
 
         return [
+            'crop_plan_id' => $cropPlanId,
             'name' => 'Indoor ' . Arr::random(['Principal', 'Vegetativo', 'Floracion', 'Experimental', 'Madre']) . ' ' . rand(1, 99),
             'large' => $large,
             'width' => $width,
@@ -302,8 +388,7 @@ class ExampleDataSeeder extends Seeder
 
     private function generateActionData($actionTypeId, $plantIds): array
     {
-        $data = ['plants' => $plantIds];
-
+        $data = [];
         switch ($actionTypeId) {
             case 1: // Riego
                 $data['irrigation'] = [
@@ -340,7 +425,8 @@ class ExampleDataSeeder extends Seeder
 
             case 4: // Transplante
                 $data['transplant'] = [
-                    'new_pot_size' => Arr::random($this->potTypes)
+                    'new_flowerpot' => Arr::random($this->potTypes),
+                    'new_capacity' => Arr::random($this->potCapacities),
                 ];
                 break;
 

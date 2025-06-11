@@ -111,7 +111,7 @@ class PlantSeeder extends Seeder
 
                     $plant = Plant::withoutGlobalScope(TenantScope::class)->create([
                         'name' => $faker->randomElement($adjetivos) . ' ' .
-                            $faker->randomElement($plantas),
+                            $faker->randomElement($plantas) . ' #' . rand(1, 999),
                         'indoor_id' => $indoor->id,
                         'seed_id' => $seeds->random()->id,
                         'germination_date' => $faker->dateTimeBetween('-6 months', 'now'),

@@ -26,4 +26,9 @@ class Tenant extends Model
     {
         return $this->hasMany(ApiToken::class);
     }
+
+    public function actions()
+    {
+        return $this->hasMany(Action::class);
+    }
 }

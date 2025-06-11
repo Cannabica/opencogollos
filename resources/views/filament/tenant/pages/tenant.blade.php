@@ -59,7 +59,7 @@
                             :disabled="$apiTokens->count() >= 5"
                             color="primary"
                         >
-                            Generar nuevo token
+                            Nuevo token
                         </x-filament::button>
                     </div>
                 </div>
@@ -89,12 +89,20 @@
                         >
                             <span x-text="showToken ? 'Ocultar' : 'Mostrar'"></span>
                         </button>
+                        <button
+                            @click="navigator.clipboard.writeText('{{ $newToken }}'); $tooltip('Copiado!', { timeout: 2000 })"
+                            type="button"
+                            class="px-3 py-2 rounded"
+                            x-tooltip="'Copiar al portapapeles'"
+                        >
+                            Copiar
+                        </button>
                     </div>
                     <div class="mt-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-600 rounded-lg" style="padding-left: 50px">
                         <p class="font-medium text-yellow-800 dark:text-yellow-200">¡Advertencia de seguridad!</p>
                         <ul class="mt-2 space-y-1 text-sm text-yellow-700 dark:text-yellow-300 list-disc pl-5">
                             <li><strong>No se puede volver a visualizar este token</strong></li>
-                            <li>Este token proporciona acceso completo a la API</li>
+                            <li>Este token proporciona acceso completo a la API y al bot de telegram</li>
                             <li>Guárdelo en un lugar seguro y no lo comparta</li>
                             <li>Si se pierde o compromete, revóquelo inmediatamente</li>
                         </ul>

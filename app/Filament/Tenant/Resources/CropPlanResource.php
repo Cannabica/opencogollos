@@ -30,6 +30,8 @@ class CropPlanResource extends Resource
     protected static ?string $model = CropPlan::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
+    protected static ?int $navigationSort = 6;
+    protected static ?string $navigationGroup = 'Plantas';
 
     // Especificar que este recurso pertenece al panel de tenant
     protected static ?string $tenant = 'tenant';
@@ -701,3 +703,4 @@ class CropPlanResource extends Resource
         ];
     }
 }
+

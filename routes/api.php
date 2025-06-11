@@ -5,20 +5,59 @@ use Illuminate\Support\Facades\Route;
 use App\Services\TenantTokenService;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
+// Temporary test route for token service
+Route::get('/test-token', function (TenantTokenService $service) {
+    // Create temporary tenant for testing
+    $tenant = new \App\Models\Tenant();
+    $tenant->id = 12345;
+    
+    // Generate token with test chat ID in metadata
+    $chatId = 987654321; // Test Telegram chat ID
+    $token = $service->generateToken($tenant, null, ['*'], $chatId);
+    
+    // Retrieve token using same chat ID
+    $retrieved = $service->getCurrentToken($chatId);
+    
+    return response()->json([
+        'generated' => $token,
+        'retrieved' => $retrieved,
+        'chat_id' => $chatId
+    ]);
+});
+
 // Telegram Webhook Route
-Route::post('/telegram/webhook/{tenant}', function (Request $request, $tenant) {
+Route::post('/api/telegram/webhook/', function (Request $request, $tenant) {
+    // Debug log full incoming webhook data
+    \Log::debug('Incoming Telegram webhook', [
+        'tenant' => $tenant,
+        'full_request' => $request->all(),
+        'headers' => $request->headers->all()
+    ]);
+    
     try {
         $telegram = app('telegram');
-        $telegram->commandsHandler(true);
+        $update = $telegram->commandsHandler(true);
         
-        return response('', 200, [
-            'Content-Type' => 'application/json'
+        \Log::debug('Processed Telegram update', [
+            'tenant' => $tenant,
+            'update_id' => $update->getUpdateId(),
+            'update_type' => $update->detectType()
+        ]);
+        
+        return response('OK', 200, [
+            'Content-Type' => 'text/plain'
         ]);
     } catch (\Exception $e) {
-        \Log::error('Telegram webhook error: '.$e->getMessage());
-        return response('', 200);
+        \Log::error('Telegram webhook processing error', [
+            'tenant' => $tenant,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->all()
+        ]);
+        return response('Error', 500);
     }
-})->middleware(['verify.telegram.tenant']);
+})->middleware('telegram.tenant');
+
 
 // Tenant API Routes
 Route::middleware('tenant.token')->group(function () {

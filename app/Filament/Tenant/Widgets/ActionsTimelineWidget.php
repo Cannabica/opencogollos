@@ -91,6 +91,7 @@ class ActionsTimelineWidget extends ChartWidget
                     ],
                 ],
             ],
+            'aspectRatio' => 1.5,
         ];
     }
 } 

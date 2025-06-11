@@ -11,29 +11,66 @@ class VerifyTelegramTenant
     public function handle(Request $request, Closure $next)
     {
         try {
-            $tenantId = $request->route('tenant');
-            $signature = $request->header('X-Telegram-Bot-Api-Secret-Token');
+            // Para webhooks de Telegram, verificar el secret token si está configurado
+            $telegramSecretToken = $request->header('X-Telegram-Bot-Api-Secret-Token');
             
-            if (!$signature) {
-                \Log::warning('Missing Telegram signature for tenant: '.$tenantId);
-                return response('', 401);
+            // Si usas secret token de Telegram (recomendado)
+            if ($telegramSecretToken) {
+                $expectedToken = config('telegram.webhook_secret'); // Configurar en config
+                if ($telegramSecretToken !== $expectedToken) {
+                    \Log::warning('Invalid Telegram secret token', [
+                        'received' => $telegramSecretToken,
+                        'ip' => $request->ip()
+                    ]);
+                    return response('Unauthorized', 401);
+                }
+            }
+            
+            // Verificación alternativa por token de API personalizado
+            $token = $request->header('X-API-Token');
+            
+            if (!$token && !$telegramSecretToken) {
+                \Log::warning('Missing authentication headers', [
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent()
+                ]);
+                return response('Unauthorized', 401);
             }
 
-            $bot = TenantBot::where('tenant_id', $tenantId)
-                ->where('webhook_secret', $signature)
-                ->first();
+            if ($token) {
+                // Verify token and get tenant ID
+                $tenantId = app(TenantTokenService::class)->getTenantIdFromToken($token);
+                
+                if (!$tenantId) {
+                    \Log::warning("Invalid API token", [
+                        'token_prefix' => substr($token, 0, 8) . '...',
+                        'ip' => $request->ip()
+                    ]);
+                    return response('Forbidden', 403);
+                }
 
-            if (!$bot) {
-                \Log::warning('Invalid bot configuration for tenant: '.$tenantId);
-                return response('', 403);
+                // Bind tenant instance to container
+                $tenant = \App\Models\Tenant::find($tenantId);
+                if (!$tenant) {
+                    \Log::error("Tenant not found", ['tenant_id' => $tenantId]);
+                    return response('Tenant not found', 404);
+                }
+                
+                app()->instance('current.tenant', $tenant);
             }
 
-            app()->instance('current.tenant.bot', $bot);
-            
             return $next($request);
+            
         } catch (\Exception $e) {
-            \Log::error('Telegram tenant verification failed: '.$e->getMessage());
-            return response('', 401);
+            \Log::error('Telegram tenant verification failed', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'ip' => $request->ip(),
+                'request_data' => $request->except(['password', 'token'])
+            ]);
+            
+            return response('Internal Server Error', 500);
         }
     }
 }

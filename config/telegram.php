@@ -33,10 +33,18 @@ return [
     'bots' => [
         'default' => [
             'token' => env('TELEGRAM_BOT_TOKEN'),
-            'webhook_url' => env('APP_URL').'/telegram/webhook/default',
+            'webhook_url' => env('APP_URL').'/api/telegram/webhook/',
             'allowed_updates' => ['message', 'callback_query'],
             'commands' => [
-                // Comandos globales
+                'start',
+                'auth',
+                'tenantinfo',
+                'indoordetails',
+                'plants',
+                'plantdetails',
+                'seedslist',
+                'actionslist',
+                'actiondetails'
             ],
         ],
     ],
@@ -205,5 +213,12 @@ return [
     'shared_commands' => [
         'start' => App\Telegram\Commands\StartCommand::class,
         'auth' => App\Telegram\Commands\AuthCommand::class,
+        'tenantinfo' => App\Telegram\Commands\TenantInfoCommand::class,
+        'indoordetails' => App\Telegram\Commands\IndoorDetailsCommand::class,
+        'plants' => App\Telegram\Commands\PlantsListCommand::class,
+        'plantdetails' => App\Telegram\Commands\PlantDetailsCommand::class,
+        'seedslist' => App\Telegram\Commands\SeedsListCommand::class,
+        'actionslist' => App\Telegram\Commands\ActionsListCommand::class,
+        'actiondetails' => App\Telegram\Commands\ActionDetailsCommand::class,
     ],
 ];

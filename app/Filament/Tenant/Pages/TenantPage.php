@@ -12,7 +12,9 @@ class TenantPage extends Page
     protected static string $view = 'filament.tenant.pages.tenant';
     protected static ?string $navigationLabel = 'Mi Grupo';
     protected static ?string $title = 'Información del grupo';
+    protected static ?int $navigationSort = 999;
 
+    protected static ?string $navigationGroup = 'Grupo de trabajo';
     public $tenant;
     public $users;
     public $apiTokens;

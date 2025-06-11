@@ -157,14 +157,9 @@ return [
 
     'providers' => ServiceProvider::defaultProviders()->merge([
         /*
-         * Package Service Providers...
-         */
-        Telegram\Bot\Laravel\TelegramServiceProvider::class,
-        Rupadana\ApiService\ApiServiceServiceProvider::class,
-
-        /*
          * Application Service Providers...
          */
+        App\Providers\TelegramServiceProvider::class,
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
@@ -172,7 +167,11 @@ return [
         App\Providers\Filament\SuperadminPanelProvider::class,
         App\Providers\Filament\TenantPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\TelegramServiceProvider::class,
+
+        /*
+         * Package Service Providers...
+         */
+        Rupadana\ApiService\ApiServiceServiceProvider::class,
 
     ])->toArray(),
 

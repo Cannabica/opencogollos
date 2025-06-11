@@ -31,6 +31,9 @@ class SeedResource extends Resource
     protected static ?string $model = Seed::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
+    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationGroup = 'Plantas';
+
 
     public static function getPluralLabel(): string
     {
@@ -107,6 +110,32 @@ class SeedResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                    Tables\Actions\Action::make('showGlobal')
+                        ->label('Globales')
+                        ->icon('heroicon-o-globe-alt')
+                        ->color('secondary')
+                        ->extraAttributes(['class' => 'filter-button'])
+                        ->action(function ($livewire) {
+                            $livewire->tableFilters['origen']['value'] = 'global';
+                        }),
+                    Tables\Actions\Action::make('showLocal')
+                        ->label('Locales')
+                        ->icon('heroicon-o-home')
+                        ->color('primary')
+                        ->extraAttributes(['class' => 'filter-button'])
+                        ->action(function ($livewire) {
+                            $livewire->tableFilters['origen']['value'] = 'local';
+                        }),
+                    Tables\Actions\Action::make('showAll')
+                        ->label('Todas')
+                        ->icon('heroicon-o-list-bullet')
+                        ->color('gray')
+                        ->extraAttributes(['class' => 'filter-button'])
+                        ->action(function ($livewire) {
+                            $livewire->tableFilters['origen']['value'] = null;
+                        }),
+            ])
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
@@ -147,7 +176,7 @@ class SeedResource extends Resource
 
                 TextColumn::make('tenant_id')
                     ->label('Origen')
-                    ->formatStateUsing(fn ($record) => $record->isGlobal() ? 'Global' : 'Local')
+                    ->formatStateUsing(fn ($record) => $record->isGlobal() ? __('Global') : __('Local'))
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('seed_type')
@@ -172,7 +201,7 @@ class SeedResource extends Resource
                     ])
                     ->query(function (Builder $query, array $data) {
                         if ($data['value'] === 'global') {
-                            return $query->whereNull('tenant_id');
+                            return $query->whereNull(columns: 'tenant_id');
                         }
                         if ($data['value'] === 'local') {
                             return $query->whereNotNull('tenant_id');

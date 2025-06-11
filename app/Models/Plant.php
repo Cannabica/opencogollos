@@ -20,13 +20,11 @@ class Plant extends Model
 
     public function seedType()
     {
-        Log::info('Accessing seedType relation for plant ID: ' . $this->id);
         return $this->belongsTo(Seed::class, 'seed_id');
     }
 
     public function indoor()
     {
-        Log::info('Accessing indoor relation for plant ID: ' . $this->id);
         return $this->belongsTo(Indoor::class);
     }
 

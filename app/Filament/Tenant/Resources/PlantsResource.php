@@ -40,6 +40,8 @@ class PlantsResource extends Resource
 
 
     protected static ?string $navigationIcon = 'heroicon-o-sun';
+    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationGroup = 'Plantas';
 
     protected static ?string $tenantOwnershipRelationshipName = 'indoor';
 

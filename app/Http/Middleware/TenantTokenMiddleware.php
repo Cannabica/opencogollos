@@ -11,7 +11,7 @@ class TenantTokenMiddleware
 {
     public function handle($request, Closure $next)
     {
-        $token = $request->bearerToken();
+        $token = $request->bearerToken();;
         
         if (!$token) {
             return response()->json(['error' => 'Unauthorized - No token provided'], 401);
@@ -26,7 +26,18 @@ class TenantTokenMiddleware
         }
 
         $tenant = $apiToken->tenant;
-        $request->merge(['tenant' => $tenant]);
+        $request->merge([
+            'tenant' => $tenant,
+            'apiToken' => $apiToken,
+            'token' => $token
+        ]);
+
+        // Add macro for backward compatibility
+        if (!method_exists($request, 'token')) {
+            $request->macro('token', function() use ($token) {
+                return $token;
+            });
+        }
 
         return $next($request);
     }

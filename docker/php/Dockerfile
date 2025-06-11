@@ -1,8 +1,6 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
+RUN apk update && apk add --no-cache \
     libzip-dev \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -12,31 +10,35 @@ RUN apk add --no-cache \
     postgresql-dev \
     curl \
     git \
+    icu-dev \
     unzip
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install \
+
+RUN docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_pgsql \
     pgsql \
     mbstring \
-    tokenizer \
     xml \
-    ctype \
-    openssl \
     gd \
     zip \
     bcmath
 
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install intl
+
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-COPY ./docker/php/nginx.conf /etc/nginx/nginx.conf
-COPY ./docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
+
+# Copy and set permissions for entrypoint
+COPY ./docker/scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 WORKDIR /var/www/html
 
 EXPOSE 9000
-EXPOSE 8000
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm", "-F"]

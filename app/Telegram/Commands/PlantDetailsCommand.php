@@ -96,11 +96,21 @@ class PlantDetailsCommand extends Command
         // Build message parts
         // Format array fields (already cast to arrays by model)
         $baseFloor = !empty($plant->base_floor)
-            ? htmlspecialchars(implode(', ', $plant->base_floor))
+            ? htmlspecialchars(
+                is_array($plant->base_floor)
+                    ? implode(',  ', array_map('trim', $plant->base_floor))
+                    : str_replace(['["', '"]', '"'], '', $plant->base_floor)
+                    ,ENT_QUOTES, 'UTF-8')
             : 'No especificado';
         $soilEnrichment = !empty($plant->soil_enrichment)
-            ? htmlspecialchars(implode(', ', $plant->soil_enrichment))
+            ? htmlspecialchars(
+                is_array($plant->soil_enrichment)
+                    ? implode(',  ', array_map('trim', $plant->soil_enrichment))
+                    : str_replace(['["', '"]', '"'], '', $plant->soil_enrichment)
+                    ,ENT_QUOTES, 'UTF-8')
             : 'No especificado';
+
+
         $capacity = $plant->capacity ? htmlspecialchars($plant->capacity) : 'No especificado';
 
         $messageParts = [

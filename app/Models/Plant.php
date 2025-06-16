@@ -14,8 +14,8 @@ class Plant extends Model
     protected $fillable = ['name', 'indoor_id', 'seed_id', 'state', 'germination_date', 'flowerpot', 'capacity', 'base_floor', 'soil_enrichment'];
 
     protected $casts = [
-        'base_floor' => 'array',
-        'soil_enrichment' => 'array',
+        'base_floor' => 'json',
+        'soil_enrichment' => 'json',
     ];
 
     public function seedType()
@@ -23,6 +23,10 @@ class Plant extends Model
         return $this->belongsTo(Seed::class, 'seed_id');
     }
 
+    public function seed()
+    {
+        return $this->belongsTo(Seed::class);
+    }
     public function indoor()
     {
         return $this->belongsTo(Indoor::class);

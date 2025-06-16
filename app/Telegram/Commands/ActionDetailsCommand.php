@@ -4,6 +4,7 @@ namespace App\Telegram\Commands;
 
 use App\Models\Action;
 use App\Models\Tenant;
+use Carbon\Carbon;
 use Log;
 use Telegram\Bot\Commands\Command;
 use App\Telegram\Commands\ChecksTelegramExpiration;
@@ -75,7 +76,10 @@ class ActionDetailsCommand extends Command
         foreach ($action->plants as $plant) {
             $messageParts[] = "├─ " . htmlspecialchars($plant->name, ENT_QUOTES, 'UTF-8');
             $messageParts[] = "│  └─ <i>Semilla:</i> " . ($plant->seedType?->name ?: 'No especificada');
-            $messageParts[] = "│  └─ <i>Tipo:</i> " . ($plant->seedType?->seed_type ?: 'No especificado');
+            $lifetime = $plant->germination_date
+                ? Carbon::now()->diffInDays(Carbon::parse($plant->germination_date))
+                : 0;
+            $messageParts[] = "│  └─ <i>Edad:</i> " . $lifetime . ' días';
             $messageParts[] = "│  └─ <i>Estado planta:</i> " . ($plant->state ?: 'No especificado');
         }
 

@@ -49,8 +49,14 @@ class ExampleDataSeeder extends Seeder
         3, 5, 7, 10, 12, 15, 20, 30, 40, 50, 75
     ];
 
-    private $suelos = ['Turba', 'Guano', 'Estiércol', 'Polvo de roca', 'Arena', 'Fibra de coco', 'Abono naturales', 'Corteza de pino', 'Perlita', 'Vermiculita'];
-    private $enriquecimientos = ['Posos de café y/o te', 'Cascaras de huevo', 'Humus de lombriz', 'Pieles de frutas y verd', 'Abono', 'Fibra de coco', 'Perlita', 'Vermiculita', 'Arena', 'Harina de huesos', 'Harina de sangre', 'Roca fosfórica', 'Cal'];
+    private $suelos;
+    private $enriquecimientos;
+
+    public function __construct()
+    {
+        $this->suelos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::BASE_FLOOR_OPTIONS);
+        $this->enriquecimientos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::SOIL_ENRICHMENT_OPTIONS);
+    }
 
 
     private $adjetivos = [
@@ -295,9 +301,15 @@ class ExampleDataSeeder extends Seeder
                         continue;
                     }
                     
-                    $suelosSeleccionados = $faker->randomElements($this->suelos, rand(3, 10));
-                    $enriquecimientosSeleccionados = $faker->randomElements($this->enriquecimientos, rand(3, 10));
-
+                    // Ensure we get at least 1 selection but no more than available options
+                    $suelosSeleccionados = $faker->randomElements(
+                        $this->suelos,
+                        rand(1, min(5, count($this->suelos)))
+                    );
+                    $enriquecimientosSeleccionados = $faker->randomElements(
+                        $this->enriquecimientos,
+                        rand(1, min(5, count($this->enriquecimientos)))
+                    );
 
                     $plant = Plant::withoutGlobalScope(TenantScope::class)->create([
                         'name' => $faker->randomElement($this->adjetivos) . ' ' .
@@ -308,8 +320,8 @@ class ExampleDataSeeder extends Seeder
                         'germination_date' => Carbon::now()->subDays(rand(10, 120)),
                         'flowerpot' => Arr::random($this->potTypes),
                         'capacity' => Arr::random($this->potCapacities),
-                        'base_floor' => json_encode($suelosSeleccionados),
-                        'soil_enrichment' => json_encode($enriquecimientosSeleccionados)
+                        'base_floor' => $suelosSeleccionados, // Array will be automatically cast to JSON
+                        'soil_enrichment' => $enriquecimientosSeleccionados // Array will be automatically cast to JSON
                     ]);
 
                     if ($plant) {

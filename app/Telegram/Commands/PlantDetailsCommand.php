@@ -17,6 +17,35 @@ class PlantDetailsCommand extends Command
     protected string $pattern = '{plant_id?:\d+}';
     protected string $description = 'Muestra detalles de una planta específica';
 
+    protected function translateIndicesToLabels($data, array $options): string
+    {
+        if (empty($data)) {
+            return '';
+        }
+
+        if (is_array($data)) {
+            $indices = $data;
+        }
+        elseif (is_string($data)) {
+            $decoded = json_decode($data, true);
+            $indices = is_array($decoded) ? $decoded : [];
+        }
+        else {
+            $indices = [$data];
+        }
+
+        $labels = [];
+        foreach ($indices as $index) {
+            if (is_numeric($index) && isset($options[intval($index)])) {
+                $labels[] = $options[intval($index)];
+            } elseif (is_string($index) && in_array($index, $options)) {
+                $labels[] = $index;
+            }
+        }
+
+        return implode(', ', array_unique($labels));
+    }
+
     public function handle()
     {
         $telegramUser = $this->getUpdate()->getMessage()->getFrom();
@@ -28,7 +57,6 @@ class PlantDetailsCommand extends Command
             'telegram_user_id' => $telegramUserId,
         ]);
 
-        // Validate tenant association
         $association = $this->checkTelegramAssociation($telegramUserId);
         if (!$association) {
             Log::warning('Unauthorized access attempt', ['telegram_user_id' => $telegramUserId]);
@@ -51,15 +79,6 @@ class PlantDetailsCommand extends Command
             ->with(['indoor', 'seedType'])
             ->first();
 
-        // Get last 5 actions with their types
-        $actions = \App\Models\Action::whereHas('plants', function($query) use ($plantId) {
-                $query->where('plant_id', $plantId);
-            })
-            ->with('action_type')
-            ->latest()
-            ->take(5)
-            ->get();
-
         if (!$plant) {
             $this->replyWithMessage([
                 'text' => "❌ <b>Planta no encontrada</b>\nNo existe una planta con ID: $plantId",
@@ -68,6 +87,24 @@ class PlantDetailsCommand extends Command
             Log::warning('Plant not found', ['plant_id' => $plantId]);
             return;
         }
+
+        $actions = \App\Models\Action::whereHas('plants', function($query) use ($plantId) {
+                $query->where('plant_id', $plantId);
+            })
+            ->with('action_type')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $actionStats = \App\Models\Action::whereHas('plants', function($query) use ($plantId) {
+                $query->where('plant_id', $plantId);
+            })
+            ->selectRaw('action_type_id, count(*) as count')
+            ->groupBy('action_type_id')
+            ->with('action_type')
+            ->get();
+
+        $totalActions = $actionStats->sum('count');
 
         $indoorName = $plant->indoor ? $plant->indoor->name : 'Sin ubicación';
         $seedName = $plant->seedType ? $plant->seedType->name : 'Desconocida';
@@ -81,7 +118,6 @@ class PlantDetailsCommand extends Command
             ? htmlspecialchars($plant->seedType->ratio_cbd) . '%'
             : 'No especificado';
 
-        // Prepare all values with proper escaping
         $id = htmlspecialchars($plant->id);
         $name = htmlspecialchars($plant->name);
         $seedName = htmlspecialchars($seedName);
@@ -93,23 +129,24 @@ class PlantDetailsCommand extends Command
             ? htmlspecialchars(date('d/m/Y', strtotime($plant->germination_date))) 
             : 'No especificada';
 
-        // Build message parts
-        // Format array fields (already cast to arrays by model)
         $baseFloor = !empty($plant->base_floor)
             ? htmlspecialchars(
-                is_array($plant->base_floor)
-                    ? implode(',  ', array_map('trim', $plant->base_floor))
-                    : str_replace(['["', '"]', '"'], '', $plant->base_floor)
-                    ,ENT_QUOTES, 'UTF-8')
+                $this->translateIndicesToLabels(
+                    $plant->base_floor,
+                    \App\Filament\Tenant\Resources\PlantsResource::BASE_FLOOR_OPTIONS
+                ),
+                ENT_QUOTES, 'UTF-8'
+            )
             : 'No especificado';
         $soilEnrichment = !empty($plant->soil_enrichment)
             ? htmlspecialchars(
-                is_array($plant->soil_enrichment)
-                    ? implode(',  ', array_map('trim', $plant->soil_enrichment))
-                    : str_replace(['["', '"]', '"'], '', $plant->soil_enrichment)
-                    ,ENT_QUOTES, 'UTF-8')
+                $this->translateIndicesToLabels(
+                    $plant->soil_enrichment,
+                    \App\Filament\Tenant\Resources\PlantsResource::SOIL_ENRICHMENT_OPTIONS
+                ),
+                ENT_QUOTES, 'UTF-8'
+            )
             : 'No especificado';
-
 
         $capacity = $plant->capacity ? htmlspecialchars($plant->capacity) : 'No especificado';
 
@@ -129,32 +166,19 @@ class PlantDetailsCommand extends Command
             "<b>📅 Fecha de germinación:</b> $germinationDate",
         ];
 
-        // Add action statistics
-        $actionStats = \App\Models\Action::whereHas('plants', function($query) use ($plantId) {
-                $query->where('plant_id', $plantId);
-            })
-            ->selectRaw('action_type_id, count(*) as count')
-            ->groupBy('action_type_id')
-            ->with('action_type')
-            ->get();
-
-        $totalActions = $actionStats->sum('count');
         $actionStatsText = [];
-        
         foreach ($actionStats as $stat) {
             $percentage = $totalActions > 0 ? round(($stat->count / $totalActions) * 100) : 0;
             $actionStatsText[] = "<b>{$stat->action_type->name}:</b> {$stat->count} ({$percentage}%)";
         }
 
-        // Format last 5 actions
         $actionLines = [];
         foreach ($actions as $action) {
             $date = $action->action_date->format('d/m/Y H:i');
             $actionLines[] = "<b>⏱ {$date}:</b> " . 
-                mb_strimwidth("{$action->type_name} - {$action->detalle_accion}", 0, 80, "...");
+                mb_strimwidth("{$action->action_type->name} - {$action->detalle_accion}", 0, 80, "...");
         }
 
-        // Add action sections to message
         $messageParts[] = "";
         $messageParts[] = "<b>📊 Estadísticas de acciones ({$totalActions} total):</b>";
         $messageParts = array_merge($messageParts, $actionStatsText);

@@ -46,8 +46,8 @@ class PlantsResource extends Resource
 
     protected static ?string $tenantOwnershipRelationshipName = 'indoor';
 
-    protected const SOIL_ENRICHMENT_OPTIONS = [
-        'Posos de café y/o te',
+    public const SOIL_ENRICHMENT_OPTIONS = [
+        'Posos de cafe o te',
         'Cascaras de huevo',
         'Humus de lombriz',
         'Pieles de frutas y verd',
@@ -62,7 +62,7 @@ class PlantsResource extends Resource
         'Cal'
     ];
 
-    protected const BASE_FLOOR_OPTIONS = [
+    public const BASE_FLOOR_OPTIONS = [
         'Turba',
         'Guano',
         'Estiércol',
@@ -77,8 +77,7 @@ class PlantsResource extends Resource
 
     protected static function getSoilEnrichmentOptions(): array
     {
-        $options = static::SOIL_ENRICHMENT_OPTIONS;
-        return array_combine(range(0, count($options) - 1), $options);
+        return static::SOIL_ENRICHMENT_OPTIONS;
     }
 
     protected static function getBaseFloorOptions(): array
@@ -89,15 +88,13 @@ class PlantsResource extends Resource
 
     protected static function loadSoilEnrichmentValues($record): array
     {
-
-
         $state = is_array($record->soil_enrichment)
             ? $record->soil_enrichment
             : json_decode($record->soil_enrichment ?? '[]', true);
         
         $loaded = [];
         foreach ((array)$state as $value) {
-            if (is_numeric($value) && isset(static::SOIL_ENRICHMENT_OPTIONS[intval($value)])) {
+            if (isset(static::SOIL_ENRICHMENT_OPTIONS[$value])) {
                 $loaded[] = intval($value);
             }
         }
@@ -131,7 +128,10 @@ class PlantsResource extends Resource
         Log::debug('Loaded base floor values:', [
             'record_id' => $record->id,
             'raw_state' => $state,
-            'processed_indices' => $loaded
+            'processed_indices' => $loaded,
+            'human_readable' => array_map(function($index) {
+                return static::BASE_FLOOR_OPTIONS[$index] ?? 'Unknown';
+            }, $loaded)
         ]);
         
         return $loaded;
@@ -184,6 +184,14 @@ class PlantsResource extends Resource
                 }
             }
         }
+
+        Log::debug('Prepared base floor for storage:', [
+            'raw_state' => $state,
+            'processed_indices' => $indices,
+            'human_readable' => array_map(function($index) {
+                return static::BASE_FLOOR_OPTIONS[$index] ?? 'Unknown';
+            }, $indices)
+        ]);
 
         // Store as JSON array of integers
         return json_encode(array_values(array_unique($indices)));
@@ -356,10 +364,23 @@ class PlantsResource extends Resource
                                 ]);
                                 return $values;
                             })
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                Log::debug('Raw soil_enrichment state before processing:', ['state' => $state]);
+                            ->afterStateHydrated(function ($state, Forms\Set $set) {
+                                Log::debug('Hydrating base_floor state:', ['state' => $state]);
                                 
                                 // Handle both array and JSON string inputs
+                                if (is_string($state)) {
+                                    $state = json_decode($state, true) ?? [];
+                                }
+                                
+                                if (!is_array($state)) {
+                                    $state = [];
+                                }
+                                
+                                $set('base_floor', $state);
+                            })
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                Log::debug('Updating base_floor state:', ['state' => $state]);
+                                
                                 if (is_string($state)) {
                                     $state = json_decode($state, true) ?? [];
                                 }
@@ -375,12 +396,6 @@ class PlantsResource extends Resource
                                     'processed_state' => $state,
                                     'encoded' => $encoded
                                 ]);
-                                
-                                Log::debug('Base floor processing:', [
-                                    'raw_state' => $state,
-                                    'encoded' => $encoded,
-                                    'options' => static::BASE_FLOOR_OPTIONS
-                                ]);
                             })
                             ->default([]),
 
@@ -395,6 +410,9 @@ class PlantsResource extends Resource
                             ->bulkToggleable()
                             ->live()
                             ->loadStateFromRelationshipsUsing(function ($record) {
+                                if (!$record->exists) {
+                                    return [];
+                                }
                                 $values = static::loadSoilEnrichmentValues($record);
                                 Log::debug('Loaded soil_enrichment values:', [
                                     'record_id' => $record->id,
@@ -402,13 +420,8 @@ class PlantsResource extends Resource
                                 ]);
                                 return $values;
                             })
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                Log::debug('Raw soil_enrichment state before processing:', ['state' => $state]);
-                                
-                                // Skip processing if empty array (likely from form reset)
-                                if (empty($state)) {
-                                    return;
-                                }
+                            ->afterStateHydrated(function ($state, Forms\Set $set) {
+                                Log::debug('Hydrating soil_enrichment state:', ['state' => $state]);
                                 
                                 // Handle both array and JSON string inputs
                                 if (is_string($state)) {
@@ -419,26 +432,25 @@ class PlantsResource extends Resource
                                     $state = [];
                                 }
                                 
-                                $encoded = static::prepareSoilEnrichmentForStorage($state);
-                                $set('soil_enrichment', $encoded);
-                                
-                                Log::debug('Processed soil_enrichment state:', [
-                                    'processed_state' => $state,
-                                    'encoded' => $encoded
-                                ]);
+                                $set('soil_enrichment', $state);
                             })
-                            ->dehydrateStateUsing(fn ($state) => $state) // Prevent double processing
-                            ->options(static::getSoilEnrichmentOptions())
-                            ->loadStateFromRelationshipsUsing(function ($record) {
-                                if (!$record->exists) {
-                                    return [];
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                
+                                if (is_string($state)) {
+                                    $state = json_decode($state, true) ?? [];
                                 }
-                                $values = static::loadSoilEnrichmentValues($record);
-                                Log::debug('Loaded soil_enrichment values:', [
-                                    'record_id' => $record->id,
-                                    'values' => $values
+                                
+                                if (!is_array($state)) {
+                                    $state = [];
+                                }
+                                
+                                // $encoded = static::prepareSoilEnrichmentForStorage($state);
+                                $set('soil_enrichment', $state);
+                                
+                                Log::debug('Final processed state:', [
+                                    'processed_values' => $state,
+                                    'options_keys' => array_keys(static::getSoilEnrichmentOptions())
                                 ]);
-                                return $values;
                             })
                             ->default([])
                     ])
@@ -491,6 +503,7 @@ class PlantsResource extends Resource
                 'md' => 2,
                 'xl' => 3,
             ])
+            ->modifyQueryUsing(fn (Builder $query) => $query->orderBy('created_at', 'desc'))
             ->filters([
                 SelectFilter::make('seed_id')
                     ->label(__('Seed Type'))

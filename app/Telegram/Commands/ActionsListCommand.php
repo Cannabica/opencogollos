@@ -29,10 +29,6 @@ class ActionsListCommand extends Command
             // Check for valid (non-expired) association
             $existingAssociation = $this->checkTelegramAssociation($telegramUserId);
             if (!$existingAssociation) {
-                $this->replyWithMessage([
-                    'text' => '🤔 Porque no estas asociado a ningún grupo de trabajo? e.e \n\n',
-                    'parse_mode' => 'HTML'
-                ]);
                 return;
             }
 

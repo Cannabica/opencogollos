@@ -25,6 +25,7 @@ use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
+use Illuminate\Support\Facades\Log;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -44,6 +45,149 @@ class PlantsResource extends Resource
     protected static ?string $navigationGroup = 'Plantas';
 
     protected static ?string $tenantOwnershipRelationshipName = 'indoor';
+
+    protected const SOIL_ENRICHMENT_OPTIONS = [
+        'Posos de café y/o te',
+        'Cascaras de huevo',
+        'Humus de lombriz',
+        'Pieles de frutas y verd',
+        'Abono',
+        'Fibra de coco',
+        'Perlita',
+        'Vermiculita',
+        'Arena',
+        'Harina de huesos',
+        'Harina de sangre',
+        'Roca fosfórica',
+        'Cal'
+    ];
+
+    protected const BASE_FLOOR_OPTIONS = [
+        'Turba',
+        'Guano',
+        'Estiércol',
+        'Polvo de roca',
+        'Arena',
+        'Fibra de coco',
+        'Abono naturales',
+        'Corteza de pino',
+        'Perlita',
+        'Vermiculita'
+    ];
+
+    protected static function getSoilEnrichmentOptions(): array
+    {
+        $options = static::SOIL_ENRICHMENT_OPTIONS;
+        return array_combine(range(0, count($options) - 1), $options);
+    }
+
+    protected static function getBaseFloorOptions(): array
+    {
+        $options = static::BASE_FLOOR_OPTIONS;
+        return array_combine(range(0, count($options) - 1), $options);
+    }
+
+    protected static function loadSoilEnrichmentValues($record): array
+    {
+
+
+        $state = is_array($record->soil_enrichment)
+            ? $record->soil_enrichment
+            : json_decode($record->soil_enrichment ?? '[]', true);
+        
+        $loaded = [];
+        foreach ((array)$state as $value) {
+            if (is_numeric($value) && isset(static::SOIL_ENRICHMENT_OPTIONS[intval($value)])) {
+                $loaded[] = intval($value);
+            }
+        }
+        
+        Log::debug('Loaded soil enrichment values:', [
+            'record_id' => $record->id,
+            'raw_state' => $state,
+            'processed_indices' => $loaded
+        ]);
+        
+        return $loaded;
+    }
+
+    protected static function loadBaseFloorValues($record): array
+    {
+        if (!$record->exists) {
+            return [];
+        }
+
+        $state = is_array($record->base_floor)
+            ? $record->base_floor
+            : json_decode($record->base_floor ?? '[]', true);
+        
+        $loaded = [];
+        foreach ((array)$state as $value) {
+            if (is_numeric($value) && isset(static::BASE_FLOOR_OPTIONS[intval($value)])) {
+                $loaded[] = intval($value);
+            }
+        }
+        
+        Log::debug('Loaded base floor values:', [
+            'record_id' => $record->id,
+            'raw_state' => $state,
+            'processed_indices' => $loaded
+        ]);
+        
+        return $loaded;
+    }
+
+    protected static function prepareSoilEnrichmentForStorage($state): string
+    {
+        if (!is_array($state)) {
+            $state = [];
+        }
+
+        $indices = [];
+        foreach ((array)$state as $value) {
+            if (is_numeric($value)) {
+                // Already an index - validate it exists in options
+                if (isset(static::SOIL_ENRICHMENT_OPTIONS[intval($value)])) {
+                    $indices[] = intval($value);
+                }
+            } elseif (is_string($value)) {
+                // Legacy string value - convert to index
+                $index = array_search($value, static::SOIL_ENRICHMENT_OPTIONS);
+                if ($index !== false) {
+                    $indices[] = $index;
+                }
+            }
+        }
+
+        // Store as JSON array of integers
+        return json_encode(array_values(array_unique($indices)));
+    }
+
+    protected static function prepareBaseFloorForStorage($state): string
+    {
+        if (!is_array($state)) {
+            $state = [];
+        }
+
+        $indices = [];
+        foreach ((array)$state as $value) {
+            if (is_numeric($value)) {
+                // Already an index - validate it exists in options
+                if (isset(static::BASE_FLOOR_OPTIONS[intval($value)])) {
+                    $indices[] = intval($value);
+                }
+            } elseif (is_string($value)) {
+                // Legacy string value - convert to index
+                $index = array_search($value, static::BASE_FLOOR_OPTIONS);
+                if ($index !== false) {
+                    $indices[] = $index;
+                }
+            }
+        }
+
+        // Store as JSON array of integers
+        return json_encode(array_values(array_unique($indices)));
+    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -200,55 +344,114 @@ class PlantsResource extends Resource
                     ->schema([
 
                         CheckboxList::make('base_floor')
-                            ->label(__('base_floor_description'))
+                            ->label(__('Base Floor'))
+                            ->options(static::getBaseFloorOptions())
                             ->columns(3)
                             ->bulkToggleable()
-                            ->options([
-                                'Turba',
-                                'Guano',
-                                'Estiércol',
-                                'Polvo de roca',
-                                'Arena',
-                                'Fibra de coco',
-                                'Abono naturales',
-                                'Corteza de pino',
-                                'Perlita',
-                                'Vermiculita'
-                            ]),
+                            ->loadStateFromRelationshipsUsing(function ($record) {
+                                $values = static::loadBaseFloorValues($record);
+                                Log::debug('Loaded base_floor values:', [
+                                    'record_id' => $record->id,
+                                    'values' => $values
+                                ]);
+                                return $values;
+                            })
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                Log::debug('Raw soil_enrichment state before processing:', ['state' => $state]);
+                                
+                                // Handle both array and JSON string inputs
+                                if (is_string($state)) {
+                                    $state = json_decode($state, true) ?? [];
+                                }
+                                
+                                if (!is_array($state)) {
+                                    $state = [];
+                                }
+                                
+                                $encoded = static::prepareBaseFloorForStorage($state);
+                                $set('base_floor', $encoded);
+                                
+                                Log::debug('Processed base_floor state:', [
+                                    'processed_state' => $state,
+                                    'encoded' => $encoded
+                                ]);
+                                
+                                Log::debug('Base floor processing:', [
+                                    'raw_state' => $state,
+                                    'encoded' => $encoded,
+                                    'options' => static::BASE_FLOOR_OPTIONS
+                                ]);
+                            })
+                            ->default([]),
 
                     ]),
 
                 Section::make(__('Soil Enrichment'))
                     ->schema([
                         CheckboxList::make('soil_enrichment')
-                            ->label(__('Soil_Enrichment_description'))
+                            ->label(__('Soil Enrichment'))
+                            ->options(static::getSoilEnrichmentOptions())
                             ->columns(3)
                             ->bulkToggleable()
-                            ->options([
-                                'Posos de café y/o te',
-                                'Cascaras de huevo',
-                                'Humus de lombriz',
-                                'Pieles de frutas y verd',
-                                'Abono',
-                                'Fibra de coco',
-                                'Perlita',
-                                'Vermiculita',
-                                'Arena',
-                                'Harina de huesos',
-                                'Harina de sangre',
-                                'Roca fosfórica',
-                                'Cal'
-                            ])
+                            ->live()
+                            ->loadStateFromRelationshipsUsing(function ($record) {
+                                $values = static::loadSoilEnrichmentValues($record);
+                                Log::debug('Loaded soil_enrichment values:', [
+                                    'record_id' => $record->id,
+                                    'values' => $values
+                                ]);
+                                return $values;
+                            })
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                Log::debug('Raw soil_enrichment state before processing:', ['state' => $state]);
+                                
+                                // Skip processing if empty array (likely from form reset)
+                                if (empty($state)) {
+                                    return;
+                                }
+                                
+                                // Handle both array and JSON string inputs
+                                if (is_string($state)) {
+                                    $state = json_decode($state, true) ?? [];
+                                }
+                                
+                                if (!is_array($state)) {
+                                    $state = [];
+                                }
+                                
+                                $encoded = static::prepareSoilEnrichmentForStorage($state);
+                                $set('soil_enrichment', $encoded);
+                                
+                                Log::debug('Processed soil_enrichment state:', [
+                                    'processed_state' => $state,
+                                    'encoded' => $encoded
+                                ]);
+                            })
+                            ->dehydrateStateUsing(fn ($state) => $state) // Prevent double processing
+                            ->options(static::getSoilEnrichmentOptions())
+                            ->loadStateFromRelationshipsUsing(function ($record) {
+                                if (!$record->exists) {
+                                    return [];
+                                }
+                                $values = static::loadSoilEnrichmentValues($record);
+                                Log::debug('Loaded soil_enrichment values:', [
+                                    'record_id' => $record->id,
+                                    'values' => $values
+                                ]);
+                                return $values;
+                            })
+                            ->default([])
+                    ])
+                ]);
 
-                    ]),
-
-            ]);
+        return $form;
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+
                 Stack::make([
                     ViewColumn::make('plant_card')
                         ->view('filament.tables.columns.plant-card')
@@ -277,6 +480,10 @@ class PlantsResource extends Resource
                                 'pruningsCount' => $record->actions()->where('action_type_id', 2)->count(),
                             ];
                         })
+                    ->searchable([
+                        'name',
+                        
+                    ])
                 ])
                 ->space(2),
             ])

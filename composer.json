@@ -12,10 +12,14 @@
         "filament/notifications": "^3.3",
         "flowframe/laravel-trend": "^0.4.0",
         "guzzlehttp/guzzle": "^7.2",
+        "irazasyed/telegram-bot-sdk": "^3.15",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "leandrocfe/filament-apex-charts": "^3.1"
+        "leandrocfe/filament-apex-charts": "^3.1",
+        "rupadana/filament-api-service": "dev-main",
+        "symfony/polyfill-intl-icu": "^1.32",
+        "tymon/jwt-auth": "^2.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -69,5 +73,11 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": {
+        "filament-api-service": {
+            "type": "vcs",
+            "url": "https://github.com/rupadana/filament-api-service"
+        }
+    }
 }

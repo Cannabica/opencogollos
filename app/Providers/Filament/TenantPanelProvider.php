@@ -26,6 +26,8 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Navigation\MenuItem;
 use App\Filament\Tenant\Widgets\ProductNotificationsWidget;
 
+use Rupadana\ApiService\ApiServicePlugin;
+
 class TenantPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -33,8 +35,12 @@ class TenantPanelProvider extends PanelProvider
         FilamentAsset::register([
             Css::make('custom-css', asset('css/custom.css')),
         ]);
+        
         return $panel
             ->id('tenant')
+            ->plugin(
+                ApiServicePlugin::make()
+            )
             ->path('tenant')
             ->font('Space Grotesk')
             ->login()
@@ -49,6 +55,7 @@ class TenantPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/tenant/theme.css')
             ->pages([
                 Dashboard::class,
+                \App\Filament\Tenant\Pages\TenantPage::class,
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('10s')

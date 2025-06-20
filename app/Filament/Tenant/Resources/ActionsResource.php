@@ -61,6 +61,8 @@ class ActionsResource extends Resource
     protected ActionRecordService $actionService;
 
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
+    protected static ?int $navigationSort = 5;
+    protected static ?string $navigationGroup = 'Plantas';
 
     protected static ?string $navigationLabel = 'Seguimiento de cultivos';
 
@@ -211,8 +213,8 @@ class ActionsResource extends Resource
                                     ->numeric()
                                     ->suffix(label: 'lts')
                                     ->default(function () {
-                                        return request()->get('irrigation_type') === 'liters' 
-                                            ? request()->get('irrigation_value') 
+                                        return request()->get('irrigation_type') === 'liters'
+                                            ? request()->get('irrigation_value')
                                             : null;
                                     })
                                     ->helperText(new HtmlString(__('fixed_liters_helper')))
@@ -224,8 +226,8 @@ class ActionsResource extends Resource
                                     ->helperText(new HtmlString(__('timed_irrigation_helper')))
                                     ->numeric()
                                     ->default(function () {
-                                        return request()->get('irrigation_type') === 'timer' 
-                                            ? request()->get('irrigation_value') 
+                                        return request()->get('irrigation_type') === 'timer'
+                                            ? request()->get('irrigation_value')
                                             : null;
                                     })
                                     ->suffix(label: 'min')
@@ -293,7 +295,7 @@ class ActionsResource extends Resource
 
                                         Select::make('data.transplant.new_capacity')
                                             ->label(__('Nueva Capacidad'))
-                                    ->options([
+                                            ->options([
                                                 3 => '3L',
                                                 5 => '5L',
                                                 7 => '7L',
@@ -317,7 +319,7 @@ class ActionsResource extends Resource
                                             ->content(function ($get) {
                                                 // Forzar actualización usando preview_key
                                                 $previewKey = $get('data.transplant.preview_key');
-                                                
+
                                                 $plants = Plant::whereIn('id', $get('plants'))->get();
                                                 if ($plants->isEmpty()) {
                                                     return new HtmlString('
@@ -333,7 +335,7 @@ class ActionsResource extends Resource
                                                 $html = "<div class='space-y-4 p-4 rounded-lg border border-gray-200'>";
                                                 $html .= "<div class='text-lg font-medium border-b pb-2 mb-3'>Resumen de Cambios</div>";
                                                 $html .= "<div class='container-flex justify-to-center'>";
-                                                
+
                                                 foreach ($plants as $plant) {
                                                     $html .= "
                                                         <div class='card-tutorial p-3 bg-white dark:bg-gray-800'>
@@ -342,7 +344,7 @@ class ActionsResource extends Resource
                                                                 <span class='text-gray-600 dark:text-gray-400'>Actual:</span><br/>
                                                                 <span class='font-medium'>{$plant->flowerpot} ({$plant->capacity}L)</span>
                                                             </div>";
-                                                    
+
                                                     if ($newFlowerpot && $newCapacity) {
                                                         $html .= "
                                                             <div class='text-sm'>
@@ -352,10 +354,10 @@ class ActionsResource extends Resource
                                                                 </span>
                                                             </div>";
                                                     }
-                                                    
+
                                                     $html .= "</div>";
                                                 }
-                                                
+
                                                 $html .= "</div></div>";
                                                 return new HtmlString($html);
                                             })
@@ -386,9 +388,9 @@ class ActionsResource extends Resource
                                     ->reorderable()
                                     ->appendFiles()
                                     ->panelLayout('grid')
-                                    ->imagePreviewHeight('150')
+                                    ->imagePreviewHeight('300')
                                     ->rules(['nullable', 'array'])
-                                    ->maxSize(5120)
+                                    ->maxSize(10240)
                                     ->uploadingMessage('Subiendo imágenes...')
                                     ->loadingIndicatorPosition('left')
                                     ->removeUploadedFileButtonPosition('right')
@@ -397,12 +399,12 @@ class ActionsResource extends Resource
                                             $component->state([]);
                                             return;
                                         }
-                                        
+
                                         if (is_string($state)) {
                                             $component->state([$state]);
                                             return;
                                         }
-                                        
+
                                         if (is_array($state)) {
                                             $component->state(array_values(array_filter($state)));
                                         }
@@ -442,10 +444,10 @@ class ActionsResource extends Resource
     public function afterCreate(): void
     {
         parent::afterCreate();
-        
+
         // Recargar el registro con sus relaciones
         $this->record->load(['plants']);
-        
+
         Log::debug('Después de crear acción', [
             'action_id' => $this->record->id,
             'tiene_plantas' => $this->record->plants()->exists(),
@@ -494,12 +496,13 @@ class ActionsResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn(Builder $query) => $query
-                ->with('plants')
-                ->withCount('plants')
-                ->whereHas('indoor', function ($query) {
-                    $query->where('tenant_id', auth()->user()->tenant_id);
-                })
+            ->modifyQueryUsing(
+                fn(Builder $query) => $query
+                    ->with('plants')
+                    ->withCount('plants')
+                    ->whereHas('indoor', function ($query) {
+                        $query->where('tenant_id', auth()->user()->tenant_id);
+                    })
             )
             ->searchPlaceholder(__('actions_searchable_placeholder'))
             ->columns([
@@ -509,6 +512,13 @@ class ActionsResource extends Resource
                     ->description(__('Registrado el'))
                     ->sortable()
                     ->searchable()
+                    ->size('sm'),
+
+                TextColumn::make('indoor.name')
+                    ->label(__('Indoor'))
+                    ->searchable()
+                    ->wrap()
+                    ->sortable()
                     ->size('sm'),
 
                 TextColumn::make('plants_count')
@@ -521,15 +531,96 @@ class ActionsResource extends Resource
 
                 TextColumn::make('detalle_accion')
                     ->label(__('Detalle'))
-                    ->description(fn($record) => $record->detalle_accion)
+                    ->formatStateUsing(function ($state, $record) {
+
+                        $data = is_string($record->data) ? json_decode($record->data, true) : $record->data;
+
+                        if ($record->action_type->id == 6) {
+                            return "La planta ha muerto";
+                        }
+
+                        if (isset($data['irrigation'])) {
+                            $irrigation = $data['irrigation'];
+                            if ($irrigation['irrigation_type'] === 'timer') {
+                                return "Riego por {$irrigation['timer']} minutos ";
+                            } else {
+                                return "Riego {$irrigation['liters']} lts ";
+                            }
+                        } elseif (isset($data['pruning'])) {
+                            $types = $data['pruning']['pruning_type'];
+                            $typesText = [];
+                            foreach ($types as $type) {
+                                $typesText[] = match ($type) {
+                                    'scrog' => 'scrog',
+                                    'excess' => 'exceso de hojas',
+                                    'dry' => 'hojas secas',
+                                    'apical' => 'apical',
+                                    'topping' => 'topping',
+                                    'defoliation' => 'defoliación',
+                                    'lollipop' => 'lollipop',
+                                    default => $type
+                                };
+                            }
+
+                            $text = "Poda";
+                            if (count($typesText) > 1) {
+                                $text .= ' ' . implode(', ', $typesText);
+                            } else {
+                                $text .= ' ' . $typesText[0];
+                            }
+                            return "{$text}";
+                        } elseif (isset($data['transplant'])) {
+                            // dd($data);
+                            return "Transplante a {$data['transplant']['new_flowerpot']} {$data['transplant']['new_capacity']}L";
+                        } elseif (isset($data['change_state'])) {
+                            return "Cambio de estado a {$data['change_state']['state']}";
+                        } elseif (isset($data['observation'])) {
+                            $images = is_array($data['observation']['image'])
+                            ? $data['observation']['image']
+                            : [$data['observation']['image']];
+                            $imageCount = count($images);
+                            
+                            $messageText = '';
+                            $messageText .= "\n" . (strlen($data['observation']['comments']) > 30 
+                                ? substr($data['observation']['comments'], 0, 30) . '...' 
+                                : $data['observation']['comments']);
+                            if ($imageCount > 0) {
+                                if ($imageCount > 1) {
+                                    $messageText .= " ({$imageCount} fotos)";
+                                } else {
+                                    $messageText .= " (1 foto)";
+                                }
+                            }
+
+                            return $messageText;
+
+                        } elseif (isset($data['product_application'])) {
+                            $appType = $data['product_application']['application_type'];
+                            $observation = substr($data['product_application']['observation'] ?? '', 0, 20);
+                            
+                            switch ($appType) {
+                                case 'flora':
+                                    return "Aplicación de producto para flora" . ($observation ? " - $observation" : '');
+                                case 'vege':
+                                    return "Aplicación de producto para vegetativo" . ($observation ? " - $observation" : '');
+                                case 'plantula':
+                                    return "Aplicación de producto para plántula" . ($observation ? " - $observation" : '');
+                                case 'plague':
+                                    return "Aplicación antiplagas" . ($observation ? " - $observation" : '');
+                                default:
+                                    return "Aplicación de producto ($appType)";
+                            }
+                        }
+                        return $state;
+                    })
                     ->wrap()
                     ->searchable()
                     ->size('sm'),
 
                 BadgeColumn::make('action_type')
                     ->label(__('Tipo'))
-                    ->formatStateUsing(fn($record) => str_replace('Registrar ', '', $record->action_type->name))
-                    ->icon(fn($record) => match($record->action_type->name) {
+                    ->formatStateUsing(callback: fn($record) => str_replace('Registrar ', '', $record->action_type->name))
+                    ->icon(fn($record) => match ($record->action_type->name) {
                         'Registrar Poda' => 'heroicon-o-scissors',
                         'Registrar Transplante' => 'heroicon-o-arrow-path',
                         'Registrar Riego' => 'heroicon-o-cloud',
@@ -583,8 +674,6 @@ class ActionsResource extends Resource
                     ])
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->iconButton(),
                 Tables\Actions\EditAction::make()
                     ->iconButton(),
             ])
@@ -600,8 +689,8 @@ class ActionsResource extends Resource
                 'md' => 15,
                 'lg' => 20,
             ])
-            ->recordClasses(fn ($record) => 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800')
-            ->recordUrl(fn ($record) => route('filament.tenant.resources.actions.edit', ['record' => $record]))
+            ->recordClasses(fn($record) => 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800')
+            ->recordUrl(fn($record) => route('filament.tenant.resources.actions.edit', ['record' => $record]))
             ->defaultPaginationPageOption(10);
     }
 
@@ -625,7 +714,7 @@ class ActionsResource extends Resource
     {
         try {
             $formState = $this->form->getState();
-            
+
             Log::debug('🚀 Iniciando creación', [
                 'form_state' => $formState,
                 'plantas' => $formState['plants'] ?? [],
@@ -636,6 +725,10 @@ class ActionsResource extends Resource
                 throw new \Exception('No se han seleccionado plantas');
             }
 
+            log::debug('🌱 Plantas seleccionadas', [
+                'count' => count($formState['plants']),
+                'ids' => $formState['plants']
+            ]);
             $record = $this->handleRecordCreation($formState);
 
             Log::debug('✅ Creación completada', [
@@ -666,7 +759,10 @@ class ActionsResource extends Resource
         // Asegurarnos de que tenemos todos los datos
         $data['_plants_state'] = $data['_plants_state'] ?? null;
         $data['plants'] = $data['plants'] ?? [];
-
+        log::debug('🔍 Datos para creación de acción', [
+            'data' => $data,
+            'tenant_id' => auth()->user()->tenant_id ?? 'no_auth'
+        ]);
         return $this->actionService->handleRecordCreation($data);
     }
 
@@ -678,6 +774,12 @@ class ActionsResource extends Resource
     // Asegurar que las plantas no se modifiquen en la edición
     public function afterSave(): void
     {
+        log::debug('🔄 Después de guardar acción', [
+            'action_id' => $this->record->id,
+            'tiene_plantas' => $this->record->plants()->exists(),
+            'plantas_count' => $this->record->plants()->count(),
+            'plantas_ids' => $this->record->plants()->pluck('id')
+        ]);
         if ($this->record->wasRecentlyCreated) {
             return; // Si es creación, no hacer nada adicional
         }

@@ -15,11 +15,11 @@ class EditPlants extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        Log::info('Datos recibidos en EditPlants:', [
-            'id' => $record->id,
-            'datos_formulario' => $data,
-            'tenant_id' => auth()->user()->tenant_id
-        ]);
+        // Log::info('Datos recibidos en EditPlants:', [
+        //     'id' => $record->id,
+        //     'datos_formulario' => $data,
+        //     'tenant_id' => auth()->user()->tenant_id
+        // ]);
 
         $record->update($data);
 

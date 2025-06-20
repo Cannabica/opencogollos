@@ -3,13 +3,15 @@
     $data = $getState();
 @endphp
 
-<div class="plant-content">
-    <div class="plant-header">
+<div class="plant-content flex-1 min-w-0 overflow-hidden">
+    <div class="plant-header flex items-center gap-2">
         <div class="plant-state-icon">
             <x-icon name="{{ $data['stateIcon'] }}" class="w-6 h-6" />
         </div>
-        <div class="flex flex-col items-start">
-            <h3 class="text-lg font-bold truncate w-full">{{ $record->name }}</h3>
+        <div class="flex flex-col items-start  max-w-3xs overflow-hidden">
+            <h3 class="text-lg font-bold break-words">
+                {{ \Illuminate\Support\Str::wordWrap($record->name, 10, "\n", true) }}
+            </h3>
             <span class="state-badge state-badge-{{ $data['stateBadgeClass'] }}">
                 {{ $record->state }}
             </span>
@@ -60,4 +62,4 @@
             <div class="text-sm">Podas</div>
         </div>
     </div>
-</div> 
+</div>

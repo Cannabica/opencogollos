@@ -1,0 +1,154 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*', 'hotfix/*' ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  VPS_IP: ${{ secrets.VPS_IP }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  APP_KEY: ${{ secrets.APP_KEY }}
+  ADMIN_EMAIL: frankie@cannabica.app
+  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+  APP_ENV: production
+  APP_DEBUG: false
+  CACHE_DRIVER: file
+  SESSION_DRIVER: file
+  QUEUE_CONNECTION: sync
+  SEED_EXAMPLE_DATA: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Install Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Directory Permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Create Database
+        run: |
+          mkdir -p database
+          touch database/cannabica_db.sqlite
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Run Database Migrations
+        run: php artisan migrate --force
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  tag-version:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get version from composer.json
+        id: get_version
+        run: echo "version=$(php -r "echo json_decode(file_get_contents('composer.json'))->version;")" >> $GITHUB_OUTPUT
+
+      - name: Create semantic-minor tag on develop, or production tag on main/hotfix
+        id: create_tag
+        run: |
+          ref="${{ github.ref }}"
+          version="${{ steps.get_version.outputs.version }}"
+
+          if [[ "$ref" == "refs/heads/main" ]] || [[ "$ref" =~ ^refs/heads/hotfix/ ]]; then
+            # Para main y hotfix: tag vX.Y.Z
+            tag="v${version}"
+          
+          elif [[ "$ref" == "refs/heads/develop" ]]; then
+            # Para develop: incrementar minor semántico (X.Y+1.0)
+            IFS='.' read -r major minor patch <<< "$version"
+            next_minor=$((minor + 1))
+            tag="v${major}.${next_minor}.0"
+
+          else
+            echo "No se crea tag para la rama $ref."
+            exit 0
+          fi
+
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "El tag $tag ya existe. No se realizará ninguna acción."
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
+
+  docker:
+    needs: [build, tag-version]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Scan Docker Image for Vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:${{ steps.tag-version.outputs.tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/cannabica:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

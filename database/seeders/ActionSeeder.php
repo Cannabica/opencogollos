@@ -15,6 +15,7 @@ class ActionSeeder extends Seeder
 {
     public function run()
     {
+
         // Verificar la existencia del tenant
         $tenant = Tenant::withoutGlobalScope(TenantScope::class)->find(1);
         if (!$tenant) {
@@ -115,7 +116,18 @@ class ActionSeeder extends Seeder
 
     private function generateActionData($actionTypeId, $selectedPlants): array
     {
-        $data = ['plants' => $selectedPlants];
+        $potTypes = [
+            'Geotextiles',
+            'Plásticas',
+            'Bolsones'
+        ];
+    
+        $potCapacities = [
+            3, 5, 7, 10, 12, 15, 20, 30, 40, 50, 75
+        ];
+    
+    
+        $data = [];
 
         switch ($actionTypeId) {
             case 1: // Riego
@@ -153,10 +165,8 @@ class ActionSeeder extends Seeder
 
             case 4: // Transplante
                 $data['transplant'] = [
-                    'new_pot_size' => Arr::random([
-                        'N10', 'N12', 'N14', '3L', '5L', 
-                        '7L', '10L', '12L', '15L', '20L'
-                    ])
+                    'new_flowerpot' => Arr::random($potTypes),
+                    'new_capacity' => Arr::random($potCapacities),
                 ];
                 break;
 

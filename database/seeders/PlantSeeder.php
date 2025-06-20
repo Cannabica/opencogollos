@@ -15,12 +15,23 @@ class PlantSeeder extends Seeder
     /**
      * Run the database seeds.
      */
+
+     private $suelos;
+     private $enriquecimientos;
+ 
+     public function __construct()
+     {
+         $this->suelos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::BASE_FLOOR_OPTIONS);
+         $this->enriquecimientos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::SOIL_ENRICHMENT_OPTIONS);
+     }
+ 
     public function run(): void
     {
         $faker = Factory::create('es_ES');
         
         $tenants = Tenant::all();
         
+    
         foreach ($tenants as $tenant) {
             $this->command->info("Creando plantas para tenant: " . $tenant->name);
             
@@ -95,8 +106,6 @@ class PlantSeeder extends Seeder
                 'Porro Patrio'
             ];
 
-            $suelos = ['Turba', 'Guano', 'Estiércol', 'Polvo de roca', 'Arena', 'Fibra de coco', 'Abono naturales', 'Corteza de pino', 'Perlita', 'Vermiculita'];
-            $enriquecimientos = ['Posos de café y/o te', 'Cascaras de huevo', 'Humus de lombriz', 'Pieles de frutas y verd', 'Abono', 'Fibra de coco', 'Perlita', 'Vermiculita', 'Arena', 'Harina de huesos', 'Harina de sangre', 'Roca fosfórica', 'Cal'];
 
             $plantsPerIndoor = ceil(20 / $indoors->count()); // Distribuir plantas equitativamente
             $plantsCreated = 0;
@@ -106,12 +115,15 @@ class PlantSeeder extends Seeder
                 
                 for ($i = 0; $i < $plantsPerIndoor && $plantsCreated < 20; $i++) {
                     // Seleccionar elementos aleatorios
-                    $suelosSeleccionados = $faker->randomElements($suelos, 3);
-                    $enriquecimientosSeleccionados = $faker->randomElements($enriquecimientos, 3);
+                    $suelosSeleccionados = $faker->randomElements($this->suelos, rand(1, min(5, count($this->suelos))));
+                    $enriquecimientosSeleccionados = $faker->randomElements(
+                        $this->enriquecimientos,
+                        rand(1, min(5, count($this->enriquecimientos)))
+                    );
 
                     $plant = Plant::withoutGlobalScope(TenantScope::class)->create([
                         'name' => $faker->randomElement($adjetivos) . ' ' .
-                            $faker->randomElement($plantas),
+                            $faker->randomElement($plantas) . ' #' . rand(1, 999),
                         'indoor_id' => $indoor->id,
                         'seed_id' => $seeds->random()->id,
                         'germination_date' => $faker->dateTimeBetween('-6 months', 'now'),

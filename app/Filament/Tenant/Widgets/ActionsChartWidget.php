@@ -33,6 +33,7 @@ class ActionsChartWidget extends ChartWidget
             'last30days' => now()->subDays(30),
             'last7days' => now()->subDays(7),
             'today' => now()->startOfDay(),
+            'all' => null,
             default => now()->subDays(30),
         };
 
@@ -42,30 +43,39 @@ class ActionsChartWidget extends ChartWidget
         $actionTypes = ActionType::all();
 
         // Preparar el rango de fechas
-        $dates = collect(new \DatePeriod(
-            $startDate->startOfDay(),
-            new \DateInterval('P1D'),
-            $endDate->endOfDay()
-        ))->map(function ($date) {
-            return $date->format('Y-m-d');
-        });
+        $dates = collect();
+        if ($startDate) {
+            $dates = collect(new \DatePeriod(
+                $startDate->startOfDay(),
+                new \DateInterval('P1D'),
+                $endDate->endOfDay()
+            ))->map(function ($date) {
+                return $date->format('Y-m-d');
+            });
+        } else {
+            // For 'all' filter, get dates from actual data
+            $dates = Action::query()
+                ->where('tenant_id', auth()->user()->tenant_id)
+                ->select(DB::raw('DATE(action_date) as date'))
+                ->groupBy('date')
+                ->orderBy('date')
+                ->pluck('date');
+        }
 
         // Obtener las acciones agrupadas por tipo y fecha
         $actions = Action::query()
-            ->whereHas('plants', function($query) {
-                $query->whereHas('indoor', function($q) {
-                    $q->where('tenant_id', auth()->user()->tenant_id);
-                });
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->when($startDate, function($query) use ($startDate, $endDate) {
+                $query->whereBetween('action_date', [
+                    $startDate->startOfDay(),
+                    $endDate->endOfDay()
+                ]);
             })
             ->select(
                 'action_type_id',
                 DB::raw('DATE(action_date) as date'),
                 DB::raw('COUNT(*) as count')
             )
-            ->whereBetween('action_date', [
-                $startDate->startOfDay(),
-                $endDate->endOfDay()
-            ])
             ->groupBy('action_type_id', 'date')
             ->get();
 
@@ -81,27 +91,38 @@ class ActionsChartWidget extends ChartWidget
             7 => '#C9CBCF'   // Cambio de estado
         ];
 
+        // Group actions by type first for better performance
+        $actionsByType = $actions->groupBy('action_type_id');
+
         // Crear un dataset para cada tipo de acción
         foreach ($actionTypes as $type) {
-            $typeData = $dates->mapWithKeys(function ($date) {
-                return [$date => 0];
-            })->toArray();
+            $typeActions = $actionsByType->get($type->id, collect());
+            
+            $typeData = $dates->mapWithKeys(function ($date) use ($typeActions) {
+                $action = $typeActions->firstWhere('date', $date);
+                return [$date => $action ? $action->count : 0];
+            });
 
-            // Llenar con los datos reales
-            foreach ($actions as $action) {
-                if ($action->action_type_id === $type->id) {
-                    $typeData[$action->date] = $action->count;
-                }
+            // Only include dataset if there are any actions of this type
+            if ($typeData->sum() > 0) {
+                $datasets[] = [
+                    'label' => $type->name,
+                    'data' => $typeData->values()->all(),
+                    'borderColor' => $colors[$type->id] ?? '#' . substr(md5($type->id), 0, 6),
+                    'backgroundColor' => $colors[$type->id] ?? '#' . substr(md5($type->id), 0, 6),
+                    'fill' => false,
+                    'tension' => 0.1, // Reduced tension to show more variation
+                    'borderWidth' => 2, // Thicker lines
+                ];
             }
+        }
 
-            $datasets[] = [
-                'label' => $type->name,
-                'data' => array_values($typeData),
-                'borderColor' => $colors[$type->id] ?? '#' . substr(md5($type->id), 0, 6),
-                'backgroundColor' => $colors[$type->id] ?? '#' . substr(md5($type->id), 0, 6),
-                'fill' => false,
-                'tension' => 0.4,
-            ];
+        // Temporary debug output
+        if (app()->environment('local')) {
+            \Log::debug('Chart Data:', [
+                'datasets' => $datasets,
+                'labels' => $dates->take(5)->all() // Show first 5 labels for debugging
+            ]);
         }
 
         return [
@@ -120,7 +141,7 @@ class ActionsChartWidget extends ChartWidget
     protected function getOptions(): array
     {
         return [
-            'responsive' => true,
+            'responsive' => false,
             'maintainAspectRatio' => false,
             'interaction' => [
                 'mode' => 'nearest',
@@ -128,7 +149,7 @@ class ActionsChartWidget extends ChartWidget
             ],
             'scales' => [
                 'y' => [
-                    'beginAtZero' => true,
+                    'beginAtZero' => true, // Changed to false to show variation better
                     'title' => [
                         'display' => true,
                         'text' => __('Cantidad de acciones'),
@@ -139,9 +160,13 @@ class ActionsChartWidget extends ChartWidget
                     ],
                     'ticks' => [
                         'color' => '#999',
-                        'stepSize' => 3,
                         'precision' => 0,
-                    ]
+                        'suggestedMax' => 10,
+                        'suggestedMin' => 0, 
+                        'stepSize' => 1, // Removed stepSize to allow dynamic scaling
+                        // Removed stepSize to allow dynamic scaling
+                    ],
+                    'min' => 0, // Still start at 0 but allow dynamic max
                 ],
                 'x' => [
                     'title' => [

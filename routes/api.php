@@ -2,18 +2,57 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Services\TenantTokenService;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+// Temporary test route for token service
+Route::get('/test-token', function (TenantTokenService $service) {
+    // Create temporary tenant for testing
+    $tenant = new \App\Models\Tenant();
+    $tenant->id = 12345;
+    
+    // Generate token with test chat ID in metadata
+    $chatId = 987654321; // Test Telegram chat ID
+    $token = $service->generateToken($tenant, null, ['*'], $chatId);
+    
+    // Retrieve token using same chat ID
+    $retrieved = $service->getCurrentToken($chatId);
+    
+    return response()->json([
+        'generated' => $token,
+        'retrieved' => $retrieved,
+        'chat_id' => $chatId
+    ]);
+});
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Tenant API Routes
+Route::middleware('tenant.token')->group(function () {
+    Route::get('/test', function (Request $request) {
+        return response()->json([
+            'message' => 'Token valid for tenant: '.$request->tenant->name,
+            'abilities' => $request->token()->abilities
+        ]);
+    });
+
+    Route::post('/renew-token', function (Request $request) {
+        $newToken = app(TenantTokenService::class)->renewToken(
+            hash('sha256', $request->bearerToken())
+        );
+        
+        if (!$newToken) {
+            return response()->json(['error' => 'Token cannot be renewed'], 400);
+        }
+
+        return response()->json(['token' => $newToken]);
+    });
+
+    Route::get('/user', function (Request $request) {
+        return $request->tenant;
+    });
+
+    Route::post('/notifications', [\App\Http\Controllers\NotificationController::class, 'store']);
+    
+    // Plant endpoints
+    Route::get('/plants', [\App\Http\Controllers\PlantController::class, 'index']);
+    Route::get('/plants/{id}', [\App\Http\Controllers\PlantController::class, 'show']);
 });

@@ -25,40 +25,6 @@ Route::get('/test-token', function (TenantTokenService $service) {
     ]);
 });
 
-// Telegram Webhook Route
-Route::post('/api/telegram/webhook/', function (Request $request, $tenant) {
-    // Debug log full incoming webhook data
-    \Log::debug('Incoming Telegram webhook', [
-        'tenant' => $tenant,
-        'full_request' => $request->all(),
-        'headers' => $request->headers->all()
-    ]);
-    
-    try {
-        $telegram = app('telegram');
-        $update = $telegram->commandsHandler(true);
-        
-        \Log::debug('Processed Telegram update', [
-            'tenant' => $tenant,
-            'update_id' => $update->getUpdateId(),
-            'update_type' => $update->detectType()
-        ]);
-        
-        return response('OK', 200, [
-            'Content-Type' => 'text/plain'
-        ]);
-    } catch (\Exception $e) {
-        \Log::error('Telegram webhook processing error', [
-            'tenant' => $tenant,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-            'request_data' => $request->all()
-        ]);
-        return response('Error', 500);
-    }
-})->middleware('telegram.tenant');
-
-
 // Tenant API Routes
 Route::middleware('tenant.token')->group(function () {
     Route::get('/test', function (Request $request) {

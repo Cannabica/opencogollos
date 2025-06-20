@@ -7,6 +7,7 @@ use Filament\Widgets\ChartWidget;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\ActionType;
+use Illuminate\Support\Facades\Log;
 
 class ActionTypesPieWidget extends ChartWidget
 {
@@ -62,6 +63,15 @@ class ActionTypesPieWidget extends ChartWidget
             7 => '#C9CBCF'   // Cambio de estado
         ];
 
+        $labels = $actions->pluck('action_type_id')
+            ->map(function ($typeId) use ($actionTypes) {
+                return $actionTypes[$typeId]->name ?? 'Desconocido';
+            })
+            ->map(function ($label) {
+                return str_replace('Registrar ', '', $label);
+            });
+
+
         return [
             'datasets' => [
                 [
@@ -71,9 +81,7 @@ class ActionTypesPieWidget extends ChartWidget
                     }),
                 ],
             ],
-            'labels' => $actions->pluck('action_type_id')->map(function ($typeId) use ($actionTypes) {
-                return $actionTypes[$typeId]->name ?? 'Desconocido';
-            }),
+            'labels' => $labels,
         ];
     }
 

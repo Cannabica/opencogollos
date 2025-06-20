@@ -30,15 +30,9 @@ Reemplazar los siguientes placeholders:
 Asegúrate de configurar:
 - Credenciales de base de datos
 - Configuración de email
-- Variables específicas de la aplicación
+- Variables específicas de la aplicación  
 - Configuración de Docker (si aplica)
 
-
-- PHP 8.3 o superior
-- Composer
-- Node.js 18 o superior
-- SQLite3
-- Docker (opcional)
 
 ## Instalación Local
 
@@ -238,6 +232,21 @@ docker ps -a | grep cannabica-app
 # Entrar al contenedor
 docker exec -it cannabica-app bash
 ```
+
+```
+'name' => 'Tenant Example',
+'email' => 'tenant@example.com',
+'user_name' => 'User Tenant',
+'user_email' => 'user@tenant.com',
+'name' => 'Green Gardens Co.',
+'email' => 'admin@greengardens.com',
+'user_name' => 'Green Gardens Manager',
+'user_email' => 'manager@greengardens.com',
+'name' => 'Urban Cultivators',
+'email' => 'contact@urbancultivators.com',
+'user_name' => 'Urban Cultivator Admin',
+'user_email' => 'admin@urbancultivators.com',
+```            
 
 
 - [Cafecito](https://cafecito.app/cannabica_app)

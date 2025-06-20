@@ -14,19 +14,21 @@ class Plant extends Model
     protected $fillable = ['name', 'indoor_id', 'seed_id', 'state', 'germination_date', 'flowerpot', 'capacity', 'base_floor', 'soil_enrichment'];
 
     protected $casts = [
-        'base_floor' => 'array',
-        'soil_enrichment' => 'array',
+        'base_floor' => 'json',
+        'soil_enrichment' => 'json',
     ];
 
     public function seedType()
     {
-        Log::info('Accessing seedType relation for plant ID: ' . $this->id);
         return $this->belongsTo(Seed::class, 'seed_id');
     }
 
+    public function seed()
+    {
+        return $this->belongsTo(Seed::class);
+    }
     public function indoor()
     {
-        Log::info('Accessing indoor relation for plant ID: ' . $this->id);
         return $this->belongsTo(Indoor::class);
     }
 

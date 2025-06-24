@@ -30,10 +30,13 @@ RUN docker-php-ext-install intl
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
+ARG ENV=development
 
-# Copy and set permissions for entrypoint
-COPY ./docker/scripts/entrypoint.sh /entrypoint.sh
+# Copy appropriate php.ini based on environment
+COPY ./docker/php/php.${ENV}.ini /usr/local/etc/php/conf.d/php.ini
+
+# Copy appropriate entrypoint based on environment
+COPY ./docker/scripts/entrypoint.${ENV}.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 WORKDIR /var/www/html

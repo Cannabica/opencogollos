@@ -43,7 +43,7 @@ jobs:
         run: |
           ref="${{ github.ref }}"
           version="${{ steps.get_version.outputs.version }}"
-
+          
           if [[ "$ref" == "refs/heads/main" ]] || [[ "$ref" =~ ^refs/heads/hotfix/ ]]; then
             # For main and hotfix: tag vX.Y.Z
             tag="v${version}"
@@ -61,9 +61,6 @@ jobs:
             echo "Tag $tag already exists. No action taken."
           else
             git tag "$tag"
-            # Use GitHub token for authentication
-            git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-            git push origin "$tag"
           fi
           echo "tag=${tag}" >> $GITHUB_OUTPUT
 
@@ -80,24 +77,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Update composer.json version
-        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        run: |
-          # Use the tag we already created to update composer.json
-          new_version=$(echo "${{ steps.create_tag.outputs.tag }}" | sed 's/^v//')
-          jq --arg v "$new_version" '.version = $v' composer.json > composer.tmp.json
-          mv composer.tmp.json composer.json
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add composer.json
-          git commit -m "Bump version to ${new_version} [skip ci]"
-          
-          # Use GitHub token for authentication
-          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-          git push origin HEAD:develop
-          
-          # Reset file modes if needed
-          git config --global core.fileMode false
 
       - name: Build PHP Docker Image
         uses: docker/build-push-action@v4
@@ -110,8 +89,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: docker/php/Dockerfile
-          build-args: |
-            ENV=develop
 
       - name: Scan Docker Image for Vulnerabilities
         uses: aquasecurity/trivy-action@master
@@ -121,10 +98,23 @@ jobs:
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
 
-      - name: Generate key
-        run: php artisan key:generate
+      - name: Update version in composer.json
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && success()
+        run: |
+          new_version=$(echo "${{ steps.create_tag.outputs.tag }}" | sed 's/^v//')
+          jq --arg v "$new_version" '.version = $v' composer.json > composer.tmp.json
+          mv composer.tmp.json composer.json
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add composer.json
+          git commit -m "Bump version to ${new_version} [skip ci]"
 
-      - name: Directory Permissions
-        run: chmod -R 777 storage bootstrap/cache
+      - name: Push version changes and tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && success()
+        run: |
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push origin HEAD:develop
+          git push origin "${{ steps.create_tag.outputs.tag }}"
+          git config --global core.fileMode false
 
 

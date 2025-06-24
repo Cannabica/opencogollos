@@ -33,10 +33,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 ARG ENV=development
 
 # Copy appropriate php.ini based on environment
-COPY ./docker/php/php.${ENV}.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
 
-# Copy appropriate entrypoint based on environment
-COPY ./docker/scripts/entrypoint.${ENV}.sh /entrypoint.sh
+COPY ./docker/scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 WORKDIR /var/www/html

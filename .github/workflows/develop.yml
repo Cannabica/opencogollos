@@ -58,7 +58,17 @@ jobs:
             git config --global user.email "actions@github.com"
             git add composer.json
             git commit -m "Bump version to ${new_version} [skip ci]"
-            git push
+            
+            # Use GitHub token for authentication
+            git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+            git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n "x-access-token:${{ secrets.GITHUB_TOKEN }}" | base64)"
+            git push origin HEAD:develop
+            
+            # Reset file modes if needed
+            if [[ "$(git config --get core.fileMode)" != "false" ]]; then
+              git config core.fileMode false
+              echo "::warning::Fixed file mode configuration"
+            fi
           fi
 
       - name: Build PHP Docker Image

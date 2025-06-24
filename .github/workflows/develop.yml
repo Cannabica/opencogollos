@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+
+permissions:
+  contents: write
 env:
   VPS_IP: ${{ secrets.VPS_IP }}
   VPS_USER: ${{ secrets.VPS_USER }}
@@ -58,6 +61,8 @@ jobs:
             echo "Tag $tag already exists. No action taken."
           else
             git tag "$tag"
+            # Use GitHub token for authentication
+            git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
             git push origin "$tag"
           fi
           echo "tag=${tag}" >> $GITHUB_OUTPUT
@@ -88,7 +93,7 @@ jobs:
           git commit -m "Bump version to ${new_version} [skip ci]"
           
           # Use GitHub token for authentication
-          git remote set-url origin "https://x-access-token:${{ secrets.FRANKIE_GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           git push origin HEAD:develop
           
           # Reset file modes if needed

@@ -264,11 +264,19 @@ class ActionsResource extends Resource
 
                                 Select::make('data.product_application.reminder_time')
                                     ->label('Recordatorio adicional')
-                                    ->options([
-                                        '1d' => 'En 1 día',
-                                        '7d' => 'En 7 días',
-                                        '14d' => 'En 14 días'
-                                    ])
+                                    ->options(function () {
+                                        $options = [
+                                            '1d' => 'En 1 día',
+                                            '7d' => 'En 7 días',
+                                            '14d' => 'En 14 días'
+                                        ];
+                                        
+                                        if (env('APP_DEBUG') === true) {
+                                            $options['5s'] = 'En 5 segundos (DEBUG)';
+                                        }
+                                        
+                                        return $options;
+                                    })
                                     ->default('none'),
                                 Textarea::make('data.product_application.observation')
                                     ->label(__('Observations'))
@@ -474,20 +482,33 @@ class ActionsResource extends Resource
                 $action->data['product_application']['reminder_time'] !== 'none'
             ) {
 
-                $delay = match ($action->data['product_application']['reminder_time']) {
-                    '1d' => 86400,
-                    '7d' => 604800,
-                    '14d' => 1209600,
-                    default => 0
-                };
-
-                if ($delay > 0) {
+                $reminderTime = $action->data['product_application']['reminder_time'];
+                
+                if ($reminderTime === '5s') {
+                    // Disparar con delay aleatorio entre 5 y 10 segundos para testing
+                    $randomDelay = rand(5, 10);
                     dispatch(new SendDelayedProductNotification(
                         $action->data['product_application']['application_type'],
                         $action->plants()->count(),
                         $action->tenant_id,
                         url(ActionsResource::getUrl('edit', ['record' => $action->id]))  // URL de edición de la acción
-                    ))->delay(now()->addSeconds($delay));
+                    ))->delay(now()->addSeconds($randomDelay));
+                } else {
+                    $delay = match ($reminderTime) {
+                        '1d' => 86400,
+                        '7d' => 604800,
+                        '14d' => 1209600,
+                        default => 0
+                    };
+
+                    if ($delay > 0) {
+                        dispatch(new SendDelayedProductNotification(
+                            $action->data['product_application']['application_type'],
+                            $action->plants()->count(),
+                            $action->tenant_id,
+                            url(ActionsResource::getUrl('edit', ['record' => $action->id]))  // URL de edición de la acción
+                        ))->delay(now()->addSeconds($delay));
+                    }
                 }
             }
         }

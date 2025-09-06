@@ -20,7 +20,7 @@
                             Si encuentras algún error, por favor
                             <a href="https://forms.gle/ExezFvDNXfAJLbW4A" target="_blank"
                                 class="underline font-medium text-orange-600 hover:text-orange-800">
-                                repórtalo aquí
+                                mandalo acá
                             </a>.
                         </p>
                     </div>

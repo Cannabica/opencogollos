@@ -32,4 +32,6 @@ default.local.conf
 build_mode_summary.js
 build_roomodes.js
 create_build.js
+
 api-notes.md
+notas.md

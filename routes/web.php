@@ -79,9 +79,55 @@ Route::post('/api/telegram/webhook', function () {
             } catch (\Exception $e) {
                 Log::error('Error triggering command: ' . $e->getMessage());
             }
+        } else {
+            // Handle other callback patterns with the general callback command
+            try {
+                Telegram::triggerCommand('callback', $update);
+            } catch (\Exception $e) {
+                Log::error('Error triggering callback command', [
+                    'error' => $e->getMessage(),
+                    'exception' => $e
+                ]);
+            }
         }
     } else {
-        Telegram::commandsHandler(true);
+        // Si es un mensaje con foto, procesarlo con el comando photo
+        if ($update->has('message') && $update->message->has('photo')) {
+            try {
+                Telegram::triggerCommand('photo', $update);
+            } catch (\Exception $e) {
+                Log::error('Error triggering photo command', [
+                    'error' => $e->getMessage(),
+                    'exception' => $e
+                ]);
+                Telegram::commandsHandler(true); // Fallback to default handler
+            }
+        }
+        // Si es un mensaje de texto y el usuario está en modo descripción de observación
+        elseif ($update->has('message') && $update->message->has('text')) {
+            $text = $update->message->text;
+            $userId = $update->message->from->id;
+            
+            // Verificar si el usuario está en el flujo de observación
+            $observationData = cache()->get('observation_step_' . $userId);
+            
+            if ($observationData && $observationData['step'] === 'ask_description') {
+                try {
+                    // Procesar la descripción y crear la observación
+                    \App\Services\TelegramObservationService::processObservationDescription($update, $observationData, $text);
+                } catch (\Exception $e) {
+                    Log::error('Error processing observation description', [
+                        'error' => $e->getMessage(),
+                        'exception' => $e
+                    ]);
+                    Telegram::commandsHandler(true); // Fallback to default handler
+                }
+            } else {
+                Telegram::commandsHandler(true);
+            }
+        } else {
+            Telegram::commandsHandler(true);
+        }
     }
 
     return response()->json(['status' => 'ok']);

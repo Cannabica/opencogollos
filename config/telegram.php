@@ -41,10 +41,13 @@ return [
                 'tenantinfo',
                 'indoordetails',
                 'plants',
-                'plantdetails',
                 'seedslist',
+                'repetirriego',
+                'plantdetails',
                 'actionslist',
-                'actiondetails'
+                'actiondetails',
+                'callback',
+                'photo'
             ],
         ],
     ],
@@ -220,5 +223,8 @@ return [
         'seedslist' => App\Telegram\Commands\SeedsListCommand::class,
         'actionslist' => App\Telegram\Commands\ActionsListCommand::class,
         'actiondetails' => App\Telegram\Commands\ActionDetailsCommand::class,
+        'photo' => App\Telegram\Commands\PhotoHandlerCommand::class,
+        'callback' => App\Telegram\Commands\CallbackHandlerCommand::class,
+        'repetirriego' => App\Telegram\Commands\RepeatLastIrrigationCommand::class,
     ],
 ];

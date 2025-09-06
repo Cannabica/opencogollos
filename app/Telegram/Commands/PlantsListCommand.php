@@ -85,7 +85,6 @@ class PlantsListCommand extends Command
 
             // Create inline keyboard with plant buttons using InlineKeyboardButton objects
             $keyboard = Keyboard::make()->inline();
-            $keyboardRows = [];
 
             $allPlants = [];
             foreach ($indoors as $indoor) {
@@ -102,10 +101,36 @@ class PlantsListCommand extends Command
                 }
             }
 
-            // Split into groups of 2 for 2-column layout
-            $buttonGroups = array_chunk($allPlants, 2);
-            foreach ($buttonGroups as $group) {
-                $keyboard->row($group);
+            // Group plants into pages of 6 (3 rows of 2 columns)
+            $plantPages = array_chunk($allPlants, 6);
+            $currentPage = 0;
+
+            // Add plants for current page
+            if (isset($plantPages[$currentPage])) {
+                $buttonGroups = array_chunk($plantPages[$currentPage], 2);
+                foreach ($buttonGroups as $group) {
+                    $keyboard->row($group);
+                }
+            }
+
+            // Add navigation buttons if there are multiple pages
+            if (count($plantPages) > 1) {
+                $navButtons = [];
+                if ($currentPage > 0) {
+                    $navButtons[] = Keyboard::inlineButton([
+                        'text' => '⬅️ Anterior',
+                        'callback_data' => 'plants_page:' . ($currentPage - 1)
+                    ]);
+                }
+                if ($currentPage < count($plantPages) - 1) {
+                    $navButtons[] = Keyboard::inlineButton([
+                        'text' => 'Siguiente ➡️',
+                        'callback_data' => 'plants_page:' . ($currentPage + 1)
+                    ]);
+                }
+                if (!empty($navButtons)) {
+                    $keyboard->row($navButtons);
+                }
             }
 
             $this->replyWithMessage([

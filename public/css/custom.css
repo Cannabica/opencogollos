@@ -6,16 +6,16 @@
 /* Contenedor principal */
 .fi-main-ctn {
     background-color: #eeeeee;
-    border: 1px solid rgba(95, 158, 160, 0.15);
+    border-width: inherit;
     border-radius: 0.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-    padding: 1rem;
 }
 
 .dark .fi-main-ctn {
     background-color: rgba(24, 24, 27, 0.8);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 0px;
 }
 
 /* Contenedores flexibles */
@@ -372,7 +372,6 @@ input[type="radio"]:checked + label.fi-btn {
 }
 
 .dark .indoor-card {
-    background-color: rgba(17, 24, 39, 0.6);
     border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -384,7 +383,6 @@ input[type="radio"]:checked + label.fi-btn {
 
 .dark .indoor-header {
     border-color: rgba(255, 255, 255, 0.1);
-    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .indoor-content {
@@ -415,7 +413,6 @@ input[type="radio"]:checked + label.fi-btn {
 }
 
 .dark .lamp-item {
-    background-color: rgba(17, 24, 39, 0.6);
     border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -629,10 +626,6 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     border-color: inherit;
 }
 
-.dark .indoor-card {
-    background-color: rgba(28, 28, 31, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
-}
 
 .dark .indoor-header {
     background-color: rgba(39, 39, 42, 0.8);
@@ -1700,13 +1693,5 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Dark mode adjustments */
-.dark .indoor-card {
-    background-color: rgba(17, 24, 39, 0.8);
-}
 
-.dark .lamp-item,
-.dark .plant-content-dashboard,
-.dark .action-item {
-    background-color: rgba(31, 41, 55, 0.7);
-}
+

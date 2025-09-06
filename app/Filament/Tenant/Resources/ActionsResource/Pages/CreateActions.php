@@ -62,20 +62,42 @@ class CreateActions extends CreateRecord
             $reminderTime = $record->data['product_application']['reminder_time'] ?? 'none';
             
             if ($reminderTime !== 'none') {
-                $delay = match($reminderTime) {
-                    '5s' => now()->addSeconds(5),
-                    '1m' => now()->addMinute(),
-                    '1d' => now()->addDay(),
-                    default => null
-                };
+                if ($reminderTime === '5s') {
+                    // Disparar inmediatamente sin delay para testing cuando APP_DEBUG=true
+                    if (env('APP_DEBUG') === true) {
+                        // Disparar con delay aleatorio entre 5 y 10 segundos para testing
+                        $randomDelay = rand(5, 10);
+                        \App\Jobs\SendDelayedProductNotification::dispatch(
+                            $applicationType,
+                            $plantsCount,
+                            auth()->user()->tenant_id,
+                            $record->id
+                        )->delay(now()->addSeconds($randomDelay));
+                    } else {
+                        // En producción, usar el delay normal de 5 segundos
+                        \App\Jobs\SendDelayedProductNotification::dispatch(
+                            $applicationType,
+                            $plantsCount,
+                            auth()->user()->tenant_id,
+                            $record->id
+                        )->delay(now()->addSeconds(5));
+                    }
+                } else {
+                    $delay = match($reminderTime) {
+                        '1m' => now()->addMinute(),
+                        '1d' => now()->addDay(),
+                        '5s' => now()->addSeconds(5),
+                        default => null
+                    };
 
-                if ($delay) {
-                    \App\Jobs\SendDelayedProductNotification::dispatch(
-                        $applicationType,
-                        $plantsCount,
-                        auth()->user()->tenant_id,
-                        $record->id
-                    )->delay($delay);
+                    if ($delay) {
+                        \App\Jobs\SendDelayedProductNotification::dispatch(
+                            $applicationType,
+                            $plantsCount,
+                            auth()->user()->tenant_id,
+                            $record->id
+                        )->delay($delay);
+                    }
                 }
             }
             

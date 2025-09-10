@@ -51,9 +51,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubje
 
     public function canAccessPanel(Panel $panel): bool
     {
-
         if ($panel->getId() === 'tenant') {
-            return $this->tenant?->active ?? false;
+            // Permitir acceso al panel incluso si el tenant está inactivo
+            // La lógica de redirección se manejará en un middleware o en el panel mismo
+            return $this->tenant !== null;
         }
 
         if ($panel->getId() === 'superadmin') {

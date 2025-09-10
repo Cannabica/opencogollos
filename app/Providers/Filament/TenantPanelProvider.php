@@ -57,6 +57,7 @@ class TenantPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
                 \App\Filament\Tenant\Pages\TenantPage::class,
+                \App\Filament\Tenant\Pages\ActivationPending::class,
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('10s')
@@ -140,6 +141,7 @@ class TenantPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\CheckTenantActivation::class,
             ])
             ->authGuard('web');
     }

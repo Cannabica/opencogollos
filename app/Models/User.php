@@ -72,7 +72,21 @@ class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubje
         'name',
         'email',
         'password',
+        'user_type',
+        'usage_type',
+        'team_emails',
+        'plants_per_cycle',
+        'harvest_products',
+        'force_password_change',
+        'tenant_id',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['plants_per_cycle_description'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -92,5 +106,24 @@ class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubje
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'harvest_products' => 'array',
+        'force_password_change' => 'boolean',
+        'plants_per_cycle' => 'integer',
     ];
+
+    /**
+     * Get the plants per cycle description
+     */
+    public function getPlantsPerCycleDescriptionAttribute(): ?string
+    {
+        $descriptions = [
+            1 => '1-5 plantas',
+            2 => '6-10 plantas',
+            3 => '11-20 plantas',
+            4 => '21-50 plantas',
+            5 => 'Más de 50 plantas',
+        ];
+
+        return $descriptions[$this->plants_per_cycle] ?? null;
+    }
 }

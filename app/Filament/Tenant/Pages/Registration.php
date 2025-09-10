@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\RedirectResponse;
 
 class Registration extends Register
 {
@@ -209,6 +208,13 @@ class Registration extends Register
                 ]);
             }
         }
+
+        // Show success notification after registration
+        Notification::make()
+            ->title('Registro exitoso')
+            ->body('Tu cuenta ha sido creada exitosamente. Debes esperar la activación de tu cuenta por parte de nuestro equipo de superadministradores.')
+            ->success()
+            ->send();
     }
 
 
@@ -231,7 +237,7 @@ class Registration extends Register
             $tenant = \App\Models\Tenant::create([
                 'name' => $user->name . "'s Tenant",
                 'email' => $user->email,
-                'active' => false, // Tenant desactivado por defecto
+                'active' => false, // Tenant desactivado por defecto, requiere activación
             ]);
             
             \Log::debug('Tenant created successfully:', ['tenant_id' => $tenant->id]);
@@ -311,32 +317,4 @@ class Registration extends Register
         }
     }
 
-    public function register(): ?\Filament\Http\Responses\Auth\Contracts\RegistrationResponse
-    {
-        \Log::debug('Registration process started');
-        
-        try {
-            $result = parent::register();
-            \Log::debug('Registration process completed successfully');
-            
-            // After successful registration, redirect to login with success message
-            Notification::make()
-                ->title('Registro exitoso')
-                ->body('Tu cuenta ha sido creada exitosamente. Debes esperar la activación de tu cuenta, que puede demorar hasta 24 horas. Te llegará un correo electrónico cuando tu cuenta esté activada.')
-                ->success()
-                ->send();
-            
-            // Return a redirect response to the login page
-            return new class implements RegistrationResponse {
-                public function toResponse($request): RedirectResponse
-                {
-                    return new RedirectResponse(route('filament.tenant.auth.login'));
-                }
-            };
-        } catch (\Exception $e) {
-            \Log::error('Registration failed: ' . $e->getMessage());
-            \Log::error('Registration error details: ', ['exception' => $e]);
-            throw $e;
-        }
-    }
 }

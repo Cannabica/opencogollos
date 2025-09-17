@@ -45,9 +45,11 @@ class RegistrationConfirmationNotification extends Notification implements Shoul
             ->line('Email: ' . $notifiable->email)
             ->line('Tenant: ' . $this->tenantName)
             ->line('')
-            ->line('Puedes acceder a tu cuenta usando las credenciales que creaste durante el registro.')
+            ->line('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista y podrás ingresar con las credenciales que creaste durante el registro.')
             ->action('Iniciar Sesión', url('/tenant/login'))
-            ->line('Gracias por unirte a nuestra comunidad!');
+            ->line('Gracias por unirte a nuestra comunidad!')
+            ->line('')
+            ->action('Monitor de estado', url('https://status.cannabica.ar'));
     }
 
     /**

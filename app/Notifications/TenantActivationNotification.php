@@ -7,19 +7,17 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TeamUserActivationNotification extends Notification implements ShouldQueue
+class TenantActivationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $password;
     public $tenantName;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $password, string $tenantName)
+    public function __construct(string $tenantName)
     {
-        $this->password = $password;
         $this->tenantName = $tenantName;
     }
 
@@ -39,16 +37,18 @@ class TeamUserActivationNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Activación de cuenta - ' . $this->tenantName)
+            ->subject('Activación de Tenant - ' . $this->tenantName)
             ->greeting('¡Hola ' . $notifiable->name . '!')
-            ->line('Has sido agregado al equipo de ' . $this->tenantName)
-            ->line('**Credenciales temporales:**')
+            ->line('Tu tenant ' . $this->tenantName . ' ha sido activado exitosamente.')
+            ->line('**Detalles de tu cuenta:**')
+            ->line('Nombre: ' . $notifiable->name)
             ->line('Email: ' . $notifiable->email)
-            ->line('Contraseña temporal: ' . $this->password)
+            ->line('Tenant: ' . $this->tenantName)
             ->line('')
-            ->line('**Importante:** Deberás cambiar tu contraseña en el primer inicio de sesión.')
+            ->line('Ahora puedes acceder a todas las funcionalidades de la plataforma.')
+            ->line('Si necesitas restablecer tu contraseña, puedes hacerlo desde la página de login.')
             ->action('Iniciar Sesión', url('/tenant/login'))
-            ->line('Tu cuenta estará activa una vez que el administrador la active.')
+            ->line('¡Bienvenido a nuestra comunidad!')
             ->line('')
             ->line('Para ver el estado del sistema, visita: https://status.cannabica.ar');
     }
@@ -61,8 +61,8 @@ class TeamUserActivationNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'password' => $this->password,
             'tenant_name' => $this->tenantName,
+            'activation_date' => now(),
         ];
     }
 }

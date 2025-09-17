@@ -33,6 +33,7 @@ class Registration extends Register
         
         return $form
             ->schema([
+                
                 Wizard::make([
                     Wizard\Step::make('Información Personal')
                         ->schema([
@@ -70,22 +71,108 @@ class Registration extends Register
                                 ->rows(3)
                                 ->required(fn (Get $get): bool => $get('usage_type') === 'equipo_trabajo')
                                 ->hidden(fn (Get $get): bool => $get('usage_type') !== 'equipo_trabajo')
-                                ->helperText('Ingrese los correos electrónicos separados por coma')
+                                ->helperText('Cargarlos separados por coma.')
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(function (Get $get, Set $set, $state) {
+                                    if ($get('usage_type') === 'equipo_trabajo' && !empty($state)) {
+                                        $emails = array_map('trim', explode(',', $state));
+                                        $validEmails = [];
+                                        $invalidEmails = [];
+                                        $duplicateEmails = [];
+                                        $strayCharacterEmails = [];
+                                        $seenEmails = [];
+                                        
+                                        foreach ($emails as $email) {
+                                            $originalEmail = $email;
+                                            $email = trim($email);
+                                            
+                                            // Check for stray characters (commas, semicolons, spaces within email)
+                                            if (preg_match('/^[,\s;]+|[,\s;]+$/', $originalEmail)) {
+                                                $strayCharacterEmails[] = $originalEmail;
+                                            }
+                                            
+                                            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                                                if (in_array($email, $seenEmails)) {
+                                                    $duplicateEmails[] = $email;
+                                                } else {
+                                                    $validEmails[] = $email;
+                                                    $seenEmails[] = $email;
+                                                }
+                                            } else {
+                                                $invalidEmails[] = $email;
+                                            }
+                                        }
+                                        
+                                        $validationState = [];
+                                        if (!empty($invalidEmails)) {
+                                            $validationState[] = 'Correos inválidos: ' . implode(', ', $invalidEmails);
+                                        }
+                                        if (!empty($strayCharacterEmails)) {
+                                            $validationState[] = 'Caracteres inválidos: ' . implode(', ', $strayCharacterEmails);
+                                        }
+                                        if (!empty($duplicateEmails)) {
+                                            $validationState[] = 'Duplicados: ' . implode(', ', $duplicateEmails);
+                                        }
+                                        if (!empty($validEmails)) {
+                                            $validationState[] = 'Válidos: ' . count($validEmails);
+                                        }
+                                        
+                                        $set('team_emails_validation', implode(' | ', $validationState));
+                                    } else {
+                                        $set('team_emails_validation', null);
+                                    }
+                                })
                                 ->rules([
                                     function (Get $get) {
                                         return function (string $attribute, $value, \Closure $fail) use ($get) {
                                             if ($get('usage_type') === 'equipo_trabajo') {
-                                                $emails = array_map('trim', explode(',', $value));
+                                                $emails = array_map(function($email) {
+                                                    $email = trim($email);
+                                                    // Remove any stray commas or semicolons at the beginning/end
+                                                    $email = trim($email, ',; ');
+                                                    return $email;
+                                                }, explode(',', $value));
+                                                
+                                                // Filter out empty strings after trimming
+                                                $emails = array_filter($emails);
+                                                
                                                 $invalidEmails = [];
+                                                $duplicateEmails = [];
+                                                $strayCharacterEmails = [];
+                                                $seenEmails = [];
                                                 
                                                 foreach ($emails as $email) {
+                                                    $originalEmail = $email;
+                                                    $email = trim($email);
+                                                    
+                                                    // Check for stray characters (commas, semicolons, spaces within email)
+                                                    if (preg_match('/^[,\s;]+|[,\s;]+$/', $originalEmail)) {
+                                                        $strayCharacterEmails[] = $originalEmail;
+                                                    }
+                                                    
                                                     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                                                         $invalidEmails[] = $email;
+                                                    } else {
+                                                        if (in_array($email, $seenEmails)) {
+                                                            $duplicateEmails[] = $email;
+                                                        }
+                                                        $seenEmails[] = $email;
                                                     }
                                                 }
                                                 
+                                                $errors = [];
                                                 if (!empty($invalidEmails)) {
-                                                    $fail('Los siguientes correos electrónicos no son válidos: ' . implode(', ', $invalidEmails));
+                                                    $errors[] = 'inválido: ' . implode(', ', $invalidEmails);
+                                                }
+                                                if (!empty($strayCharacterEmails)) {
+                                                    $errors[] = 'caracteres inválidos: ' . implode(', ', $strayCharacterEmails);
+                                                }
+                                                if (!empty($duplicateEmails)) {
+                                                    $errors[] = 'duplicados: ' . implode(', ', $duplicateEmails);
+                                                }
+                                                
+                                                if (!empty($errors)) {
+                                                    $fail(implode(' ', $errors));
                                                 }
                                             }
                                         };
@@ -118,7 +205,7 @@ class Registration extends Register
                             CheckboxList::make('harvest_products')
                                 ->label('Habitualmente con la cosecha:')
                                 ->options([
-                                    'enfrasco_etiqueto' => 'Enfrascó y etiquetó lo cosechado',
+                                    'enfrasco_etiqueto' => 'Enfrasco y etiqueto lo cosechado',
                                     'aceites' => 'Produzco aceites',
                                     'cremas' => 'Produzco cremas',
                                     'edibles' => 'Produzco edibles o algún tipo de alimento',
@@ -136,6 +223,23 @@ class Registration extends Register
                         Registrarse
                     </x-filament::button>
                     BLADE))),
+                
+                // Footer with status monitoring link
+                \Filament\Forms\Components\Placeholder::make('')
+                    ->content(new HtmlString('
+                        <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                            <p class="text-sm text-gray-600">
+                                ¿Problemas con el sistema? Verifica el estado en 
+                                <a href="https://status.cannabica.ar" target="_blank" class="text-cadetblue hover:text-cadetblue-700 font-medium">
+                                    status.cannabica.ar
+                                </a>
+                            </p>
+                            <p class="text-xs text-gray-500 mt-2">
+                                &copy; ' . date('Y') . ' Cannabica. Todos los derechos reservados.
+                            </p>
+                        </div>
+                    '))
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -212,7 +316,7 @@ class Registration extends Register
         // Show success notification after registration
         Notification::make()
             ->title('Registro exitoso')
-            ->body('Tu cuenta ha sido creada exitosamente. Debes esperar la activación de tu cuenta por parte de nuestro equipo de superadministradores.')
+            ->body('Tu cuenta ha sido creada exitosamente. Debes esperar la activación de tu cuenta por parte de nuestro equipo.')
             ->success()
             ->send();
     }

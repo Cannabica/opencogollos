@@ -132,3 +132,12 @@ Route::post('/api/telegram/webhook', function () {
 
     return response()->json(['status' => 'ok']);
 })->withoutMiddleware(['web']);
+
+// Add named route 'login' for Filament authentication redirects
+Route::get('/login', function () {
+    // Redirect to the appropriate login based on the current path or default to tenant
+    if (request()->is('superadmin*')) {
+        return redirect('/superadmin/login');
+    }
+    return redirect('/tenant/login');
+})->name('login');

@@ -35,7 +35,7 @@ class Registration extends Register
             ->schema([
                 
                 Wizard::make([
-                    Wizard\Step::make('Información Personal')
+                    Wizard\Step::make('Personal')
                         ->schema([
                             $this->getNameFormComponent()
                                 ->required()
@@ -56,6 +56,17 @@ class Registration extends Register
                         ]),
                     Wizard\Step::make('Uso')
                         ->schema([
+
+                            
+                            $this->getPasswordFormComponent()
+                                ->label('Contraseña del administrador')    
+                                ->required()
+                                ->password(),
+                            $this->getPasswordConfirmationFormComponent()
+                                ->label('Confirmar contraseña del administrador')
+                                ->required()
+                                ->password(),
+
                             Select::make('usage_type')
                                 ->label('¿Quién usará la plataforma?')
                                 ->options([
@@ -71,7 +82,7 @@ class Registration extends Register
                                 ->rows(3)
                                 ->required(fn (Get $get): bool => $get('usage_type') === 'equipo_trabajo')
                                 ->hidden(fn (Get $get): bool => $get('usage_type') !== 'equipo_trabajo')
-                                ->helperText('Cargarlos separados por coma.')
+                                ->helperText('Cargarlos separados por coma, a todos se les va a enviar un correo con su clave temporal')
                                 ->live(onBlur: true)
                                 ->afterStateUpdated(function (Get $get, Set $set, $state) {
                                     if ($get('usage_type') === 'equipo_trabajo' && !empty($state)) {
@@ -180,13 +191,7 @@ class Registration extends Register
                                 ])
                                 ->validationMessages([
                                     'required' => 'Este campo es obligatorio cuando se selecciona Grupo de personas/equipo de trabajo',
-                                ]),
-                            $this->getPasswordFormComponent()
-                                ->required()
-                                ->password(),
-                            $this->getPasswordConfirmationFormComponent()
-                                ->required()
-                                ->password(),
+                                ])
                         ]),
                     Wizard\Step::make('Cultivos')
                         ->schema([
@@ -331,20 +336,30 @@ class Registration extends Register
             $data['harvest_products'] = json_encode($data['harvest_products']);
         }
         
-        // Create the user first
-        $user = parent::handleRegistration($data);
+        // Create the user first (without registration fields)
+        $userData = $data;
+        // Remove registration fields that should go to tenant
+        unset($userData['user_type'], $userData['usage_type'], $userData['team_emails'], $userData['plants_per_cycle'], $userData['harvest_products']);
+        
+        $user = parent::handleRegistration($userData);
         
         \Log::debug('User created successfully in handleRegistration:', ['user_id' => $user->id]);
         
-        // Create tenant and assign it to the user
+        // Create tenant with registration data
         try {
             $tenant = \App\Models\Tenant::create([
                 'name' => $user->name . "'s Tenant",
                 'email' => $user->email,
                 'active' => false, // Tenant desactivado por defecto, requiere activación
+                'user_type' => $data['user_type'] ?? null,
+                'usage_type' => $data['usage_type'] ?? null,
+                'team_emails' => $data['team_emails'] ?? null,
+                'plants_per_cycle' => $data['plants_per_cycle'] ?? null,
+                'harvest_products' => $data['harvest_products'] ?? null,
+                'activated_at' => null,
             ]);
             
-            \Log::debug('Tenant created successfully:', ['tenant_id' => $tenant->id]);
+            \Log::debug('Tenant created successfully with registration data:', ['tenant_id' => $tenant->id]);
             
             // Assign the tenant to the user
             $user->tenant_id = $tenant->id;
@@ -375,17 +390,13 @@ class Registration extends Register
             // Generate a random password
             $password = \Illuminate\Support\Str::random(12);
             
-            // Create the team user
+            // Create the team user (without registration fields - they're stored in tenant)
             $teamUser = \App\Models\User::create([
                 'name' => explode('@', $email)[0], // Use the part before @ as name
                 'email' => $email,
                 'password' => \Illuminate\Support\Facades\Hash::make($password),
                 'tenant_id' => $tenantId,
                 'force_password_change' => true,
-                'user_type' => $this->data['user_type'] ?? 'cultivador_hogareño',
-                'usage_type' => 'individual',
-                'plants_per_cycle' => $this->data['plants_per_cycle'] ?? 1,
-                'harvest_products' => $this->data['harvest_products'] ?? [],
             ]);
             
             \Log::debug('Team user created:', [

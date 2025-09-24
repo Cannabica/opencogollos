@@ -10,7 +10,17 @@ class Tenant extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'email', 'active'];
+    protected $fillable = [
+        'name',
+        'email',
+        'active',
+        'user_type',
+        'usage_type',
+        'team_emails',
+        'plants_per_cycle',
+        'harvest_products',
+        'activated_at'
+    ];
 
     public function users()
     {

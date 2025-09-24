@@ -51,7 +51,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - SEED_EXAMPLE_DATA=${SEED_EXAMPLE_DATA:-true}
+      - SEED_EXAMPLE_DATA=${SEED_EXAMPLE_DATA:-false}
       - APP_URL=${APP_URL:-http://localhost:8090}
     volumes:
       - app:/var/www/html

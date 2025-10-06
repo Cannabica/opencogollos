@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TenantActivationNotification extends Notification // implements ShouldQueue
+class TenantDeactivationNotification extends Notification // implements ShouldQueue
 {
     use Queueable;
 
@@ -36,27 +36,14 @@ class TenantActivationNotification extends Notification // implements ShouldQueu
      */
     public function toMail(object $notifiable): MailMessage
     {
-
         return (new MailMessage)
-            ->subject('Activacion de Tenant - ' . $this->tenantName)
-                        
+            ->subject('Desactivación de Tenant - ' . $this->tenantName)
+            ->greeting('Hola ' . $notifiable->name . ',')
+            ->line('Tu tenant ' . $this->tenantName . ' ha sido desactivado.')
             ->line('')
+            ->line('Si crees que esto es un error o necesitas reactivar tu cuenta, por favor contacta con el administrador del sistema.')
             ->line('')
-            ->greeting('Hola ' . $notifiable->name)
-            ->line('')
-            
-            ->line('Tu tenant ' . $this->tenantName . ' ha sido activado exitosamente.')
-            ->line('**Detalles de tu cuenta:**')
-            ->line('Nombre: ' . $notifiable->name)
-            ->line('Email: ' . $notifiable->email)
-            ->line('Tenant: ' . $this->tenantName)
-            ->line('')
-            ->line('Ahora puedes acceder a la plataforma.')
-            ->action('Iniciar Sesión', url('/tenant/login'))
-            ->line('¡Bienvenido a nuestra comunidad!')
-            ->line('')
-            ->line('Para ver el estado de la plataforma, visita: [Monitor del Sistema](https://status.cannabica.ar)')
-            ->salutation('Cualquier duda, no dudes en contactarnos.');
+            ->salutation('Para consultas o soporte, contacta con el administrador del sistema.');
     }
 
     /**
@@ -68,7 +55,7 @@ class TenantActivationNotification extends Notification // implements ShouldQueu
     {
         return [
             'tenant_name' => $this->tenantName,
-            'activation_date' => now(),
+            'deactivation_date' => now(),
         ];
     }
 }

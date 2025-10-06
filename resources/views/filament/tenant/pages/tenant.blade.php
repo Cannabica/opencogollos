@@ -1,8 +1,6 @@
 <x-filament::page x-data="{}" x-on:token-renewed.window="$dispatch('notify', { message: 'Token renewed successfully', type: 'success' })">
     <x-filament::card>
-        <div class="space-y-4">
-            <h2 class="text-xl font-bold">Información del grupo</h2>
-            
+        <div class="space-y-4">            
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-sm font-medium text-gray-500">Nombre</p>
@@ -20,7 +18,114 @@
 
     <x-filament::card>
         <div class="space-y-4">
-            <h2 class="text-xl font-bold">Usuarios del grupo</h2>
+            <h2 class="text-xl font-bold">Información de registro</h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Tipo de usuario</p>
+                    @php
+                        $userTypeLabels = [
+                            'cultivador_hogareño' => 'Cultivador Hogareño / Cultivador solidario',
+                            'growshop' => 'Growshop - Club de cultivo / Comercio',
+                            'cooperativa' => 'Cooperativa',
+                            'otro' => 'Otro',
+                        ];
+                        $displayValue = $user_type ? ($userTypeLabels[$user_type] ?? $user_type) : 'No especificado';
+                    @endphp
+                    <p>{{ $displayValue }}</p>
+                </div>
+                                
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Plantas por ciclo</p>
+                    @php
+                        $plantsOptions = [
+                            1 => '1-5 plantas',
+                            2 => '6-10 plantas',
+                            3 => '11-20 plantas',
+                            4 => '21-50 plantas',
+                            5 => 'Más de 50 plantas',
+                        ];
+                    @endphp
+                    <p>{{ $plants_per_cycle ? ($plantsOptions[$plants_per_cycle] ?? 'No especificado') : 'No especificado' }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Productos de cosecha</p>
+                    @if($harvest_products)
+                        @php
+                            $products = json_decode($harvest_products, true);
+                        @endphp
+                            @if(is_array($products) && count($products) > 0)
+                                <ul class="list-disc pl-5 space-y-1">
+                                    @foreach($products as $product)
+                                        <p class="capitalize">{{ $product }}</p>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <p>No especificado</p>
+                            @endif
+                    @else
+                        <p>No especificado</p>
+                    @endif
+                </div>
+                
+            </div>
+        </div>
+    </x-filament::card>
+
+    <x-filament::card>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold">Usuarios del grupo</h2>
+                @if($isOwner)
+                    <x-filament::button
+                        wire:click="$set('showUserForm', true)"
+                        color="primary"
+                        size="sm"
+                    >
+                        Agregar usuario
+                    </x-filament::button>
+                @endif
+            </div>
+            
+            @if($showUserForm)
+                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <h3 class="text-lg font-medium mb-4">
+                        {{ $editingUser ? 'Editar usuario' : 'Agregar nuevo usuario' }}
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <x-filament::input
+                            wire:model="userName"
+                            placeholder="Nombre completo"
+                            required
+                        />
+                        <x-filament::input
+                            wire:model="userEmail"
+                            type="email"
+                            placeholder="Email"
+                            required
+                        />
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <x-filament::button
+                            wire:click="{{ $editingUser ? 'updateUser' : 'addUser' }}"
+                            color="primary"
+                            size="sm"
+                        >
+                            {{ $editingUser ? 'Actualizar' : 'Agregar' }}
+                        </x-filament::button>
+                        <x-filament::button
+                            wire:click="cancelEdit"
+                            color="gray"
+                            size="sm"
+                        >
+                            Cancelar
+                        </x-filament::button>
+                    </div>
+                </div>
+            @endif
             
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -28,18 +133,88 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Email</th>
+                            @if($isOwner)
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Acciones</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @foreach($users as $user)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $user->name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ $user->name }}
+                                @if($user->id === auth()->id())
+                                    <span class="pildora">🫵🏼</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
+                            @if($isOwner)
+                            
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($user->force_password_change)
+                                        <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">Cambio requerido</span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Activo</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex gap-2">
+                                        @if($user->id !== auth()->id())
+                                            <x-filament::button
+                                                wire:click="editUser({{ $user->id }})"
+                                                color="warning"
+                                                size="sm"
+                                            >
+                                                Editar
+                                            </x-filament::button>
+                                            <x-filament::button
+                                                wire:click="resetPassword({{ $user->id }})"
+                                                color="danger"
+                                                size="sm"
+                                                wire:confirm="¿Estás seguro de que quieres blanquear la contraseña de este usuario? Se enviará una nueva contraseña temporal por email."
+                                            >
+                                                Blanquear contraseña
+                                            </x-filament::button>
+                                            <x-filament::button
+                                                wire:click="forcePasswordChange({{ $user->id }})"
+                                                color="warning"
+                                                size="sm"
+                                                wire:confirm="¿Forzar cambio de contraseña en el próximo inicio de sesión?"
+                                            >
+                                                Forzar cambio
+                                            </x-filament::button>
+                                            <x-filament::button
+                                                wire:click="removeUser({{ $user->id }})"
+                                                color="danger"
+                                                size="sm"
+                                                wire:confirm="¿Estás seguro de que quieres eliminar este usuario del grupo?"
+                                            >
+                                                Eliminar
+                                            </x-filament::button>
+                                        @else
+                                            <span class="text-gray-400 text-sm">Acciones no disponibles</span>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
+            
+            @if($isOwner)
+                <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <h4 class="font-medium text-blue-800 dark:text-blue-200">Información para propietarios</h4>
+                    <ul class="mt-2 space-y-1 text-sm text-blue-700 dark:text-blue-300 list-disc pl-5">
+                        <li>Puedes agregar, editar y eliminar usuarios del grupo</li>
+                        <li>Al blanquear una contraseña, se genera una nueva temporal y se notifica al usuario</li>
+                        <li>Forzar cambio de contraseña obliga al usuario a cambiar su contraseña en el próximo inicio</li>
+                        <li>No puedes eliminar tu propio usuario</li>
+                    </ul>
+                </div>
+            @endif
         </div>
     </x-filament::card>
 
@@ -169,4 +344,5 @@
             @endif
         </div>
     </x-filament::card>
+
 </x-filament::page>

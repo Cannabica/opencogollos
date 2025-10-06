@@ -12,15 +12,29 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn([
-                'user_type',
-                'usage_type',
-                'team_emails',
-                'plants_per_cycle',
-                'harvest_products',
-                'active',
-                'activated_at'
-            ]);
+            // Only drop columns that actually exist in the users table
+            // These fields were moved to the tenants table
+            if (Schema::hasColumn('users', 'user_type')) {
+                $table->dropColumn('user_type');
+            }
+            if (Schema::hasColumn('users', 'usage_type')) {
+                $table->dropColumn('usage_type');
+            }
+            if (Schema::hasColumn('users', 'team_emails')) {
+                $table->dropColumn('team_emails');
+            }
+            if (Schema::hasColumn('users', 'plants_per_cycle')) {
+                $table->dropColumn('plants_per_cycle');
+            }
+            if (Schema::hasColumn('users', 'harvest_products')) {
+                $table->dropColumn('harvest_products');
+            }
+            if (Schema::hasColumn('users', 'active')) {
+                $table->dropColumn('active');
+            }
+            if (Schema::hasColumn('users', 'activated_at')) {
+                $table->dropColumn('activated_at');
+            }
         });
     }
 

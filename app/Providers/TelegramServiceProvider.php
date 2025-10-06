@@ -37,10 +37,12 @@ class TelegramServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-
         $this->publishes([
             __DIR__ . '/../../config/telegram.php' => config_path('telegram.php'),
         ], 'config');
+
+        // Register Telegram commands
+        $this->registerCommands();
 
         $this->app->booted(function () {
             if (app()->runningInConsole()) {
@@ -70,5 +72,19 @@ class TelegramServiceProvider extends ServiceProvider
                 }
             }
         });
+    }
+
+    /**
+     * Register the Artisan commands.
+     */
+    private function registerCommands(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \App\Console\Commands\Telegram\CommandsListCommand::class,
+                \App\Console\Commands\Telegram\WebhookSetupCommand::class,
+                \Telegram\Bot\Laravel\Artisan\WebhookCommand::class,
+            ]);
+        }
     }
 }

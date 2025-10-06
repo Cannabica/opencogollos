@@ -47,9 +47,8 @@ class RegistrationConfirmationNotification extends Notification implements Shoul
             ->line('')
             ->line('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista y podrás ingresar con las credenciales que creaste durante el registro.')
             ->action('Iniciar Sesión', url('/tenant/login'))
-            ->line('Gracias por unirte a nuestra comunidad!')
             ->line('')
-            ->action('Monitor de estado', url('https://status.cannabica.ar'));
+            ->salutation('Gracias por unirte a nuestra comunidad!');
     }
 
     /**

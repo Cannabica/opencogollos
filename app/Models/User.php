@@ -127,4 +127,38 @@ class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubje
 
         return $descriptions[$this->plants_per_cycle] ?? null;
     }
+
+    /**
+     * Check if the user is the owner of the tenant
+     */
+    public function isTenantOwner(): bool
+    {
+        return $this->tenant && $this->email === $this->tenant->email;
+    }
+
+    /**
+     * Check if the user can manage team users
+     */
+    public function canManageTeamUsers(): bool
+    {
+        return $this->isTenantOwner();
+    }
+
+    /**
+     * Check if the user can be managed by the given user
+     */
+    public function canBeManagedBy(User $manager): bool
+    {
+        // A user can only be managed by tenant owner
+        // and cannot manage themselves
+        return $manager->isTenantOwner() && $this->id !== $manager->id;
+    }
+
+    /**
+     * Scope to get users that belong to the same tenant
+     */
+    public function scopeSameTenant($query)
+    {
+        return $query->where('tenant_id', auth()->user()->tenant_id);
+    }
 }

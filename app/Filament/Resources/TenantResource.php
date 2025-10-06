@@ -60,10 +60,37 @@ class TenantResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading(function ($record) {
+                        return __('Edit Tenant') . ' - ' . $record->name;
+                    })
+                    ->modalDescription(__('¿Está seguro de que desea editar este tenant? Si cambia el estado de activación, se enviará una notificación por email al usuario.')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('activate')
+                        ->label(__('Activate selected'))
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['active' => true]);
+                            });
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading(__('Activate Tenants'))
+                        ->modalDescription(__('¿Está seguro de que desea activar los tenants seleccionados? Se enviarán notificaciones por email a los usuarios afectados.'))
+                        ->deselectRecordsAfterCompletion(),
+                    Tables\Actions\BulkAction::make('deactivate')
+                        ->label(__('Deactivate selected'))
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['active' => false]);
+                            });
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading(__('Deactivate Tenants'))
+                        ->modalDescription(__('¿Está seguro de que desea desactivar los tenants seleccionados? Se enviarán notificaciones por email a los usuarios afectados.'))
+                        ->deselectRecordsAfterCompletion(),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);

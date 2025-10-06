@@ -1692,6 +1692,197 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     backdrop-filter: blur(8px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+.pildora {
+    background-color: transparent;
+    color: #1f2937; /* Improved contrast - darker gray for better readability */
+    padding: 0.5rem 0.875rem; /* Slightly increased padding for better text spacing */
+    border: 2px solid #d1d5db; /* Lighter border for better contrast with text */
+    border-radius: 9999px;
+    font-size: 0.8125rem; /* Slightly larger font size (13px) */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em; /* Slightly increased letter spacing */
+    transition: all 0.2s ease-in-out;
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem; /* Increased minimum height for better touch targets */
+    line-height: 1.2; /* Improved line height for better vertical spacing */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle text shadow for better readability */
+}
 
+/* Dark mode support */
+.dark .pildora {
+    color: #f9fafb; /* Light text for dark backgrounds */
+    border-color: #4b5563; /* Darker border for dark mode */
+    background-color: rgba(255, 255, 255, 0.05); /* Subtle background for better contrast */
+}
 
+/* Hover state for interactive pildoras */
+.pildora:hover {
+    background-color: #374151;
+    color: #ffffff;
+    border-color: #374151; /* Match border to background on hover */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Enhanced text shadow for hover state */
+}
 
+/* Dark mode hover state */
+.dark .pildora:hover {
+    background-color: #6b7280;
+    color: #ffffff;
+    border-color: #6b7280;
+}
+
+/* Focus state for accessibility */
+.pildora:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Active state */
+.pildora:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Color variations with improved contrast */
+.pildora.pildora-primary {
+    color: #1d4ed8; /* Darker blue for better contrast */
+    border-color: #3b82f6;
+}
+
+.dark .pildora.pildora-primary {
+    color: #60a5fa; /* Lighter blue for dark mode */
+    border-color: #3b82f6;
+}
+
+.pildora.pildora-primary:hover {
+    background-color: #3b82f6;
+    color: #ffffff;
+    border-color: #3b82f6;
+}
+
+.dark .pildora.pildora-primary:hover {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.pildora.pildora-success {
+    color: #047857; /* Darker green for better contrast */
+    border-color: #10b981;
+}
+
+.dark .pildora.pildora-success {
+    color: #34d399; /* Lighter green for dark mode */
+    border-color: #10b981;
+}
+
+.pildora.pildora-success:hover {
+    background-color: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+}
+
+.dark .pildora.pildora-success:hover {
+    background-color: #059669;
+    color: #ffffff;
+}
+
+.pildora.pildora-warning {
+    color: #d97706; /* Darker orange for better contrast */
+    border-color: #f59e0b;
+}
+
+.dark .pildora.pildora-warning {
+    color: #fbbf24; /* Lighter orange for dark mode */
+    border-color: #f59e0b;
+}
+
+.pildora.pildora-warning:hover {
+    background-color: #f59e0b;
+    color: #ffffff;
+    border-color: #f59e0b;
+}
+
+.dark .pildora.pildora-warning:hover {
+    background-color: #d97706;
+    color: #ffffff;
+}
+
+.pildora.pildora-danger {
+    color: #dc2626; /* Darker red for better contrast */
+    border-color: #ef4444;
+}
+
+.dark .pildora.pildora-danger {
+    color: #f87171; /* Lighter red for dark mode */
+    border-color: #ef4444;
+}
+
+.pildora.pildora-danger:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+.dark .pildora.pildora-danger:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+/* Filled variant with improved contrast */
+.pildora.pildora-filled {
+    background-color: #374151;
+    color: #ffffff;
+    border-color: transparent;
+    font-weight: 600; /* Ensure good contrast with background */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); /* Text shadow for filled variants */
+}
+
+.dark .pildora.pildora-filled {
+    background-color: #4b5563;
+    color: #f9fafb; /* Slightly off-white for better readability */
+}
+
+.pildora.pildora-filled:hover {
+    background-color: #4b5563;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+}
+
+.dark .pildora.pildora-filled:hover {
+    background-color: #6b7280;
+    color: #ffffff;
+}
+
+/* Small size variant with improved readability */
+.pildora.pildora-sm {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem; /* Slightly larger for better readability */
+    min-height: 1.75rem;
+    letter-spacing: 0.04em; /* Adjusted spacing for smaller text */
+    text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.08); /* Subtle shadow for small text */
+}
+
+.dark .pildora.pildora-sm {
+    background-color: rgba(255, 255, 255, 0.08); /* Enhanced contrast for small text */
+}
+
+/* Large size variant with enhanced typography */
+.pildora.pildora-lg {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem; /* Slightly larger for better hierarchy */
+    min-height: 2.5rem;
+    letter-spacing: 0.07em; /* Increased spacing for larger text */
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Enhanced shadow for larger text */
+}
+
+.dark .pildora.pildora-lg {
+    background-color: rgba(255, 255, 255, 0.03); /* Subtle background for large text */
+}

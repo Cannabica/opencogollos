@@ -195,7 +195,7 @@ class Registration extends Register
                         ]),
                     Wizard\Step::make('Cultivos')
                         ->schema([
-                            Select::make('plants_per_cycle')
+                            Select::make(name: 'plants_per_cycle')
                                 ->label('¿Qué cantidad de plantas cultivas por ciclo?')
                                 ->options([
                                     1 => '1-5 plantas',

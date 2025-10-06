@@ -37,7 +37,7 @@ services:
     command: certonly --webroot --webroot-path=/var/www/html/public -d plataforma.cannabica.ar -d status.cannabica.ar --email alexis.frank.toledo@gmail.com --agree-tos --non-interactive --keep-until-expiring
 
   php:
-    image: ${DOCKER_IMAGE:-cannabica/openindoor:v0.1.1-staging}
+    image: ${DOCKER_IMAGE:-cannabica/cannabica-php:latest}
     env_file:
       - .env
     environment:

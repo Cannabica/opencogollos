@@ -5,6 +5,7 @@ services:
       - "${APP_HTTP_PORT:-8090}:80"
       - "${APP_HTTPS_PORT:-8040}:443"
     volumes:
+      - public-php:/var/www/html:ro
       - ./default.conf:/etc/nginx/conf.d/default.conf
       - certbot-www:/var/www/html/public/.well-known/acme-challenge
       - certbot-conf:/etc/letsencrypt
@@ -72,13 +73,13 @@ services:
       - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL:-https://plataforma.cannabica.ar/api/telegram/webhook/}
       - XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-/var/www/html/.config}
     volumes:
+      - public-php:/var/www/html
       - php-fpm-logs:/var/log/php-fpm
-      - ./www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./www.conf:/usr/local/etc/pp-fpm.d/www.conf
       - ./.env:/var/www/html/.env
     depends_on:
       db:
         condition: service_healthy
-    command: /usr/local/bin/entrypoint.sh
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[p]hp-fpm: master process' || exit 1"]
       interval: 10s
@@ -151,7 +152,7 @@ volumes:
   php-fpm-logs:
   certbot-www:
   certbot-conf:
-
+  public-php:
 networks:
   app_network:
     driver: bridge 

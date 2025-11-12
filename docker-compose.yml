@@ -6,7 +6,6 @@ services:
       - "${APP_HTTPS_PORT:-8040}:443"
     volumes:
       - ./default.conf:/etc/nginx/conf.d/default.conf
-      - app:/var/www/html
       - certbot-www:/var/www/html/public/.well-known/acme-challenge
       - certbot-conf:/etc/letsencrypt
       - ./ssl:/etc/nginx/ssl
@@ -41,8 +40,11 @@ services:
     env_file:
       - .env
     environment:
-      - APP_ENV=${APP_ENV:-local}
-      - APP_DEBUG=${APP_DEBUG:-true}
+      - APP_NAME=${APP_NAME:-OpenIndoor}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL:-https://plataforma.cannabica.ar}
       - DB_CONNECTION=${DB_CONNECTION:-pgsql}
       - DB_HOST=${DB_HOST:-db}
       - DB_PORT=${DB_PORT:-5432}
@@ -52,11 +54,27 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - SEED_EXAMPLE_DATA=${SEED_EXAMPLE_DATA:-false}
-      - APP_URL=${APP_URL:-http://localhost:8090}
+      - QUEUE_CONNECTION=${QUEUE_CONNECTION:-database}
+      - SESSION_DRIVER=${SESSION_DRIVER:-database}
+      - CACHE_DRIVER=${CACHE_DRIVER:-redis}
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_HOST=${MAIL_HOST:-smtp.mailgun.org}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@cannabica.app}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-${APP_NAME:-OpenIndoor}}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - TELEGRAM_MAX_PLANTS_PER_PAGE=${TELEGRAM_MAX_PLANTS_PER_PAGE:-101}
+      - TELEGRAM_PHOTO_MAX_SIZE=${TELEGRAM_PHOTO_MAX_SIZE:-5120}
+      - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL:-https://plataforma.cannabica.ar/api/telegram/webhook/}
+      - XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-/var/www/html/.config}
     volumes:
-      - app:/var/www/html
       - php-fpm-logs:/var/log/php-fpm
       - ./www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./.env:/var/www/html/.env
     depends_on:
       db:
         condition: service_healthy
@@ -131,8 +149,6 @@ volumes:
   uptime-kuma-data:
   postgres_data:
   php-fpm-logs:
-  app:
-    driver: local
   certbot-www:
   certbot-conf:
 

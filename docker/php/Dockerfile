@@ -1,8 +1,20 @@
 FROM php:8.3-fpm-alpine AS builder
 
 RUN apk update && apk add --no-cache \
-    libzip-dev libpng-dev libjpeg-turbo-dev freetype-dev libxml2-dev \
-    oniguruma-dev postgresql-dev curl git icu-dev unzip nodejs npm
+    libzip-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    postgresql-dev \
+    curl \
+    git \
+    icu-dev \
+    unzip \
+    nodejs \
+    npm \
+    zlib-dev
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j$(nproc) \
@@ -26,10 +38,16 @@ RUN rm -rf node_modules
 
 FROM php:8.3-fpm-alpine
 RUN apk update && apk add --no-cache \
-    libzip libpng libjpeg-turbo freetype libxml2 oniguruma \
+    libzip \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    libxml2 \
+    oniguruma \
     postgresql-libs \
-    icu unzip
-
+    icu \
+    unzip \
+    zlib
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j$(nproc) \

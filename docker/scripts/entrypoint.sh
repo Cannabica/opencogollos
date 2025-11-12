@@ -8,13 +8,21 @@ if [ "${APP_DEBUG}" = "true" ]; then
     set -x
 fi
 
-: ${APP_USER_ID:=1000}
-: ${APP_GROUP_ID:=1000}
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+mkdir -p /var/www/html/storage/framework/cache/data
+mkdir -p /var/www/html/storage/app/public
+mkdir -p /var/www/html/storage/logs
 
-mkdir -p /var/www/html/storage/{app,framework/{sessions,views,cache},logs}
+mkdir -p /var/www/html/bootstrap/cache
 mkdir -p /var/www/html/.config/psysh
-chown -R ${APP_USER_ID}:${APP_GROUP_ID} /var/www/html/storage /var/www/html/.config
+
+chown -R www-data:www-data /var/www/html/storage
+chown -R www-data:www-data /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/.config
+
 chmod -R 775 /var/www/html/storage
+chmod -R 775 /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/.config
 
 if [ -f "artisan" ]; then
@@ -89,8 +97,7 @@ if [ "${SEED_EXAMPLE_DATA}" = "true" ]; then
     php artisan db:seed --class=ExampleDataSeeder --force
 fi
 
-# Iniciar queue worker en segundo plano
-# Note: In production, consider running queue worker in a separate container
+# TODO queue worker in a separate container
 php artisan queue:work --daemon --sleep=3 --tries=3 &
 
 echo "Registrando webhook de Telegram..."

@@ -19,11 +19,11 @@ services:
       - app_network
     command: >
       /bin/sh -c "
-        apk add --no-cache openssl &&
-        mkdir -p /etc/nginx/ssl &&
-        openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj '/C=AR/ST=Buenos Aires/L=Buenos Aires/O=Cannabica/CN=plataforma.cannabica.ar' -addext 'subjectAltName=DNS:plataforma.cannabica.ar,DNS:status.cannabica.ar' -addext 'extendedKeyUsage=serverAuth' &&
-        chmod 644 /etc/nginx/ssl/nginx.crt &&
-        chmod 600 /etc/nginx/ssl/nginx.key &&
+        # apk add --no-cache openssl &&
+        # mkdir -p /etc/nginx/ssl &&
+        # openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj '/C=AR/ST=Buenos Aires/L=Buenos Aires/O=Cannabica/CN=plataforma.cannabica.ar' -addext 'subjectAltName=DNS:plataforma.cannabica.ar,DNS:status.cannabica.ar' -addext 'extendedKeyUsage=serverAuth' &&
+        # chmod 644 /etc/nginx/ssl/nginx.crt &&
+        # chmod 600 /etc/nginx/ssl/nginx.key &&
         nginx -g 'daemon off;'
       "
 
@@ -34,7 +34,8 @@ services:
       - certbot-conf:/etc/letsencrypt
     depends_on:
       - nginx
-    command: certonly --webroot --webroot-path=/var/www/html/public -d plataforma.cannabica.ar -d status.cannabica.ar --email alexis.frank.toledo@gmail.com --agree-tos --non-interactive --keep-until-expiring
+    # command: certonly --webroot --webroot-path=/var/www/html/public -d plataforma.cannabica.ar -d status.cannabica.ar --email alexis.frank.toledo@gmail.com --agree-tos --non-interactive --keep-until-expiring
+    command: renew --quiet
 
   php:
     image: ${DOCKER_IMAGE:-cannabica/cannabica-php:latest}

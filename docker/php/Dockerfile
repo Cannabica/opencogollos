@@ -11,7 +11,9 @@ RUN apk update && apk add --no-cache \
     curl \
     git \
     icu-dev \
-    unzip
+    unzip \
+    nodejs \
+    npm
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 

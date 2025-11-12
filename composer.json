@@ -1,7 +1,7 @@
 {
   "name": "laravel/laravel",
   "type": "project",
-  "version": "0.7.0",
+  "version": "0.6.0",
   "description": "The skeleton application for the Laravel framework.",
   "keywords": [
     "laravel",
@@ -22,10 +22,10 @@
     "leandrocfe/filament-apex-charts": "^3.1",
     "rupadana/filament-api-service": "dev-main",
     "symfony/polyfill-intl-icu": "^1.32",
-    "fakerphp/faker": "^1.9.1",
     "tymon/jwt-auth": "^2.2"
   },
   "require-dev": {
+    "fakerphp/faker": "^1.9.1",
     "laravel/pint": "^1.0",
     "laravel/sail": "^1.18",
     "mockery/mockery": "^1.4.4",

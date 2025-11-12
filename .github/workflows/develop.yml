@@ -135,27 +135,13 @@ jobs:
           key: ${{ secrets.VPS_KEY }}
           script: |
             cd /home/ubuntu
-
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-            echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
-            echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
-
-            echo "APP_NAME=${{ secrets.APP_NAME }} " >> .env
-
-            echo "APP_KEY=${{ secrets.APP_KEY }} " >> .env
-            echo "APP_URL=${{ secrets.APP_URL }} " >> .env
-            
-            echo "DB_DATABASE=${{ secrets.DB_DATABASE }} " >> .env
-            echo "DB_USERNAME=${{ secrets.DB_USERNAME }} " >> .env
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }} " >> .env
-
-            echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }} " >> .env
-            echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} " >> .env
-            echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} " >> .env
-                
             export DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/cannabica-php:${{ needs.build.outputs.tag }}
 
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             docker-compose pull php
+            
+            docker-compose down
+
             docker-compose up -d --remove-orphans
+            
             docker image prune -f

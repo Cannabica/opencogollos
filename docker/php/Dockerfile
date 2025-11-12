@@ -13,13 +13,15 @@ RUN apk update && apk add --no-cache \
     icu-dev \
     unzip \
     nodejs \
-    npm \
-    zlib-dev
+    npm 
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j$(nproc) \
-    pdo pdo_pgsql pgsql mbstring xml gd zip bcmath intl
+    pdo pdo_pgsql pgsql mbstring xml gd zip bcmath
     
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install intl
+
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /var/www/html
@@ -46,12 +48,14 @@ RUN apk update && apk add --no-cache \
     oniguruma \
     postgresql-libs \
     icu \
-    unzip \
-    zlib
+    unzip
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j$(nproc) \
-    pdo pdo_pgsql pgsql mbstring xml gd zip bcmath intl
+    pdo pdo_pgsql pgsql mbstring xml gd zip bcmath
+
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install intl
 
 COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
 

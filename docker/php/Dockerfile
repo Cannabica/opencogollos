@@ -30,15 +30,22 @@ RUN docker-php-ext-install intl
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-ARG ENV=development
-
-# Copy appropriate php.ini based on environment
+# Copy php.ini configuration
 COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
+
+WORKDIR /var/www/html
+
+# Copy application code
+COPY . .
 
 COPY ./docker/scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-WORKDIR /var/www/html
+# Install composer dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 9000
 

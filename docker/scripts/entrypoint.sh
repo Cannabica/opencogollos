@@ -1,5 +1,9 @@
 #!/bin/sh
-if $APP_DEBUG; then
+# Set default values for critical environment variables
+: ${APP_DEBUG:=false}
+: ${SEED_EXAMPLE_DATA:=false}
+
+if [ "${APP_DEBUG}" = "true" ]; then
     echo "Debug mode is ON. Displaying all commands."
     set -x
 fi
@@ -86,6 +90,7 @@ if [ "${SEED_EXAMPLE_DATA}" = "true" ]; then
 fi
 
 # Iniciar queue worker en segundo plano
+# Note: In production, consider running queue worker in a separate container
 php artisan queue:work --daemon --sleep=3 --tries=3 &
 
 echo "Registrando webhook de Telegram..."

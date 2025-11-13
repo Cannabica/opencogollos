@@ -9,6 +9,9 @@
 
 .env
 .env.example
+.env.local
+.env.testing
+.env.production
 /storage/logs/*.log
 /storage/framework/sessions/*
 /storage/framework/cache/data/*
@@ -16,4 +19,35 @@
 
 Dockerfile
 docker-compose.yml
+docker-compose.local.yml
 .dockerignore
+
+# Development and testing files
+/tests
+/phpunit.xml
+/phpunit.xml.dist
+/.phpunit.result.cache
+
+# Documentation and IDE files
+/README.md
+/.editorconfig
+/.styleci.yml
+/.php_cs
+/.php_cs.dist
+/composer.phar
+
+# Build artifacts
+/public/hot
+/public/storage
+/storage/app/public
+/storage/debugbar
+
+# Cache and temporary files
+/bootstrap/cache/*.php
+/.cache
+/.DS_Store
+Thumbs.db
+
+# Node.js build artifacts
+/package-lock.json
+/yarn.lock

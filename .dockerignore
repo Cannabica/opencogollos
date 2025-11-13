@@ -48,6 +48,3 @@ docker-compose.local.yml
 /.DS_Store
 Thumbs.db
 
-# Node.js build artifacts
-/package-lock.json
-/yarn.lock

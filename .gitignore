@@ -41,3 +41,5 @@ ssla
 ssl/*
 /ssl/*
 /ssl/*
+
+vps-deploy.md

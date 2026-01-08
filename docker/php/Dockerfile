@@ -14,8 +14,13 @@ RUN apk update && apk add --no-cache \
     unzip \
     nodejs \
     npm \
+
+    
     zlib \
-    zlib-dev
+    zlib-dev \
+    libjpeg \
+    freetype \
+    pkgconfig
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure intl && \
@@ -53,7 +58,9 @@ RUN apk update && apk add --no-cache \
     postgresql-libs \
     icu \
     unzip \
-    zlib
+    zlib \
+    libjpeg \
+    pkgconfig
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure intl && \

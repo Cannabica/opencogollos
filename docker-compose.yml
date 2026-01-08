@@ -4,6 +4,10 @@ services:
     ports:
       - "${APP_HTTP_PORT:-8090}:80"
       - "${APP_HTTPS_PORT:-8040}:443"
+    env_file:
+      - .env.production
+    environment:
+      - APP_URL=${APP_URL}
     volumes:
       - public-php:/var/www/html:ro
       - ./default.conf:/etc/nginx/conf.d/default.conf
@@ -19,12 +23,7 @@ services:
       - app_network
     command: >
       /bin/sh -c "
-        # apk add --no-cache openssl &&
-        # mkdir -p /etc/nginx/ssl &&
-        # openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj '/C=AR/ST=Buenos Aires/L=Buenos Aires/O=Cannabica/CN=plataforma.cannabica.ar' -addext 'subjectAltName=DNS:plataforma.cannabica.ar,DNS:status.cannabica.ar' -addext 'extendedKeyUsage=serverAuth' &&
-        # chmod 644 /etc/nginx/ssl/nginx.crt &&
-        # chmod 600 /etc/nginx/ssl/nginx.key &&
-        nginx -g 'daemon off;'
+      nginx -g 'daemon off;'
       "
 
   certbot:
@@ -34,13 +33,12 @@ services:
       - certbot-conf:/etc/letsencrypt
     depends_on:
       - nginx
-    # command: certonly --webroot --webroot-path=/var/www/html/public -d plataforma.cannabica.ar -d status.cannabica.ar --email alexis.frank.toledo@gmail.com --agree-tos --non-interactive --keep-until-expiring
     command: renew --quiet
 
   php:
     image: ${DOCKER_IMAGE:-cannabica/cannabica-php:latest}
     env_file:
-      - .env
+      - .env.production
     environment:
       - APP_NAME=${APP_NAME:-OpenIndoor}
       - APP_ENV=${APP_ENV:-production}
@@ -77,7 +75,7 @@ services:
       - public-php:/var/www/html
       - php-fpm-logs:/var/log/php-fpm
       - ./www.conf:/usr/local/etc/pp-fpm.d/www.conf
-      - ./.env:/var/www/html/.env
+      - .env.production:/var/www/html/.env
     depends_on:
       db:
         condition: service_healthy
@@ -88,8 +86,6 @@ services:
       retries: 3
       start_period: 20s
     restart: unless-stopped
-    ports:
-      - "9000:9000" #comentar para prod
     networks:
       - app_network
 
@@ -105,7 +101,7 @@ services:
   db:
     image: postgres:15
     env_file:
-      - .env
+      - .env.production
     environment:
       - POSTGRES_DB=${DB_DATABASE}
       - POSTGRES_USER=${DB_USERNAME}
@@ -118,31 +114,6 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    ports: #comentar para prod
-      - "5433:5432"
-    networks:
-      - app_network
-
-  adminer:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.adminer
-    env_file:
-      - .env
-    environment:
-      - ADMINER_DEFAULT_SERVER=${DB_HOST:-db}
-      - ADMINER_DEFAULT_DB_DRIVER=pgsql
-      - ADMINER_DEFAULT_DB_HOST=${DB_HOST:-db}
-      - ADMINER_DEFAULT_DB_PORT=${DB_PORT:-5432}
-      - ADMINER_DEFAULT_DB_NAME=${DB_DATABASE}
-      - ADMINER_DEFAULT_DB_USER=${DB_USERNAME}
-      - ADMINER_DEFAULT_DB_PASSWORD=${DB_PASSWORD}
-      - ADMINER_DESIGN=pepa-linha
-    ports:
-      - "8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - app_network
 

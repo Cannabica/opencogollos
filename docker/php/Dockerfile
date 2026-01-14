@@ -46,18 +46,17 @@ RUN composer install --no-dev --optimize-autoloader && \
 
 FROM php:8.3-fpm-alpine
 
-RUN apk update && apk add --no-cache \
-    libzip \
-    libpng \
-    libjpeg-turbo \
-    freetype \
-    libxml2 \
-    oniguruma \
-    postgresql-libs \
-    icu \
+RUN apk add --no-cache \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    postgresql-dev \
+    icu-dev \
+    zlib-dev \
     unzip \
-    zlib \
-    libjpeg \
     pkgconfig
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \

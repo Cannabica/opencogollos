@@ -14,8 +14,6 @@ RUN apk update && apk add --no-cache \
     unzip \
     nodejs \
     npm \
-
-    
     zlib \
     zlib-dev \
     libjpeg \
@@ -35,7 +33,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-autoloader --no-scripts --prefer-dist
 
 COPY package.json package-lock.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 COPY . .
 RUN composer install --no-dev --optimize-autoloader && \

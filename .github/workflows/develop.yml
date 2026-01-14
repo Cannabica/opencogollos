@@ -156,19 +156,19 @@ jobs:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.VPS_IP }}
+          host: ${{ secrets.V PS_IP }}
           username: ${{ secrets.VPS_USER }}
           port: 60022
           key: ${{ secrets.VPS_KEY }}
           script: |
-            cd /home/ubuntu
+            cd /home/almalinux
             export DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/cannabica-php:${{ needs.build.outputs.tag }}
 
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-            docker-compose pull php
+            docker compose pull php
             
-            docker-compose down
+            docker compose down
 
-            docker-compose up -d --remove-orphans
+            docker compose up -d --remove-orphans
             
             docker image prune -f

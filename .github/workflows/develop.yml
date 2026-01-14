@@ -156,7 +156,7 @@ jobs:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.V PS_IP }}
+          host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           port: 60022
           key: ${{ secrets.VPS_KEY }}

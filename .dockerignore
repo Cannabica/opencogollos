@@ -39,6 +39,7 @@ docker-compose.local.yml
 # Build artifacts
 /public/hot
 /public/storage
+/public/build
 /storage/app/public
 /storage/debugbar
 

@@ -22,18 +22,12 @@ class SendDelayedProductNotification implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        protected string $applicationType,
-        protected int $plantsCount,
-        protected int $tenantId,
-        protected ?int $actionId = null,
-        protected ?int $notificationId = null
+        public string $applicationType,
+        public int $plantsCount,
+        public int $tenantId,
+        public ?int $actionId = null,
+        public ?int $notificationId = null
     ) {
-        Log::info('SendDelayedProductNotification constructor', [
-            'applicationType' => $this->applicationType,
-            'plantsCount' => $this->plantsCount,
-            'tenantId' => $this->tenantId,
-            'actionId' => $this->actionId
-        ]);
     }
 
     public function handle(): void
@@ -50,13 +44,13 @@ class SendDelayedProductNotification implements ShouldQueue
 
         // Enviar mensajes de Telegram a todos los usuarios asociados al tenant
         $telegramUsers = TelegramUserTenant::where('tenant_id', $this->tenantId)->get();
-        
+
         foreach ($telegramUsers as $telegramUser) {
             try {
                 // Obtener información del indoor si hay una acción asociada
                 $indoorName = 'tu indoor';
                 $actionUrl = null;
-                
+
                 if ($this->actionId) {
                     try {
                         $action = ActionModel::find($this->actionId);
@@ -64,14 +58,14 @@ class SendDelayedProductNotification implements ShouldQueue
                             if ($action->indoor) {
                                 $indoorName = $action->indoor->name;
                             }
-                            
+
                             // Obtener observaciones/comentarios si existen
                             $observations = '';
                             if (!empty($action->data['product_application']['observations'])) {
                                 $observations = "\n📝 *Observaciones:* " . $action->data['product_application']['observations'] . "\n";
                             }
                         }
-                        
+
                         // Generar URL de la acción
                         $actionUrl = url("/tenant/actions/{$this->actionId}/edit");
                     } catch (\Exception $e) {
@@ -85,16 +79,16 @@ class SendDelayedProductNotification implements ShouldQueue
                 $message = "🌱 *¡Es momento de aplicar!* 🌱\n\n";
                 $message .= "Es momento de aplicar un producto de *{$this->applicationType}* sobre *{$this->plantsCount} plantas* en {$indoorName}.\n\n";
                 $message .= "⏰ *Recordatorio programado:* " . now()->format('d/m/Y H:i') . "\n";
-                
+
                 // Agregar observaciones si existen
                 if (!empty($observations)) {
                     $message .= $observations;
                 }
-                
+
                 if ($actionUrl) {
                     $message .= "\n📋 [Ver detalles de la aplicación]($actionUrl)";
                 }
-                
+
                 $message .= "\n\n_🤖 Este es un recordatorio automático_";
 
                 Telegram::sendMessage([
@@ -122,28 +116,61 @@ class SendDelayedProductNotification implements ShouldQueue
                 'email' => $user->email
             ]);
 
-            // Enviar notificación de base de datos para el widget
-            $user->notify(new ProductApplicationReminder(
-                $this->applicationType,
-                $this->plantsCount
-            ));
+            $indoorName = 'tu indoor';
+            $plantsText = "**{$this->plantsCount}** plantas";
+
+            if ($this->actionId) {
+                $action = ActionModel::with(['indoor', 'plants'])->find($this->actionId);
+                if ($action) {
+                    if ($action->indoor) {
+                        $indoorName = $action->indoor->name;
+                    }
+                    if ($action->plants->count() === 1) {
+                        $plantsText = "la planta **" . $action->plants->first()->name . "**";
+                    } else {
+                        $plantsText = "**" . $action->plants->count() . "** plantas";
+                    }
+                }
+            }
+
+            $typeTranslation = match (strtolower($this->applicationType)) {
+                'flora' => 'Flora',
+                'plague' => 'Control de Plagas',
+                'plantula' => 'Etapa de Plántula',
+                default => 'Producto',
+            };
+
+            $title = strtolower($this->applicationType) === 'other'
+                ? "Recordatorio de aplicación de producto"
+                : "Recordatorio de aplicación: {$typeTranslation}";
 
             FilamentNotification::make()
                 ->success()
-                ->title('Recordatorio de aplicación pendiente')
-                ->body("Hay que realizar una aplicación de {$this->applicationType} para {$this->plantsCount} plantas")
+                ->title($title)
+                ->body("Hola, es momento de realizar la aplicación de **" . (strtolower($this->applicationType) === 'other' ? 'un producto' : $typeTranslation) . "** sobre {$plantsText} en el indoor **{$indoorName}**. Por favor, revisa los detalles para proceder.")
                 ->persistent()
                 ->actions([
+                    FilamentAction::make('markAsRead')
+                        ->label('Leída')
+                        ->icon('heroicon-m-check-circle')
+                        ->link()
+                        ->size('sm')
+                        ->color('success')
+                        ->markAsRead(),
                     FilamentAction::make('postpone')
-                        ->label('Posponer 24h')
-                        ->button()
-                        ->color('gray')
+                        ->label('Posponer')
+                        ->icon('heroicon-m-clock')
+                        ->link()
+                        ->size('sm')
+                        ->color('warning')
                         ->action(function () {
                             if ($this->notificationId) {
                                 Livewire::dispatch('markNotificationAsRead', ['id' => $this->notificationId]);
                             }
-                            if (empty($this->applicationType) || empty($this->plantsCount) ||
-                                empty($this->tenantId) || empty($this->actionId)) {
+                            if (
+                                empty($this->applicationType) || empty($this->plantsCount) ||
+                                empty($this->tenantId) || empty($this->actionId)
+                            ) {
                                 Log::error('Missing required notification parameters', [
                                     'applicationType' => $this->applicationType,
                                     'plantsCount' => $this->plantsCount,
@@ -154,18 +181,20 @@ class SendDelayedProductNotification implements ShouldQueue
                             }
 
                             return redirect()->route('actions.postpone-notification', [
-                                'type' => (string)$this->applicationType,
-                                'count' => (int)$this->plantsCount,
-                                'tenant' => (int)$this->tenantId,
-                                'action' => (int)$this->actionId
+                                'type' => (string) $this->applicationType,
+                                'count' => (int) $this->plantsCount,
+                                'tenant' => (int) $this->tenantId,
+                                'action' => (int) $this->actionId
                             ]);
                         })
                         ->close()
                         ->extraAttributes([]),
                     FilamentAction::make('goToAction')
-                        ->label('Aplicación que generó el recordatorio')
-                        ->button()
-                        ->color('success')
+                        ->label('Revisar')
+                        ->icon('heroicon-m-eye')
+                        ->link()
+                        ->size('sm')
+                        ->color('primary')
                         ->url($this->actionId
                             ? "/tenant/actions/{$this->actionId}/edit"
                             : "/tenant/actions")

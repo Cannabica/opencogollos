@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Faker\Factory;
 
 class ExampleDataSeeder extends Seeder
 {
@@ -46,7 +45,17 @@ class ExampleDataSeeder extends Seeder
     ];
 
     private $potCapacities = [
-        3, 5, 7, 10, 12, 15, 20, 30, 40, 50, 75
+        3,
+        5,
+        7,
+        10,
+        12,
+        15,
+        20,
+        30,
+        40,
+        50,
+        75
     ];
 
     private $suelos;
@@ -114,7 +123,7 @@ class ExampleDataSeeder extends Seeder
             'flowering_time' => rand(45, 90),
             'ratio_thc' => rand(5, 25),
             'ratio_cbd' => rand(1, 15),
-            'aprobado_inase' => (bool)rand(0, 1),
+            'aprobado_inase' => (bool) rand(0, 1),
             'provider' => 'Tenant Specific Provider',
         ]);
     }
@@ -124,9 +133,9 @@ class ExampleDataSeeder extends Seeder
      */
     public function run(): void
     {
-    
+
         $this->command->info('Iniciando ExampleDataSeeder...');
-        $faker = Factory::create('es_ES');
+        $faker = fake();
 
         // Crear múltiples tenants
         $tenantConfigs = [
@@ -157,7 +166,7 @@ class ExampleDataSeeder extends Seeder
                 ->first();
 
             if (!$tenant) {
-                
+
                 // Crear tenant con el siguiente ID disponible
                 $tenant = Tenant::withoutGlobalScope(TenantScope::class)->create([
                     'name' => $config['name'],
@@ -277,9 +286,9 @@ class ExampleDataSeeder extends Seeder
 
                 // Obtener todas las semillas disponibles (globales + locales del tenant)
                 $availableSeeds = Seed::withoutGlobalScope(TenantScope::class)
-                    ->where(function($query) use ($tenant) {
+                    ->where(function ($query) use ($tenant) {
                         $query->whereNull('tenant_id')
-                              ->orWhere('tenant_id', $tenant->id);
+                            ->orWhere('tenant_id', $tenant->id);
                     })->get();
 
                 if ($availableSeeds->isEmpty()) {
@@ -294,13 +303,13 @@ class ExampleDataSeeder extends Seeder
                 for ($k = 0; $k < $numPlants; $k++) {
                     // Seleccionar una semilla aleatoria de las disponibles
                     $randomSeed = $availableSeeds->random();
-                    
+
                     // Verificar que el indoor pertenezca al tenant actual
                     if ($indoor->tenant_id !== $tenant->id) {
                         $this->command->error("El indoor no pertenece al tenant actual");
                         continue;
                     }
-                    
+
                     // Ensure we get at least 1 selection but no more than available options
                     $suelosSeleccionados = $faker->randomElements(
                         $this->suelos,
@@ -313,7 +322,7 @@ class ExampleDataSeeder extends Seeder
 
                     $plant = Plant::withoutGlobalScope(TenantScope::class)->create([
                         'name' => $faker->randomElement($this->adjetivos) . ' ' .
-                        $faker->randomElement($this->plantas) . ' #' . rand(1, 999),
+                            $faker->randomElement($this->plantas) . ' #' . rand(1, 999),
                         'indoor_id' => $indoor->id,
                         'seed_id' => $randomSeed->id,
                         'state' => Arr::random($this->plantStates),
@@ -326,7 +335,7 @@ class ExampleDataSeeder extends Seeder
 
                     if ($plant) {
                         $this->command->info("Planta creada: " . $plant->name . " en " . $indoor->name);
-                        
+
                         // Crear acciones para esta planta
                         $this->createRandomActions($plant, $indoor->id, $tenant->id);
                     }
@@ -342,12 +351,12 @@ class ExampleDataSeeder extends Seeder
         $height = rand(2, 8);
 
         $numFans = rand(1, 4);
-        $fans = array_map(function() {
+        $fans = array_map(function () {
             return ['inches' => rand(8, 20)];
         }, range(1, $numFans));
 
         $numLamps = rand(1, 3);
-        $lamps = array_map(function() {
+        $lamps = array_map(function () {
             return [
                 'power' => rand(40, 150),
                 'technology' => Arr::random(['led', 'sodio', 'led full spectrum']),
@@ -363,8 +372,8 @@ class ExampleDataSeeder extends Seeder
             'height' => $height,
             'fans' => $fans,
             'lamps' => $lamps,
-            'hygometer' => (bool)rand(0, 1),
-            'humidifier' => (bool)rand(0, 1),
+            'hygometer' => (bool) rand(0, 1),
+            'humidifier' => (bool) rand(0, 1),
             'peak_quantity' => rand(30, 200),
             'scheduled_time' => rand(2, 8),
             'times_a_day' => rand(1, 6),
@@ -380,7 +389,7 @@ class ExampleDataSeeder extends Seeder
         for ($i = 0; $i < $numActions; $i++) {
             $actionTypeId = Arr::random($actionTypes);
             $actionDate = Carbon::now()->subDays(rand(1, 60));
-            
+
             $data = $this->generateActionData($actionTypeId, [$plant->id]);
 
             $action = Action::withoutGlobalScope(TenantScope::class)->create([

@@ -41,6 +41,40 @@
     justify-content: center;
 }
 
+/* Disable interactions on read notification actions */
+.is-read-notification .fi-no-notification-actions {
+    pointer-events: none;
+}
+
+/* Fade out the "Posponer" and "Revisar" buttons and remove solid backgrounds */
+.is-read-notification .fi-no-notification-actions > *:not(:first-child) {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+/* Transform the "Marcar como leída" button into a "Leída" indicator */
+.is-read-notification .fi-no-notification-actions > *:first-child {
+    background-color: transparent !important;
+    border: 1px solid rgba(var(--success-500), 0.6) !important;
+    color: rgba(var(--success-500), 1) !important;
+    box-shadow: none !important;
+}
+
+/* Hide the original "Marcar como leída" text */
+.is-read-notification .fi-no-notification-actions > *:first-child .fi-btn-label {
+    display: none !important;
+}
+
+/* Inject the "Leída" text */
+.is-read-notification .fi-no-notification-actions > *:first-child::after {
+    content: "Leída";
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
 /* Alerta de Bug con tonos naranja */
 .bug-notification {
     background-color: #d9534f !important;
@@ -812,9 +846,8 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 /* Estilos para el encabezado de tabla */
 .fi-ta-header {
     background-color: rgba(95, 158, 160, 0.08);
-    border-bottom: 1px solid rgba(95, 158, 160, 0.2);
+    border-bottom: 0px solid rgba(95, 158, 160, 0.2);
     padding: 1rem;
-    margin-bottom: 1rem;
     border-radius: 0.5rem;
 }
 

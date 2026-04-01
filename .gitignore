@@ -43,3 +43,9 @@ ssl/*
 /ssl/*
 
 vps-deploy.md
+
+# Agent & AI Tools
+/.agents
+/.agent
+/.gemini
+/.cursorrules

@@ -46,7 +46,6 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Grid as FormsGrid;
 use Filament\Forms\Components\Hidden;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Filament\Tenant\Resources\Actions\Components\PlantSelector;
 use App\Filament\Tenant\Resources\Actions\Rules\ActionValidationRules;
 use App\Filament\Tenant\Resources\Actions\Services\ActionRecordService;
@@ -270,11 +269,11 @@ class ActionsResource extends Resource
                                             '7d' => 'En 7 días',
                                             '14d' => 'En 14 días'
                                         ];
-                                        
-                                        if (env('APP_DEBUG') === true) {
+
+                                        if (config('app.debug')) {
                                             $options['5s'] = 'En 5 segundos (DEBUG)';
                                         }
-                                        
+
                                         return $options;
                                     })
                                     ->default('none'),
@@ -464,7 +463,7 @@ class ActionsResource extends Resource
         ]);
     }
 
-    protected function executeActionTrigger(Action $action)
+    public static function executeActionTrigger(Action $action)
     {
         $actionClass = $action->action_type->action_class;
 
@@ -477,38 +476,30 @@ class ActionsResource extends Resource
 
             // Si es una aplicación de producto y tiene recordatorio
             if (
-                $action->action_type_id === 3 &&
+                $action->action_type_id == 3 &&
                 isset($action->data['product_application']['reminder_time']) &&
                 $action->data['product_application']['reminder_time'] !== 'none'
             ) {
 
                 $reminderTime = $action->data['product_application']['reminder_time'];
-                
-                if ($reminderTime === '5s') {
-                    // Disparar con delay aleatorio entre 5 y 10 segundos para testing
-                    $randomDelay = rand(5, 10);
-                    dispatch(new SendDelayedProductNotification(
-                        $action->data['product_application']['application_type'],
-                        $action->plants()->count(),
-                        $action->tenant_id,
-                        url(ActionsResource::getUrl('edit', ['record' => $action->id]))  // URL de edición de la acción
-                    ))->delay(now()->addSeconds($randomDelay));
-                } else {
-                    $delay = match ($reminderTime) {
-                        '1d' => 86400,
-                        '7d' => 604800,
-                        '14d' => 1209600,
-                        default => 0
-                    };
+                $applicationType = $action->data['product_application']['application_type'] ?? 'desconocido';
+                $plantsCount = $action->plants()->count();
 
-                    if ($delay > 0) {
-                        dispatch(new SendDelayedProductNotification(
-                            $action->data['product_application']['application_type'],
-                            $action->plants()->count(),
-                            $action->tenant_id,
-                            url(ActionsResource::getUrl('edit', ['record' => $action->id]))  // URL de edición de la acción
-                        ))->delay(now()->addSeconds($delay));
-                    }
+                $delay = match ($reminderTime) {
+                    '5s' => now()->addSeconds(5),
+                    '1d' => now()->addDay(),
+                    '7d' => now()->addDays(7),
+                    '14d' => now()->addDays(14),
+                    default => null
+                };
+
+                if ($delay) {
+                    dispatch(new SendDelayedProductNotification(
+                        $applicationType,
+                        $plantsCount,
+                        $action->tenant_id,
+                        $action->id
+                    ))->delay($delay);
                 }
             }
         }
@@ -597,13 +588,13 @@ class ActionsResource extends Resource
                             return "Cambio de estado a {$data['change_state']['state']}";
                         } elseif (isset($data['observation'])) {
                             $images = is_array($data['observation']['image'])
-                            ? $data['observation']['image']
-                            : [$data['observation']['image']];
+                                ? $data['observation']['image']
+                                : [$data['observation']['image']];
                             $imageCount = count($images);
-                            
+
                             $messageText = '';
-                            $messageText .= "\n" . (strlen($data['observation']['comments']) > 30 
-                                ? substr($data['observation']['comments'], 0, 30) . '...' 
+                            $messageText .= "\n" . (strlen($data['observation']['comments']) > 30
+                                ? substr($data['observation']['comments'], 0, 30) . '...'
                                 : $data['observation']['comments']);
                             if ($imageCount > 0) {
                                 if ($imageCount > 1) {
@@ -618,7 +609,7 @@ class ActionsResource extends Resource
                         } elseif (isset($data['product_application'])) {
                             $appType = $data['product_application']['application_type'];
                             $observation = substr($data['product_application']['observation'] ?? '', 0, 20);
-                            
+
                             switch ($appType) {
                                 case 'flora':
                                     return "Aplicación de producto para flora" . ($observation ? " - $observation" : '');

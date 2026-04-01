@@ -5,7 +5,7 @@ use Telegram\Bot\Commands\HelpCommand;
 return [
     /*
     |--------------------------------------------------------------------------
-    | Your Telegram Bots
+    // | Your Telegram Bots
     |--------------------------------------------------------------------------
     | You may use multiple bots at once using the manager class. Each bot
     | that you own should be configured here.
@@ -33,7 +33,7 @@ return [
     'bots' => [
         'default' => [
             'token' => env('TELEGRAM_BOT_TOKEN'),
-            'webhook_url' => env('APP_URL').'/api/telegram/webhook/',
+            'webhook_url' => env('TELEGRAM_WEBHOOK_URL', env('APP_URL') . '/api/telegram/webhook/'),
             'allowed_updates' => ['message', 'callback_query'],
             'commands' => [
                 'start',

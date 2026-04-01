@@ -27,6 +27,9 @@ class Kernel extends ConsoleKernel
 
         // Registrar comandos personalizados de Telegram
         $this->load(__DIR__.'/Commands/Telegram');
+        $this->commands([
+            \App\Console\Commands\RunActionExecutionServer::class,
+        ]);
 
         require base_path('routes/console.php');
     }

@@ -450,60 +450,42 @@ class ActionsResource extends Resource
 
     public function afterCreate(): void
     {
-        parent::afterCreate();
-
-        // Recargar el registro con sus relaciones
-        $this->record->load(['plants']);
-
-        Log::debug('Después de crear acción', [
-            'action_id' => $this->record->id,
-            'tiene_plantas' => $this->record->plants()->exists(),
-            'plantas_count' => $this->record->plants()->count(),
-            'plantas_ids' => $this->record->plants()->pluck('id')
-        ]);
-    }
-
-    public static function executeActionTrigger(Action $action)
-    {
-        $actionClass = $action->action_type->action_class;
-
-        if (class_exists($actionClass)) {
-            $actionInstance = new $actionClass();
-
-            foreach ($action->plants as $plant) {
-                $actionInstance->trigger($plant);
+        $this->executeActionTrigger($this->record);
+        
+        if ($this->record->action_type_id == 3) {
+            $notificationTiming = $this->record->data['product_application']['notification_timing'] ?? 'none';
+            
+            if ($notificationTiming === 'none') {
+                return;
             }
-
-            // Si es una aplicación de producto y tiene recordatorio
-            if (
-                $action->action_type_id == 3 &&
-                isset($action->data['product_application']['reminder_time']) &&
-                $action->data['product_application']['reminder_time'] !== 'none'
-            ) {
-
-                $reminderTime = $action->data['product_application']['reminder_time'];
-                $applicationType = $action->data['product_application']['application_type'] ?? 'desconocido';
-                $plantsCount = $action->plants()->count();
-
-                $delay = match ($reminderTime) {
-                    '5s' => now()->addSeconds(5),
-                    '1d' => now()->addDay(),
-                    '7d' => now()->addDays(7),
-                    '14d' => now()->addDays(14),
-                    default => null
-                };
-
-                if ($delay) {
-                    dispatch(new SendDelayedProductNotification(
-                        $applicationType,
-                        $plantsCount,
-                        $action->tenant_id,
-                        $action->id
-                    ))->delay($delay);
-                }
+            
+            $notificationDate = match($notificationTiming) {
+                '10s' => now()->addSeconds(10),
+                '10m' => now()->addMinutes(10),
+                '1d' => now()->addDay(),
+                '3d' => now()->addDays(3),
+                '7d' => now()->addDays(7),
+                default => null,
+            };
+            
+            if ($notificationDate) {
+                ProductApplicationReminderNotification::sendToTenant($this->record, $notificationDate);
+                
+                FilamentNotification::make()
+                    ->title('Recordatorio programado')
+                    ->body("Se ha programado un recordatorio para el " . $notificationDate->format('d/m/Y H:i'))
+                    ->actions([
+                        \Filament\Notifications\Actions\Action::make('view_history')
+                            ->label('Ver historial')
+                            ->url(route('filament.tenant.pages.notifications-history')),
+                    ])
+                    ->success()
+                    ->persistent()
+                    ->send();
             }
         }
     }
+
 
     public static function table(Table $table): Table
     {

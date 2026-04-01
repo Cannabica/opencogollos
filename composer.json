@@ -22,10 +22,10 @@
     "leandrocfe/filament-apex-charts": "^3.1",
     "rupadana/filament-api-service": "dev-main",
     "symfony/polyfill-intl-icu": "^1.32",
-    "tymon/jwt-auth": "^2.2"
+    "tymon/jwt-auth": "^2.2",
+    "fakerphp/faker": "^1.23"
   },
   "require-dev": {
-    "fakerphp/faker": "^1.9.1",
     "laravel/breeze": "^1.29",
     "laravel/pint": "^1.0",
     "laravel/sail": "^1.18",

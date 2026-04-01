@@ -1,0 +1,8 @@
+$action = App\Models\Action::where('action_type_id', 3)->latest()->first();
+if ($action) {
+    App\Filament\Tenant\Resources\ActionsResource::executeActionTrigger($action);
+    $tenantId = $action->tenant_id;
+    $jobs = App\Models\Job::where('payload', 'like', '%SendDelayedProductNotification%')
+        ->where('payload', 'like', '%\"tenantId\";i:' . $tenantId . ';%')
+        ->get();
+    echo \"Jobs found for tenant $tenantId: \" . $jobs->count() . \"\n\";

@@ -54,7 +54,7 @@ class AuthCommand extends Command
             $this->saveUserTenantAssociation($telegramUserId, $tenant->id, $tokenData['expires_at']);
 
             $this->replyWithMessage([
-                'text' => "✅ Autenticado correctamente con el tenant *{$tenant->name}* usando token: `{$token}`\n\n👤 Usuario: *{$this->getUpdate()->getMessage()->getFrom()->getFirstName()}* (ID: `{$this->getUpdate()->getMessage()->getFrom()->getId()}`)\n\n📅 El token expira el: *" . $tokenData['expires_at']->format('d/m/Y H:i') . "*",
+                'text' => "✅ Autenticado correctamente con el tenant *{$tenant->name}*\n\n👤 Usuario: *{$this->getUpdate()->getMessage()->getFrom()->getFirstName()}* (ID: `{$this->getUpdate()->getMessage()->getFrom()->getId()}`)\n\n📅 El token expira el: *" . $tokenData['expires_at']->format('d/m/Y H:i') . "*",
                 'parse_mode' => 'Markdown'
             ]);
 

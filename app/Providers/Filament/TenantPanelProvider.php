@@ -35,7 +35,7 @@ class TenantPanelProvider extends PanelProvider
         FilamentAsset::register([
             Css::make('custom-css', asset('css/custom.css')),
         ]);
-        
+
         return $panel
             ->id('tenant')
             ->plugin(
@@ -45,8 +45,9 @@ class TenantPanelProvider extends PanelProvider
             ->font('Space Grotesk')
             ->login()
             ->registration(\App\Filament\Tenant\Pages\Registration::class)
+            ->passwordReset()
             ->authGuard('web')
-            ->default()              
+            ->default()
             ->favicon(asset(path: 'images/favicon.png'))
             ->brandLogo(fn() => view('filament.admin.logo'))
             ->darkModeBrandLogo(fn() => view('filament.admin.logo-darkmode'))

@@ -21,23 +21,41 @@ class ActionTypesSeeder extends Seeder
     {
 
         $actionsTypes = [
-            ['name' =>'Registrar Riego', 'action_class' => RegisterIrrigation::class],
-            ['name' =>'Registrar Poda', 'action_class' => RegisterPruning::class],
-            ['name' =>'Registrar Aplique producto', 'action_class' => RegisterApplication::class],
-            ['name' =>'Registrar Transplante', 'action_class' => RegisterTransplant::class],
-            ['name' =>'Registrar Observación con foto', 'action_class' => RegisterObservation::class],
-            ['name' =>'Registrar Muerte de la planta', 'action_class' => RegisterDeath::class],
-            ['name' =>'Registrar Cambio de Estado', 'action_class' => RegisterState::class],
+            ['name' => 'Registrar Riego', 'action_class' => RegisterIrrigation::class],
+            ['name' => 'Registrar Poda', 'action_class' => RegisterPruning::class],
+            ['name' => 'Registrar Aplique producto', 'action_class' => RegisterApplication::class],
+            ['name' => 'Registrar Transplante', 'action_class' => RegisterTransplant::class],
+            ['name' => 'Registrar Observación con foto', 'action_class' => RegisterObservation::class],
+            ['name' => 'Registrar Muerte de la planta', 'action_class' => RegisterDeath::class],
+            ['name' => 'Registrar Cambio de Estado', 'action_class' => RegisterState::class],
             //...
         ];
-        
+
         foreach ($actionsTypes as $type) {
-            DB::table(table: 'action_types')->insert([ 
-                'name' => $type['name'],
-                'action_class' => $type['action_class'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $existing = DB::table('action_types')
+                ->where('action_class', $type['action_class'])
+                ->first();
+
+            if ($existing) {
+                // Update the existing record and ensure no duplicates remain
+                DB::table('action_types')
+                    ->where('action_class', $type['action_class'])
+                    ->where('id', '!=', $existing->id)
+                    ->delete();
+
+                DB::table('action_types')->where('id', $existing->id)->update([
+                    'name' => $type['name'],
+                    'updated_at' => now(),
+                ]);
+            } else {
+                // Insert new record
+                DB::table('action_types')->insert([
+                    'name' => $type['name'],
+                    'action_class' => $type['action_class'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
     }
 }

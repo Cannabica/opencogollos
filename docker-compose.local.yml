@@ -92,6 +92,9 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./docker/grafana-provisioning/dashboards-config:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana-provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./docker/grafana-provisioning/dashboards:/etc/grafana/dashboards:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     restart: unless-stopped

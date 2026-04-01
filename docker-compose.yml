@@ -118,6 +118,42 @@ services:
     networks:
       - app_network
 
+  loki:
+    image: grafana/loki:3.0.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./docker/loki/loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro
+    command: -config.file=/etc/promtail/config.yaml
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana-provisioning/dashboards-config:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana-provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./docker/grafana-provisioning/dashboards:/etc/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    restart: unless-stopped
+    networks:
+      - app_network
 
 volumes:
   uptime-kuma-data:
@@ -126,6 +162,9 @@ volumes:
   certbot-www:
   certbot-conf:
   public-php:
+  grafana_data:
+  loki_data:
+
 networks:
   app_network:
     driver: bridge 

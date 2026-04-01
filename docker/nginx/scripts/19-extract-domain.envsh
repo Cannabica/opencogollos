@@ -1,0 +1,8 @@
+#!/bin/sh
+# Extract domain from APP_URL for Nginx template
+if [ -n "$APP_URL" ]; then
+    export APP_DOMAIN=$(echo "$APP_URL" | sed -E 's|https?://||' | cut -d/ -f1)
+    echo "Extracted APP_DOMAIN: $APP_DOMAIN"
+else
+    echo "APP_URL not set, APP_DOMAIN will be empty"
+fi

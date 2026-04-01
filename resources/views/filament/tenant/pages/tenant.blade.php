@@ -248,41 +248,41 @@
             </div>
 
             @if($newToken)
-                <div class="p-4 bg-green-50 rounded-lg" x-data="{ showToken: false }">
-                    <p class="font-medium">Nuevo token generado:</p>
+                <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/30" x-data="{ showToken: false }">
+                    <p class="font-medium text-green-900 dark:text-green-300">Nuevo token generado:</p>
                     <div class="mt-2 flex items-center gap-2">
                         <input
                             x-bind:type="showToken ? 'text' : 'password'"
                             value="{{ $newToken }}"
-                            class="flex-1 p-3 bg-white rounded border border-gray-200 break-all"
+                            class="flex-1 p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 dark:text-white break-all"
                             readonly
                         >
                         <button
                             @click="showToken = !showToken"
                             type="button"
-                            class="px-3 py-2 rounded"
+                            class="px-3 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-800/50"
                         >
                             <span x-text="showToken ? 'Ocultar' : 'Mostrar'"></span>
                         </button>
                         <button
                             @click="navigator.clipboard.writeText('{{ $newToken }}'); $tooltip('Copiado!', { timeout: 2000 })"
                             type="button"
-                            class="px-3 py-2 rounded"
+                            class="px-3 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-green-100 dark:hover:bg-green-800/50"
                             x-tooltip="'Copiar al portapapeles'"
                         >
                             Copiar
                         </button>
                     </div>
-                    <div class="mt-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-600 rounded-lg" style="padding-left: 50px">
-                        <p class="font-medium text-yellow-800 dark:text-yellow-200">¡Advertencia de seguridad!</p>
-                        <ul class="mt-2 space-y-1 text-sm text-yellow-700 dark:text-yellow-300 list-disc pl-5">
+                    <div class="mt-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-600/50 rounded-lg" style="padding-left: 50px">
+                        <p class="font-medium text-yellow-800 dark:text-yellow-300">¡Advertencia de seguridad!</p>
+                        <ul class="mt-2 space-y-1 text-sm text-yellow-700 dark:text-yellow-400 list-disc pl-5">
                             <li><strong>No se puede volver a visualizar este token</strong></li>
                             <li>Este token proporciona acceso completo a la API y al bot de telegram</li>
                             <li>Guárdelo en un lugar seguro y no lo comparta</li>
                             <li>Si se pierde o compromete, revóquelo inmediatamente</li>
                         </ul>
                     </div>
-                    <p class="mt-2 text-sm text-gray-600">Este token expirará en 7 días y puede renovarse hasta 10 veces.</p>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Este token expirará en 7 días y puede renovarse hasta 10 veces.</p>
                 </div>
             @endif
 

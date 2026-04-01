@@ -8,7 +8,6 @@ use App\Models\Seed;
 use App\Models\Indoor;
 use App\Models\Tenant;
 use App\Models\Scopes\TenantScope;
-use Faker\Factory;
 
 class PlantSeeder extends Seeder
 {
@@ -16,31 +15,31 @@ class PlantSeeder extends Seeder
      * Run the database seeds.
      */
 
-     private $suelos;
-     private $enriquecimientos;
- 
-     public function __construct()
-     {
-         $this->suelos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::BASE_FLOOR_OPTIONS);
-         $this->enriquecimientos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::SOIL_ENRICHMENT_OPTIONS);
-     }
- 
+    private $suelos;
+    private $enriquecimientos;
+
+    public function __construct()
+    {
+        $this->suelos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::BASE_FLOOR_OPTIONS);
+        $this->enriquecimientos = array_keys(\App\Filament\Tenant\Resources\PlantsResource::SOIL_ENRICHMENT_OPTIONS);
+    }
+
     public function run(): void
     {
-        $faker = Factory::create('es_ES');
-        
+        $faker = fake();
+
         $tenants = Tenant::all();
-        
-    
+
+
         foreach ($tenants as $tenant) {
             $this->command->info("Creando plantas para tenant: " . $tenant->name);
-            
+
             // Obtener todas las semillas disponibles (globales + locales del tenant)
             $seeds = Seed::where(function ($query) use ($tenant) {
                 $query->whereNull('tenant_id')
-                      ->orWhere('tenant_id', $tenant->id);
+                    ->orWhere('tenant_id', $tenant->id);
             })->get();
-            
+
             if ($seeds->isEmpty()) {
                 $this->command->info("No hay semillas disponibles para el tenant " . $tenant->name);
                 continue;
@@ -112,7 +111,7 @@ class PlantSeeder extends Seeder
 
             foreach ($indoors as $indoor) {
                 $this->command->info("Creando plantas para indoor: " . $indoor->name);
-                
+
                 for ($i = 0; $i < $plantsPerIndoor && $plantsCreated < 20; $i++) {
                     // Seleccionar elementos aleatorios
                     $suelosSeleccionados = $faker->randomElements($this->suelos, rand(1, min(5, count($this->suelos))));

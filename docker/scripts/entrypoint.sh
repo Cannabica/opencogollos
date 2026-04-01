@@ -32,6 +32,23 @@ if [ -f "artisan" ]; then
     php artisan view:clear || true
 fi
 
+# Esperar a que la base de datos esté lista y el usuario pueda conectarse
+echo "Esperando a que la base de datos esté lista ($DB_HOST:$DB_PORT)..."
+max_tries=30
+count=0
+until php artisan tinker --execute="DB::connection()->getPdo();" > /dev/null 2>&1 || [ $count -eq $max_tries ]; do
+    echo "Base de datos no disponible todavía... esperando (intento $count/$max_tries)"
+    sleep 2
+    count=$((count + 1))
+done
+
+if [ $count -eq $max_tries ]; then
+    echo "Error: No se pudo conectar a la base de datos después de $max_tries intentos."
+    exit 1
+fi
+
+echo "¡Base de datos lista! Procediendo con migraciones..."
+
 # Ejecutar migraciones
 echo "Ejecutando migraciones..."
 php artisan migrate --force
@@ -52,8 +69,10 @@ check_table_exists() {
 # Función para verificar si una tabla tiene registros
 check_table_has_records() {
     if [ "$(check_table_exists $1)" = "true" ]; then
+        >&2 echo "Tabla $1 existe"
         record_count=$(php artisan tinker --execute='echo DB::table("'$1'")->count();')
-        return $record_count
+        >&2 echo "Registros en $1: $record_count"
+        echo "$record_count"
     else
         echo '0'
     fi
@@ -84,12 +103,8 @@ else
     echo "La tabla 'seeds' ya tiene registros, no se ejecuta el seeder de Seeds."
 fi
 
-if [ "$(check_table_has_records action_types)" = "0" ]; then
-    echo "Ejecutando seeder de tipos de acción..."
-    php artisan db:seed --class=ActionTypesSeeder --force
-else
-    echo "La tabla 'action_types' ya tiene registros, no se ejecuta el seeder de ActionTypes."
-fi
+echo "Sincronizando tipos de acción..."
+php artisan db:seed --class=ActionTypesSeeder --force
 
 # Verificar si se debe ejecutar el seeder de datos de ejemplo
 if [ "${SEED_EXAMPLE_DATA}" = "true" ]; then

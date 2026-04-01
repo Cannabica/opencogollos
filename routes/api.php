@@ -25,6 +25,38 @@ Route::get('/test-token', function (TenantTokenService $service) {
     ]);
 });
 
+// Telegram webhook route
+Route::post('/telegram/webhook', function (\Illuminate\Http\Request $request) {
+    try {
+        $update = Telegram::getWebhookUpdate();
+
+        if ($update->has('callback_query')) {
+            $callbackData = $update->callbackQuery->data;
+
+            if (strpos($callbackData, 'plantdetails:') === 0) {
+                Telegram::triggerCommand('plantdetails', $update);
+            } elseif (strpos($callbackData, 'actiondetails:') === 0) {
+                Telegram::triggerCommand('actiondetails', $update);
+            } else {
+                Telegram::triggerCommand('callback', $update);
+            }
+        } elseif ($update->has('message') && $update->message->has('photo')) {
+            Telegram::triggerCommand('photo', $update);
+        } else {
+            Telegram::commandsHandler(true);
+        }
+
+        return response()->json(['status' => 'ok']);
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Telegram webhook processing error', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->all()
+        ]);
+        return response('Error', 500);
+    }
+});
+
 // Tenant API Routes
 Route::middleware('tenant.token')->group(function () {
     Route::get('/test', function (Request $request) {

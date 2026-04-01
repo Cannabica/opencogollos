@@ -10,7 +10,7 @@ class SuperAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminEmail = env('ADMIN_EMAIL', 'frankie@cannabica.app');
+        $adminEmail = env('ADMIN_EMAIL', 'administrator@cannabica.app');
         $adminPassword = env('ADMIN_PASSWORD');
 
         if (!$adminPassword) {
@@ -21,7 +21,7 @@ class SuperAdminSeeder extends Seeder
         User::updateOrCreate(
             ['email' => $adminEmail],
             [
-                'name' => 'Frankie',
+                'name' => 'Administrator',
                 'password' => Hash::make($adminPassword),
                 'email_verified_at' => now(),
                 'tenant_id' => null,

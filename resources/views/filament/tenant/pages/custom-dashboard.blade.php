@@ -46,6 +46,13 @@
             </div>
 
             <div class="tutorial-grid">
+                <a href="/tenant/tutorials/telegram-bot" class="card-tutorial">
+                    <img src="/images/tutorials/telegram-bot.png" class="w-full aspect-video object-cover rounded-t-lg">
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">Configurar Bot Telegram</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Recibe notificaciones y alertas en tiempo real.</p>
+                    </div>
+                </a>
                 <a href="/tenant/indoors/create" class="card-tutorial">
                     <img src="/images/tutorial01.png" class="w-full aspect-video object-cover rounded-t-lg">
                     <div class="p-4">

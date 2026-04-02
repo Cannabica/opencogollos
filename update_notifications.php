@@ -22,7 +22,7 @@ foreach ($notifications as $notification) {
             if ($action['name'] === 'markAsRead' || $action['label'] === 'Marcar leída' || $action['label'] === 'Marcar como leída') {
                 $action['label'] = 'Leída';
                 $action['color'] = 'success';
-                $action['icon'] = 'heroicon-m-check-circle';
+                $action['icon'] = 'heroicon-m-check';
             } elseif ($action['name'] === 'postpone' || $action['label'] === 'Posponer' || $action['label'] === 'Posponer 24h') {
                 $action['label'] = 'Posponer';
                 $action['color'] = 'warning';

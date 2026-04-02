@@ -4,6 +4,7 @@ namespace App\Telegram\Commands;
 
 use App\Models\Indoor;
 use Log;
+use App\Services\TelegramLogger;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Keyboard\Keyboard;
 use App\Telegram\Commands\ChecksTelegramExpiration; 
@@ -40,7 +41,7 @@ class PhotoHandlerCommand extends Command
                 $photo = $photos->last();
                 
                 // Log para debugging
-                Log::debug('Foto recibida', [
+                TelegramLogger::activity('photo_received', [
                     'user_id' => $telegramUserId,
                     'is_album' => $isAlbum,
                     'media_group_id' => $mediaGroupId,
@@ -202,7 +203,7 @@ class PhotoHandlerCommand extends Command
                 ]);
 
                 // Log para debugging
-                Log::debug('PhotoHandlerCommand executed', [
+                TelegramLogger::activity('photo_handler_executed', [
                     'update_id' => $update->getUpdateId(),
                     'user_id' => $telegramUserId,
                     'tenant_id' => $existingAssociation->tenant_id,

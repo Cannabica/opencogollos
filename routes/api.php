@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Services\TenantTokenService;
+use App\Services\TelegramLogger;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 // Temporary test route for token service
@@ -29,6 +30,7 @@ Route::get('/test-token', function (TenantTokenService $service) {
 Route::post('/telegram/webhook', function (\Illuminate\Http\Request $request) {
     try {
         $update = Telegram::getWebhookUpdate();
+        TelegramLogger::logUpdate($update);
 
         if ($update->has('callback_query')) {
             $callbackData = $update->callbackQuery->data;

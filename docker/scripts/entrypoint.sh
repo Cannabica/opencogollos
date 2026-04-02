@@ -26,6 +26,9 @@ chmod -R 775 /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/.config
 
 if [ -f "artisan" ]; then
+    php artisan package:discover || true
+    # NO hacer config:cache aquí: congela la config sin las env vars del runtime
+    # y hace que artisan migrate no pueda conectarse a la DB
     php artisan config:clear || true
     php artisan cache:clear || true
     php artisan route:clear || true
@@ -36,9 +39,9 @@ fi
 echo "Esperando a que la base de datos esté lista ($DB_HOST:$DB_PORT)..."
 max_tries=30
 count=0
-until php artisan tinker --execute="DB::connection()->getPdo();" > /dev/null 2>&1 || [ $count -eq $max_tries ]; do
+until pg_isready -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USERNAME}" -d "${DB_DATABASE}" -q || [ $count -eq $max_tries ]; do
     echo "Base de datos no disponible todavía... esperando (intento $count/$max_tries)"
-    sleep 2
+    sleep 3
     count=$((count + 1))
 done
 
@@ -49,9 +52,9 @@ fi
 
 echo "¡Base de datos lista! Procediendo con migraciones..."
 
-# Ejecutar migraciones
+# Ejecutar migraciones (sin config cache para que lea las env vars del entorno)
 echo "Ejecutando migraciones..."
-php artisan migrate --force
+php artisan migrate --force || { echo "ERROR: php artisan migrate falló"; exit 1; }
 
 # Crear enlace simbólico de storage si no existe
 if [ ! -L "public/storage" ]; then

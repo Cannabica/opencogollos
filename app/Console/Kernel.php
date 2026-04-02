@@ -22,14 +22,8 @@ class Kernel extends ConsoleKernel
     {
         $this->load(__DIR__.'/Commands');
 
-        // Registrar comandos de Telegram
-        $this->load(__DIR__.'/../../vendor/telegram-bot-sdk/src/Laravel/Console/Commands');
-
-        // Registrar comandos personalizados de Telegram
+        // Registrar comandos personalizados de Telegram (ya cargados en Commands por el load arriba, pero por si acaso)
         $this->load(__DIR__.'/Commands/Telegram');
-        $this->commands([
-            \App\Console\Commands\RunActionExecutionServer::class,
-        ]);
 
         require base_path('routes/console.php');
     }

@@ -60,7 +60,7 @@ class ActivationPending extends Page
                                                 
                         Placeholder::make('message')
                             ->label('')
-                            ->content('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista.')
+                            ->content('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista, sumate al servidor de discord si querés interactuar o realizar alguna consulta.')
                             ->extraAttributes(['class' => 'text-gray-600 text-center']),
                     ])
                     ->columns(1),

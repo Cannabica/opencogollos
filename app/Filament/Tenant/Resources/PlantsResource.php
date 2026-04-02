@@ -91,20 +91,20 @@ class PlantsResource extends Resource
         $state = is_array($record->soil_enrichment)
             ? $record->soil_enrichment
             : json_decode($record->soil_enrichment ?? '[]', true);
-        
+
         $loaded = [];
-        foreach ((array)$state as $value) {
+        foreach ((array) $state as $value) {
             if (isset(static::SOIL_ENRICHMENT_OPTIONS[$value])) {
                 $loaded[] = intval($value);
             }
         }
-        
+
         Log::debug('Loaded soil enrichment values:', [
             'record_id' => $record->id,
             'raw_state' => $state,
             'processed_indices' => $loaded
         ]);
-        
+
         return $loaded;
     }
 
@@ -117,23 +117,23 @@ class PlantsResource extends Resource
         $state = is_array($record->base_floor)
             ? $record->base_floor
             : json_decode($record->base_floor ?? '[]', true);
-        
+
         $loaded = [];
-        foreach ((array)$state as $value) {
+        foreach ((array) $state as $value) {
             if (is_numeric($value) && isset(static::BASE_FLOOR_OPTIONS[intval($value)])) {
                 $loaded[] = intval($value);
             }
         }
-        
+
         Log::debug('Loaded base floor values:', [
             'record_id' => $record->id,
             'raw_state' => $state,
             'processed_indices' => $loaded,
-            'human_readable' => array_map(function($index) {
+            'human_readable' => array_map(function ($index) {
                 return static::BASE_FLOOR_OPTIONS[$index] ?? 'Unknown';
             }, $loaded)
         ]);
-        
+
         return $loaded;
     }
 
@@ -144,7 +144,7 @@ class PlantsResource extends Resource
         }
 
         $indices = [];
-        foreach ((array)$state as $value) {
+        foreach ((array) $state as $value) {
             if (is_numeric($value)) {
                 // Already an index - validate it exists in options
                 if (isset(static::SOIL_ENRICHMENT_OPTIONS[intval($value)])) {
@@ -170,7 +170,7 @@ class PlantsResource extends Resource
         }
 
         $indices = [];
-        foreach ((array)$state as $value) {
+        foreach ((array) $state as $value) {
             if (is_numeric($value)) {
                 // Already an index - validate it exists in options
                 if (isset(static::BASE_FLOOR_OPTIONS[intval($value)])) {
@@ -188,7 +188,7 @@ class PlantsResource extends Resource
         Log::debug('Prepared base floor for storage:', [
             'raw_state' => $state,
             'processed_indices' => $indices,
-            'human_readable' => array_map(function($index) {
+            'human_readable' => array_map(function ($index) {
                 return static::BASE_FLOOR_OPTIONS[$index] ?? 'Unknown';
             }, $indices)
         ]);
@@ -248,9 +248,9 @@ class PlantsResource extends Resource
                             ->label(__('Seed Type'))
                             ->searchable()
                             ->options(function () {
-                                return Seed::where(function($query) {
+                                return Seed::where(function ($query) {
                                     $query->whereNull('tenant_id')
-                                          ->orWhere('tenant_id', auth()->user()->tenant_id);
+                                        ->orWhere('tenant_id', auth()->user()->tenant_id);
                                 })->pluck('name', 'id');
                             })
                             ->required()
@@ -259,7 +259,9 @@ class PlantsResource extends Resource
                                 if ($state) {
                                     $seed = Seed::find($state);
                                     if ($seed) {
-                                        $set('seed_details', "Nombre: {$seed->name}\n" .
+                                        $set(
+                                            'seed_details',
+                                            "Nombre: {$seed->name}\n" .
                                             "Tipo: {$seed->seed_type}\n" .
                                             "THC: {$seed->ratio_thc}% - CBD: {$seed->ratio_cbd}%\n" .
                                             "Tiempo de floración: {$seed->flowering_time} días\n" .
@@ -274,7 +276,9 @@ class PlantsResource extends Resource
                                 if ($state) {
                                     $seed = Seed::find($state);
                                     if ($seed) {
-                                        $set('seed_details', "Nombre: {$seed->name}\n" .
+                                        $set(
+                                            'seed_details',
+                                            "Nombre: {$seed->name}\n" .
                                             "Tipo: {$seed->seed_type}\n" .
                                             "THC: {$seed->ratio_thc}% - CBD: {$seed->ratio_cbd}%\n" .
                                             "Tiempo de floración: {$seed->flowering_time} días\n" .
@@ -290,7 +294,7 @@ class PlantsResource extends Resource
                             ->dehydrated(false)
                             ->columnSpanFull()
                             ->rows(4)
-                            ->visible(fn ($get) => filled($get('seed_id'))),
+                            ->visible(fn($get) => filled($get('seed_id'))),
 
                         Select::make('state')
                             ->label(__('Plant State'))
@@ -366,32 +370,32 @@ class PlantsResource extends Resource
                             })
                             ->afterStateHydrated(function ($state, Forms\Set $set) {
                                 Log::debug('Hydrating base_floor state:', ['state' => $state]);
-                                
+
                                 // Handle both array and JSON string inputs
                                 if (is_string($state)) {
                                     $state = json_decode($state, true) ?? [];
                                 }
-                                
+
                                 if (!is_array($state)) {
                                     $state = [];
                                 }
-                                
+
                                 $set('base_floor', $state);
                             })
                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                 Log::debug('Updating base_floor state:', ['state' => $state]);
-                                
+
                                 if (is_string($state)) {
                                     $state = json_decode($state, true) ?? [];
                                 }
-                                
+
                                 if (!is_array($state)) {
                                     $state = [];
                                 }
-                                
+
                                 $encoded = static::prepareBaseFloorForStorage($state);
                                 $set('base_floor', $encoded);
-                                
+
                                 Log::debug('Processed base_floor state:', [
                                     'processed_state' => $state,
                                     'encoded' => $encoded
@@ -422,31 +426,31 @@ class PlantsResource extends Resource
                             })
                             ->afterStateHydrated(function ($state, Forms\Set $set) {
                                 Log::debug('Hydrating soil_enrichment state:', ['state' => $state]);
-                                
+
                                 // Handle both array and JSON string inputs
                                 if (is_string($state)) {
                                     $state = json_decode($state, true) ?? [];
                                 }
-                                
+
                                 if (!is_array($state)) {
                                     $state = [];
                                 }
-                                
+
                                 $set('soil_enrichment', $state);
                             })
                             ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                
+
                                 if (is_string($state)) {
                                     $state = json_decode($state, true) ?? [];
                                 }
-                                
+
                                 if (!is_array($state)) {
                                     $state = [];
                                 }
-                                
+
                                 // $encoded = static::prepareSoilEnrichmentForStorage($state);
                                 $set('soil_enrichment', $state);
-                                
+
                                 Log::debug('Final processed state:', [
                                     'processed_values' => $state,
                                     'options_keys' => array_keys(static::getSoilEnrichmentOptions())
@@ -454,7 +458,7 @@ class PlantsResource extends Resource
                             })
                             ->default([])
                     ])
-                ]);
+            ]);
 
         return $form;
     }
@@ -492,18 +496,18 @@ class PlantsResource extends Resource
                                 'pruningsCount' => $record->actions()->where('action_type_id', 2)->count(),
                             ];
                         })
-                    ->searchable([
-                        'name',
-                        
-                    ])
+                        ->searchable([
+                            'name',
+
+                        ])
                 ])
-                ->space(2),
+                    ->space(2),
             ])
             ->contentGrid([
                 'md' => 2,
                 'xl' => 3,
             ])
-            ->modifyQueryUsing(fn (Builder $query) => $query->orderBy('created_at', 'desc'))
+            ->modifyQueryUsing(fn(Builder $query) => $query->orderBy('created_at', 'desc'))
             ->filters([
                 SelectFilter::make('seed_id')
                     ->label(__('Seed Type'))
@@ -525,7 +529,7 @@ class PlantsResource extends Resource
                     }),
                 Filter::make('Plantas Muertas')
                     ->toggle()
-                    ->query(fn (Builder $query): Builder => $query->where('state', '!=', 'muerta'))
+                    ->query(fn(Builder $query): Builder => $query->where('state', '!=', 'muerta'))
                     ->default(true) // Oculta "Muerta" por defecto
                     ->label(__('Ocultar Plantas Muertas')),
             ])

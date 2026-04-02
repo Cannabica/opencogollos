@@ -9,6 +9,7 @@ use App\Models\ActionType;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Keyboard\Keyboard;
 use Illuminate\Support\Facades\Log;
+use App\Services\TelegramLogger;
 use App\Telegram\Commands\ChecksTelegramExpiration;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -37,6 +38,14 @@ class CallbackHandlerCommand extends Command
                     'chat_id' => $chatId,
                     'message_id' => $messageId,
                     'user_id' => $telegramUserId
+                ]);
+                
+                TelegramLogger::activity('callback_received', [
+                    'callback_data' => $data,
+                    'chat_id' => $chatId,
+                    'message_id' => $messageId,
+                    'user_id' => $telegramUserId,
+                    'username' => $callbackQuery->from->username ?? ''
                 ]);
 
                 // Check authentication first

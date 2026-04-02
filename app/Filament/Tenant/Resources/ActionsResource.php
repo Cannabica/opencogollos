@@ -448,43 +448,6 @@ class ActionsResource extends Resource
             ->statePath('data');
     }
 
-    public function afterCreate(): void
-    {
-        $this->executeActionTrigger($this->record);
-        
-        if ($this->record->action_type_id == 3) {
-            $notificationTiming = $this->record->data['product_application']['notification_timing'] ?? 'none';
-            
-            if ($notificationTiming === 'none') {
-                return;
-            }
-            
-            $notificationDate = match($notificationTiming) {
-                '10s' => now()->addSeconds(10),
-                '10m' => now()->addMinutes(10),
-                '1d' => now()->addDay(),
-                '3d' => now()->addDays(3),
-                '7d' => now()->addDays(7),
-                default => null,
-            };
-            
-            if ($notificationDate) {
-                ProductApplicationReminderNotification::sendToTenant($this->record, $notificationDate);
-                
-                FilamentNotification::make()
-                    ->title('Recordatorio programado')
-                    ->body("Se ha programado un recordatorio para el " . $notificationDate->format('d/m/Y H:i'))
-                    ->actions([
-                        \Filament\Notifications\Actions\Action::make('view_history')
-                            ->label('Ver historial')
-                            ->url(route('filament.tenant.pages.notifications-history')),
-                    ])
-                    ->success()
-                    ->persistent()
-                    ->send();
-            }
-        }
-    }
 
 
     public static function table(Table $table): Table
@@ -704,84 +667,40 @@ class ActionsResource extends Resource
         ];
     }
 
-    public function create(bool $another = false): void
+    public static function executeActionTrigger($record): void
     {
-        try {
-            $formState = $this->form->getState();
+        $actionClass = $record->action_type->action_class ?? null;
 
-            Log::debug('🚀 Iniciando creación', [
-                'form_state' => $formState,
-                'plantas' => $formState['plants'] ?? [],
-                'indoor_id' => $formState['indoor_id'] ?? null
-            ]);
-
-            if (empty($formState['plants'])) {
-                throw new \Exception('No se han seleccionado plantas');
+        if ($actionClass && class_exists($actionClass)) {
+            $actionTypeInstance = new $actionClass();
+            $plants = $record->plants()->get();
+            foreach ($plants as $plant) {
+                $actionTypeInstance->trigger($plant, $record->data);
             }
-
-            log::debug('🌱 Plantas seleccionadas', [
-                'count' => count($formState['plants']),
-                'ids' => $formState['plants']
-            ]);
-            $record = $this->handleRecordCreation($formState);
-
-            Log::debug('✅ Creación completada', [
-                'action_id' => $record->id,
-                'plantas_count' => $record->plants()->count(),
-                'plantas_ids' => $record->plants()->pluck('id')->toArray()
-            ]);
-
-            $this->record = $record;
-
-            if ($another) {
-                $this->redirect($this->getResource()::getUrl('create'));
-            } else {
-                $this->redirect($this->getResource()::getUrl('edit', ['record' => $record]));
-            }
-
-        } catch (\Exception $e) {
-            Log::error('💥 Error en create', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            throw $e;
-        }
-    }
-
-    protected function handleRecordCreation(array $data): Model
-    {
-        // Asegurarnos de que tenemos todos los datos
-        $data['_plants_state'] = $data['_plants_state'] ?? null;
-        $data['plants'] = $data['plants'] ?? [];
-        log::debug('🔍 Datos para creación de acción', [
-            'data' => $data,
-            'tenant_id' => auth()->user()->tenant_id ?? 'no_auth'
-        ]);
-        return $this->actionService->handleRecordCreation($data);
-    }
-
-    protected function handleRecordUpdate(Model $record, array $data): Model
-    {
-        return $this->actionService->handleRecordUpdate($record, $data);
-    }
-
-    // Asegurar que las plantas no se modifiquen en la edición
-    public function afterSave(): void
-    {
-        log::debug('🔄 Después de guardar acción', [
-            'action_id' => $this->record->id,
-            'tiene_plantas' => $this->record->plants()->exists(),
-            'plantas_count' => $this->record->plants()->count(),
-            'plantas_ids' => $this->record->plants()->pluck('id')
-        ]);
-        if ($this->record->wasRecentlyCreated) {
-            return; // Si es creación, no hacer nada adicional
         }
 
-        // Si es edición, restaurar las plantas originales
-        $originalPlants = $this->record->getOriginal('plants');
-        if ($originalPlants) {
-            $this->record->plants()->sync($originalPlants);
+        // Programación de notificaciones retardadas (Tipo 3: Aplicación de producto)
+        if ($record->action_type_id == 3) {
+            $reminderTime = $record->data['product_application']['reminder_time'] ?? 'none';
+
+            if ($reminderTime !== 'none') {
+                $delay = match($reminderTime) {
+                    '5s' => now()->addSeconds(5),
+                    '1d' => now()->addDay(),
+                    '7d' => now()->addDays(7),
+                    '14d' => now()->addDays(14),
+                    default => null,
+                };
+
+                if ($delay) {
+                    \App\Jobs\SendDelayedProductNotification::dispatch(
+                        $record->data['product_application']['application_type'] ?? 'other',
+                        $record->plants()->count(),
+                        $record->tenant_id,
+                        $record->id
+                    )->delay($delay);
+                }
+            }
         }
     }
 }

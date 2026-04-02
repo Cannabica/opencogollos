@@ -13,6 +13,7 @@ services:
       - ./docker/nginx/scripts/19-extract-domain.envsh:/docker-entrypoint.d/19-extract-domain.envsh
       - ./ssl:/etc/nginx/ssl
       - .:/var/www/html
+      - certbot-www:/var/www/certbot
     depends_on:
       - php
       - mailpit
@@ -21,7 +22,7 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-      network: host
+      # network: host
     user: "1000:1000"
     env_file: .env.local
     environment:
@@ -45,8 +46,7 @@ services:
     build:
       context: .
       dockerfile: docker/db/Dockerfile
-    env_file:
-      - .env.local
+    env_file: .env.local
     ports:
       - "5434:5432"
     volumes:
@@ -105,3 +105,4 @@ volumes:
   laravel_logs:
   grafana_data:
   loki_data:
+  certbot-www:

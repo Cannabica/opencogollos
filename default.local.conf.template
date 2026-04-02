@@ -2,6 +2,12 @@ server {
     listen 80;
     server_name ${APP_DOMAIN};
     client_max_body_size 20M;
+    
+    location ^~ /.well-known/acme-challenge/ {
+        alias /var/www/certbot/.well-known/acme-challenge/;
+        try_files $uri =404;
+    }
+    
     return 301 https://${APP_DOMAIN}$request_uri;
 }
 
@@ -24,6 +30,11 @@ server {
     
     root /var/www/html/public;
     index index.php;
+
+    location ^~ /.well-known/acme-challenge/ {
+        alias /var/www/certbot/.well-known/acme-challenge/;
+        try_files $uri =404;
+    }
 
     location / {
         try_files $uri $uri/ /index.php?$query_string;
@@ -74,7 +85,7 @@ server {
         fastcgi_read_timeout 600;
     }
 
-    location ~ /\.(?!well-known).* {
+    location ~ /\.(?!well-known/acme-challenge).* {
         deny all;
     }
 

@@ -21,10 +21,7 @@ class CreateActions extends CreateRecord
 
     protected function handleRecordCreation(array $data): Action
     {
-        // Add tenant_id to the data
-        $data['tenant_id'] = auth()->user()->tenant_id;
-
-        return Action::create($data);
+        return (new \App\Filament\Tenant\Resources\Actions\Services\ActionRecordService())->handleRecordCreation($data);
     }
 
     protected function afterCreate(): void

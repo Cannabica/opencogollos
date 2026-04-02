@@ -6,6 +6,7 @@ ENV POSTGRES_PASSWORD=${DB_PASSWORD:-cannabica_dev}
 
 # Copiar scripts de inicialización personalizados
 COPY ./docker/db/init-scripts/ /docker-entrypoint-initdb.d/
+RUN chmod +x /docker-entrypoint-initdb.d/*.sh
 
 # Configuraciones adicionales de PostgreSQL
 COPY ./docker/db/postgresql.conf /etc/postgresql/postgresql.conf

@@ -80,7 +80,7 @@ class ProductNotificationsWidget extends Component
                 'notifications' => $this->notifications->toArray()
             ]);
 
-            $this->emit('notificationsLoaded');
+            $this->dispatch('notificationsLoaded');
         } catch (\Exception $e) {
             Log::error('ProductNotificationsWidget loadNotifications - Error', [
                 'message' => $e->getMessage(),
@@ -111,7 +111,7 @@ class ProductNotificationsWidget extends Component
                     ->send();
 
                 $this->loadNotifications();
-                $this->emit('notificationMarkedAsRead');
+                $this->dispatch('notificationMarkedAsRead');
             } else {
                 Log::warning('ProductNotificationsWidget handleMarkAsRead - Notification not found', [
                     'notificationId' => $id

@@ -23,20 +23,19 @@ RUN apk update && apk add --no-cache \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure intl && \
     docker-php-ext-install -j$(nproc) \
-        pdo pdo_pgsql pgsql mbstring xml gd zip bcmath intl
+    pdo pdo_pgsql pgsql mbstring xml gd zip bcmath intl
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-autoloader --no-scripts --prefer-dist
 
 COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN composer install --no-dev --optimize-autoloader && \
+RUN composer install --no-dev --optimize-autoloader --no-scripts && \
     npm run build && \
     rm -rf node_modules
 
@@ -54,6 +53,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     oniguruma-dev \
     postgresql-dev \
+    postgresql-client \
     icu-dev \
     zlib-dev \
     unzip \
@@ -62,7 +62,7 @@ RUN apk add --no-cache \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-configure intl && \
     docker-php-ext-install -j$(nproc) \
-        pdo pdo_pgsql pgsql mbstring xml gd zip bcmath intl
+    pdo pdo_pgsql pgsql mbstring xml gd zip bcmath intl
 
 COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
 

@@ -45,7 +45,7 @@ class RegistrationConfirmationNotification extends Notification implements Shoul
             ->line('Email: ' . $notifiable->email)
             ->line('Tenant: ' . $this->tenantName)
             ->line('')
-            ->line('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista y podrás ingresar con las credenciales que creaste durante el registro.')
+            ->line('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista, sumate al servidor de discord si querés interactuar o realizar alguna consulta.')
             ->action('Iniciar Sesión', url('/tenant/login'))
             ->line('')
             ->salutation('Gracias por unirte a nuestra comunidad!');

@@ -57,23 +57,24 @@
 /* Transform the "Marcar como leída" button into a "Leída" indicator */
 .is-read-notification .fi-no-notification-actions > *:first-child {
     background-color: transparent !important;
-    border: 1px solid rgba(var(--success-500), 0.6) !important;
+    /* border: 1px solid rgba(var(--success-500), 0.6) !important; */
     color: rgba(var(--success-500), 1) !important;
     box-shadow: none !important;
 }
 
-/* Hide the original "Marcar como leída" text */
+/* Hide the original "Marcar como leída" text - DEPRECATED: PHP label is already "Leída"
 .is-read-notification .fi-no-notification-actions > *:first-child .fi-btn-label {
     display: none !important;
-}
+} */
 
-/* Inject the "Leída" text */
-.is-read-notification .fi-no-notification-actions > *:first-child::after {
+/* Inject the "Leída" text - DEPRECATED: PHP label already provides this */
+/* .is-read-notification .fi-no-notification-actions > *:first-child::after {
     content: "Leída";
     font-weight: 500;
     font-size: 0.875rem;
     line-height: 1.25rem;
-}
+} */
+
 
 /* Alerta de Bug con tonos naranja */
 .bug-notification {

@@ -4,6 +4,7 @@ namespace App\Telegram\Commands;
 
 use Telegram\Bot\Commands\Command;
 use App\Services\TenantTokenService;
+use App\Services\TelegramLogger;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -18,11 +19,11 @@ class AuthCommand extends Command
     {
         try {
             $token = $this->argument('token');
-            Log::info('AuthCommand executed', [
+            TelegramLogger::activity('auth_execution', [
                 'update_id' => $this->getUpdate()?->getUpdateId(),
                 'user_id' => $this->getUpdate()?->getMessage()?->getFrom()?->getId(),
                 'token' => substr($token, 0, 4) . '...'
-            ]);       
+            ]);
 
             if (empty($token)) {
                 $this->replyWithMessage([

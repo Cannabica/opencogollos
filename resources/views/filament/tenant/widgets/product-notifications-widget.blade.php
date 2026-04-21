@@ -44,10 +44,5 @@
                 </div>
             </div>
         @endforeach
-    @else
-        <div class="text-center text-gray-500 dark:text-gray-400">
-            No hay notificaciones pendientes
-            <p class="text-sm mt-1">Última actualización: {{ now()->format('H:i:s') }}</p>
-        </div>
     @endif
 </div>

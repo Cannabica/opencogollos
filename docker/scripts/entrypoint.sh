@@ -17,13 +17,15 @@ mkdir -p /var/www/html/storage/logs
 mkdir -p /var/www/html/bootstrap/cache
 mkdir -p /var/www/html/.config/psysh
 
-chown -R www-data:www-data /var/www/html/storage
-chown -R www-data:www-data /var/www/html/bootstrap/cache
-chown -R www-data:www-data /var/www/html/.config
+if [ "$(id -u)" = "0" ]; then
+    chown -R www-data:www-data /var/www/html/storage
+    chown -R www-data:www-data /var/www/html/bootstrap/cache
+    chown -R www-data:www-data /var/www/html/.config
+fi
 
-chmod -R 775 /var/www/html/storage
-chmod -R 775 /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/.config
+chmod -R 775 /var/www/html/storage 2>/dev/null || true
+chmod -R 775 /var/www/html/bootstrap/cache 2>/dev/null || true
+chmod -R 775 /var/www/html/.config 2>/dev/null || true
 
 if [ -f "artisan" ]; then
     php artisan package:discover || true

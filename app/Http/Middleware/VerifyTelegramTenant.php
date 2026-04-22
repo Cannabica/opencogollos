@@ -55,6 +55,11 @@ class VerifyTelegramTenant
                     \Log::error("Tenant not found", ['tenant_id' => $tenantId]);
                     return response('Tenant not found', 404);
                 }
+
+                if (!$tenant->active) {
+                    \Log::warning("Inactive tenant attempted to use Telegram API token", ['tenant_id' => $tenantId]);
+                    return response('Forbidden: Tenant inactive', 403);
+                }
                 
                 app()->instance('current.tenant', $tenant);
             }

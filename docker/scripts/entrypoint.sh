@@ -58,9 +58,11 @@ echo "¡Base de datos lista! Procediendo con migraciones..."
 echo "Ejecutando migraciones..."
 php artisan migrate --force || { echo "ERROR: php artisan migrate falló"; exit 1; }
 
-# Crear enlace simbólico de storage si no existe
-if [ ! -L "public/storage" ]; then
-    php artisan storage:link
+# Remove storage symlink - files are served through Laravel's StorageController
+# with authentication and tenant isolation checks
+if [ -L "public/storage" ]; then
+    rm public/storage
+    echo "Symlink public/storage eliminado (archivos protegidos por StorageController)"
 fi
 
 # Publicar assets de Livewire

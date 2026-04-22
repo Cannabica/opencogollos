@@ -56,7 +56,7 @@ services:
       - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL:-https://plataforma.cannabica.ar/api/telegram/webhook/}
       - XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-/var/www/html/.config}
     volumes:
-      - public-php:/var/www/html/public:ro
+      - public-php:/var/www/html/public
       - laravel_storage:/var/www/html/storage
       - php-fpm-logs:/var/log/php-fpm
       - ./www.conf:/usr/local/etc/pp-fpm.d/www.conf

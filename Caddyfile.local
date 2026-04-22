@@ -1,0 +1,25 @@
+:80, :443 {
+    tls internal
+    root * /var/www/html/public
+    encode gzip
+    file_server
+
+    @blocked_paths {
+        path /actuator/* /server/* /config/*
+    }
+    @blocked_vendor {
+        path_regexp \/(vendor|storage|uploads)\/.*\.php$
+    }
+
+    @hidden {
+        path */.*
+    }
+    respond @hidden 404
+    respond @blocked_paths 404
+    respond @blocked_vendor 404
+
+    @tenant path_regexp tenant ^/tenant/actions/\d+/([^/]+)/storage/(.*)$
+    rewrite @tenant /storage/{re.tenant.2}
+
+    php_fastcgi php:9000
+}

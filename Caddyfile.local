@@ -2,7 +2,6 @@
     tls internal
     root * /var/www/html/public
     encode gzip
-    file_server
 
     @blocked_paths {
         path /actuator/* /server/* /config/*
@@ -21,5 +20,6 @@
     @tenant path_regexp tenant ^/tenant/actions/\d+/([^/]+)/storage/(.*)$
     rewrite @tenant /storage/{re.tenant.2}
 
+    file_server
     php_fastcgi php:9000
 }

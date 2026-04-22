@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +22,11 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Protected storage files - auth + tenant ownership check
+Route::get('/storage/{path}', [StorageController::class, 'show'])
+    ->where('path', '.*')
+    ->name('storage.protected');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

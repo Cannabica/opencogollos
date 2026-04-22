@@ -121,7 +121,7 @@ jobs:
           file: docker/php/Dockerfile
 
       - name: Scan Docker Image for Vulnerabilities
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/cannabica-php:${{ needs.prepare.outputs.tag }}
           format: 'table'

@@ -42,6 +42,15 @@ class AuthCommand extends Command
                 return;
             }
             $tenant = Tenant::find($tokenData['tenant_id']);
+
+            if (!$tenant || !$tenant->active) {
+                $this->replyWithMessage([
+                    'text' => "❌ La cuenta del tenant *" . ($tenant->name ?? 'desconocido') . "* se encuentra inactiva o no existe. Por favor contacta al administrador.",
+                    'parse_mode' => 'Markdown'
+                ]);
+                return;
+            }
+
             $telegramUserId = $this->getUpdate()->getMessage()->getFrom()->getId();
             $existingAssociation = \App\Models\TelegramUserTenant::where('telegram_user_id', $telegramUserId)->first();
 

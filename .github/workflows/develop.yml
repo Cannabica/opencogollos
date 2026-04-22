@@ -161,7 +161,7 @@ jobs:
           port: 60022
           key: ${{ secrets.VPS_KEY }}
           script: |
-            cd /home/almalinux
+            cd /home/${{ secrets.VPS_USER }}
             export DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/cannabica-php:${{ needs.build.outputs.tag }}
 
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin

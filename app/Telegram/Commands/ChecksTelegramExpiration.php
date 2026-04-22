@@ -26,6 +26,14 @@ trait ChecksTelegramExpiration
             return null;
         }
 
+        if (!$association->tenant->active) {
+            $this->replyWithMessage([
+                'text' => '❌ El tenant asociado a tu cuenta se encuentra inactivo. Por favor contacta al administrador.',
+                'parse_mode' => 'HTML'
+            ]);
+            return null;
+        }
+
         return $association;
     }
 }

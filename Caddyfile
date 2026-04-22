@@ -1,0 +1,35 @@
+plataforma.cannabica.ar {
+    root * /var/www/html/public
+    encode gzip
+    file_server
+
+    @blocked_paths {
+        path /actuator/* /server/* /config/*
+    }
+    @blocked_vendor {
+        path_regexp \/(vendor|storage|uploads)\/.*\.php$
+    }
+
+
+    # First, allow .well-known
+    handle_path /.well-known/acme-challenge/* {
+        file_server
+    }
+
+    # Then block other hidden files
+    @hidden {
+        path */.*
+    }
+    respond @hidden 404
+    respond @blocked_paths 404
+    respond @blocked_vendor 404
+
+    @tenant path_regexp tenant ^/tenant/actions/\d+/([^/]+)/storage/(.*)$
+    rewrite @tenant /storage/{re.tenant.2}
+
+    php_fastcgi php:9000
+}
+
+status.cannabica.ar {
+    reverse_proxy uptime-kuma:3001
+}

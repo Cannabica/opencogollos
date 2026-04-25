@@ -9,6 +9,7 @@ services:
       - public-php:/var/www/html/public:ro
       - caddy_data:/data
       - caddy_config:/config
+      - ./logs/caddy:/var/log/caddy
     depends_on:
       php:
         condition: service_healthy
@@ -58,6 +59,7 @@ services:
     volumes:
       - public-php:/var/www/html/public
       - laravel_storage:/var/www/html/storage
+      - ./storage/logs:/var/www/html/storage/logs
       - php-fpm-logs:/var/log/php-fpm
       - ./www.conf:/usr/local/etc/pp-fpm.d/www.conf
     depends_on:

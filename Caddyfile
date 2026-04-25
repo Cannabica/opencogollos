@@ -2,6 +2,15 @@ plataforma.cannabica.ar {
     root * /var/www/html/public
     encode gzip
 
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+        format json
+    }
+
+
     @blocked_paths {
         path /actuator/* /server/* /config/*
     }

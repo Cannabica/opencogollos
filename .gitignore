@@ -49,3 +49,9 @@ vps-deploy.md
 /.agent
 /.gemini
 /.cursorrules
+
+# Marketing & Adoption Assets (local only)
+/marketing
+
+# Server deployment scaling and infra config scripts
+/server-bootstrap

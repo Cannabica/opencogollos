@@ -91,7 +91,7 @@ jobs:
         id: should_release
         run: |
           flag="false"
-          if [[ "${{ github.event_name }}" == "push" ]] && { [[ "${{ github.ref }}" == "refs/heads/develop" ]] || [[ "${{ github.ref }}" == "refs/heads/main" ]]; }; then
+          if [[ "${{ github.event_name }}" == "push" ]] && [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             flag="true"
           fi
           echo "flag=$flag" >> $GITHUB_OUTPUT

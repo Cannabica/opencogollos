@@ -24,6 +24,8 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
 
       - name: Build and push to internal registry
         uses: docker/build-push-action@v4

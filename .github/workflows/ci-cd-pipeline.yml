@@ -203,6 +203,17 @@ jobs:
             cd /home/${{ secrets.VPS_USER }}
             export DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/cannabica-php:${{ needs.prepare.outputs.tag }}
 
+            # Inyecta las variables del bot admin en el .env del VPS (idempotente)
+            ENV_FILE=/home/${{ secrets.VPS_USER }}/.env
+            touch "$ENV_FILE"
+            upsert_env() { key="${1%%=*}"; sed -i "/^${key}=/d" "$ENV_FILE"; printf '%s\n' "$1" >> "$ENV_FILE"; }
+            upsert_env "TELEGRAM_ADMIN_BOT_TOKEN=${{ secrets.TELEGRAM_ADMIN_BOT_TOKEN }}"
+            upsert_env "TELEGRAM_ADMIN_SECRET_TOKEN=${{ secrets.TELEGRAM_ADMIN_SECRET_TOKEN }}"
+            upsert_env "TELEGRAM_ADMIN_ALLOWED_USER_IDS=${{ secrets.TELEGRAM_ADMIN_ALLOWED_USER_IDS }}"
+            upsert_env "TELEGRAM_ADMIN_WEBHOOK_URL=${{ secrets.TELEGRAM_ADMIN_WEBHOOK_URL }}"
+            upsert_env "TELEGRAM_ADMIN_DIGEST_ENABLED=${{ secrets.TELEGRAM_ADMIN_DIGEST_ENABLED }}"
+            chmod 600 "$ENV_FILE"
+
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             docker compose pull php
             

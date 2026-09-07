@@ -19,6 +19,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\View\PanelsRenderHook;
 use App\Http\Middleware\LogUsageMiddleware;
+use App\Filament\Pages\UsageAnalytics;
 
 
 class SuperadminPanelProvider extends PanelProvider
@@ -38,6 +39,7 @@ class SuperadminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                UsageAnalytics::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

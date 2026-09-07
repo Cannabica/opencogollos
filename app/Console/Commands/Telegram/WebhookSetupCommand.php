@@ -14,6 +14,7 @@ class WebhookSetupCommand extends Command
      * @var string
      */
     protected $signature = 'telegram:webhook:setup
+                            {--bot= : Bot name from config/telegram.php (default: configured default)}
                             {--remove : Remove the webhook instead of setting it up}
                             {--info : Show current webhook information}';
 
@@ -29,26 +30,27 @@ class WebhookSetupCommand extends Command
      */
     public function handle(BotsManager $telegram)
     {
-        $defaultBot = Config::get('telegram.default', 'default');
         $bots = Config::get('telegram.bots', []);
-        
-        if (!isset($bots[$defaultBot])) {
-            $this->error("Default bot '{$defaultBot}' not found in configuration.");
+
+        $botName = $this->option('bot') ?: Config::get('telegram.default', 'default');
+
+        if (! isset($bots[$botName])) {
+            $this->error("Bot '{$botName}' not found in configuration.");
             return 1;
         }
 
-        $botConfig = $bots[$defaultBot];
+        $botConfig = $bots[$botName];
         $webhookUrl = $botConfig['webhook_url'] ?? null;
 
         if ($this->option('info')) {
-            return $this->showWebhookInfo($telegram, $defaultBot, $webhookUrl);
+            return $this->showWebhookInfo($telegram, $botName, $webhookUrl);
         }
 
         if ($this->option('remove')) {
-            return $this->removeWebhook($telegram, $defaultBot);
+            return $this->removeWebhook($telegram, $botName);
         }
 
-        return $this->setupWebhook($telegram, $defaultBot, $webhookUrl);
+        return $this->setupWebhook($telegram, $botName, $webhookUrl);
     }
 
     /**
@@ -122,7 +124,7 @@ class WebhookSetupCommand extends Command
     {
         $this->info("Setting up webhook for Bot: {$botName}");
 
-        if (!$webhookUrl) {
+        if (! $webhookUrl) {
             $this->error('Webhook URL is not configured in config/telegram.php');
             $this->line('Please set the webhook_url in your telegram configuration.');
             return 1;
@@ -138,7 +140,7 @@ class WebhookSetupCommand extends Command
                 $this->warn("⚠️  A webhook is already set: " . $currentInfo->getUrl());
                 $this->line("Pending updates: " . ($currentInfo->getPendingUpdateCount() ?? 0));
                 
-                if (!$this->confirm('Do you want to replace the existing webhook?')) {
+                if (! $this->confirm('Do you want to replace the existing webhook?')) {
                     $this->info('Webhook setup cancelled.');
                     return 0;
                 }
@@ -152,17 +154,30 @@ class WebhookSetupCommand extends Command
         $allowedUpdates = $botConfig['allowed_updates'] ?? ['message', 'callback_query'];
         $maxConnections = $botConfig['max_connections'] ?? 40;
 
+        // Para el bot admin se exige el secret token: Telegram lo devuelve en
+        // el header X-Telegram-Bot-Api-Secret-Token de cada update.
+        $secretToken = Config::get('telegram.admin_secret');
+
         $this->line("Allowed Updates: " . implode(', ', $allowedUpdates));
         $this->line("Max Connections: {$maxConnections}");
+        if ($botName === 'admin') {
+            $this->line('Secret Token: ' . ($secretToken ? '✓ Set' : '✗ Missing (el webhook admin rechazará todo con 503)'));
+        }
         $this->line('');
 
         if ($this->confirm('Proceed with webhook setup?')) {
             try {
-                $result = $telegram->bot($botName)->setWebhook([
+                $params = [
                     'url' => $webhookUrl,
                     'allowed_updates' => $allowedUpdates,
                     'max_connections' => $maxConnections,
-                ]);
+                ];
+
+                if ($botName === 'admin' && $secretToken) {
+                    $params['secret_token'] = $secretToken;
+                }
+
+                $result = $telegram->bot($botName)->setWebhook($params);
 
                 if ($result) {
                     $this->info('✅ Webhook setup successfully!');

@@ -106,6 +106,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Bot Digest
+    |--------------------------------------------------------------------------
+    |
+    | Habilita/deshabilita el resumen proactivo (admin:digest) que le manda
+    | novedades al superadmin por Telegram.
+    |
+    */
+    'admin_digest_enabled' => env('TELEGRAM_ADMIN_DIGEST_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Asynchronous Requests [Optional]
     |--------------------------------------------------------------------------
     |

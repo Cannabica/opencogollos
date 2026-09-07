@@ -17,7 +17,7 @@ class ConfirmarCommand extends AdminCommand
             return;
         }
 
-        $userId = $this->getUpdate()->getMessage()->getFrom()->getId();
+        $userId = $this->currentUserId();
         $pending = app(AdminPendingActionService::class)->get($userId);
 
         if ($pending === null) {

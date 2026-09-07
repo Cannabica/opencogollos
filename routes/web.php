@@ -19,6 +19,12 @@ Route::get('/', function () {
     return redirect('/tenant/login');
 });
 
+// Aliasing para auth de Laravel: los invitados que caen en rutas con
+// middleware 'auth' (ej. /dashboard) se redirigen al login del panel tenant.
+Route::get('/login', function () {
+    return redirect('/tenant/login');
+})->name('login');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

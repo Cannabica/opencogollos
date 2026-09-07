@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Purga diaria del detalle de uso (telemetría server-side).
+        $schedule->command('usage:prune')
+            ->daily()
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**

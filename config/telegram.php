@@ -50,6 +50,24 @@ return [
                 'photo'
             ],
         ],
+
+        'admin' => [
+            'token' => env('TELEGRAM_ADMIN_BOT_TOKEN'),
+            'webhook_url' => env('TELEGRAM_ADMIN_WEBHOOK_URL', env('APP_URL') . '/api/telegram/admin/webhook/'),
+            'allowed_updates' => ['message'],
+            'commands' => [
+                'admin_start',
+                'admin_estado',
+                'admin_tenants',
+                'admin_tenant',
+                'admin_metricas',
+                'admin_pendientes',
+                'admin_activar',
+                'admin_desactivar',
+                'admin_confirmar',
+                'admin_cancelar',
+            ],
+        ],
     ],
 
     /*
@@ -62,6 +80,40 @@ return [
     |
     */
     'default' => 'default',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Bot Security
+    |--------------------------------------------------------------------------
+    |
+    | Secret token que Telegram incluye en el header
+    | X-Telegram-Bot-Api-Secret-Token al llamar al webhook del bot admin.
+    | Sin este valor el webhook admin rechaza todo (fail closed).
+    |
+    */
+    'admin_secret' => env('TELEGRAM_ADMIN_SECRET_TOKEN'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Bot Allowed User Ids
+    |--------------------------------------------------------------------------
+    |
+    | Ids numéricos de Telegram autorizados a usar el bot de administración
+    | (separados por coma). Solo el superadmin de la plataforma.
+    |
+    */
+    'admin_allowed_user_ids' => env('TELEGRAM_ADMIN_ALLOWED_USER_IDS', ''),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Bot Digest
+    |--------------------------------------------------------------------------
+    |
+    | Habilita/deshabilita el resumen proactivo (admin:digest) que le manda
+    | novedades al superadmin por Telegram.
+    |
+    */
+    'admin_digest_enabled' => env('TELEGRAM_ADMIN_DIGEST_ENABLED', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -226,5 +278,17 @@ return [
         'photo' => App\Telegram\Commands\PhotoHandlerCommand::class,
         'callback' => App\Telegram\Commands\CallbackHandlerCommand::class,
         'repetirriego' => App\Telegram\Commands\RepeatLastIrrigationCommand::class,
+
+        // Comandos del bot de administración (superadmin)
+        'admin_start' => App\Telegram\Admin\Commands\StartCommand::class,
+        'admin_estado' => App\Telegram\Admin\Commands\EstadoCommand::class,
+        'admin_tenants' => App\Telegram\Admin\Commands\TenantsCommand::class,
+        'admin_tenant' => App\Telegram\Admin\Commands\TenantCommand::class,
+        'admin_metricas' => App\Telegram\Admin\Commands\MetricasCommand::class,
+        'admin_pendientes' => App\Telegram\Admin\Commands\PendientesCommand::class,
+        'admin_activar' => App\Telegram\Admin\Commands\ActivarCommand::class,
+        'admin_desactivar' => App\Telegram\Admin\Commands\DesactivarCommand::class,
+        'admin_confirmar' => App\Telegram\Admin\Commands\ConfirmarCommand::class,
+        'admin_cancelar' => App\Telegram\Admin\Commands\CancelarCommand::class,
     ],
 ];

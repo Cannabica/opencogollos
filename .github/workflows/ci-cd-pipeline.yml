@@ -119,6 +119,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: docker/php/Dockerfile
+          build-args: |
+            COMPOSER_AUTH={"github-oauth":{"github.com":"${{ secrets.GITHUB_TOKEN }}"}}
 
       - name: Scan Docker Image for Vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
@@ -147,6 +149,8 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/cannabica-php:${{ needs.prepare.outputs.tag }}
           cache-from: type=gha
           file: docker/php/Dockerfile
+          build-args: |
+            COMPOSER_AUTH={"github-oauth":{"github.com":"${{ secrets.GITHUB_TOKEN }}"}}
 
   release:
     name: Release & Version Bump

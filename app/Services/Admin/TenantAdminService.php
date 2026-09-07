@@ -10,6 +10,7 @@ use App\Models\Seed;
 use App\Models\TelegramUserTenant;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Throwable;
 
 /**
@@ -102,6 +103,55 @@ class TenantAdminService
         ];
     }
 
+    /**
+     * Datos básicos de un tenant (para confirmaciones y acciones).
+     *
+     * @return array{id: int, name: ?string, active: bool}|null
+     */
+    public function basic(int $id): ?array
+    {
+        $tenant = Tenant::query()->find($id);
+
+        if (! $tenant) {
+            return null;
+        }
+
+        return [
+            'id' => $tenant->id,
+            'name' => $tenant->name,
+            'active' => (bool) $tenant->active,
+        ];
+    }
+
+    /**
+     * Activa o desactiva un tenant. Reutiliza el update() del modelo, que ya
+     * dispara las notificaciones por email al usuario (mismo efecto que el
+     * panel de superadmin).
+     *
+     * @return array{id: int, name: ?string, active: bool}|null
+     */
+    public function setActive(int $id, bool $active): ?array
+    {
+        $tenant = Tenant::query()->find($id);
+
+        if (! $tenant) {
+            return null;
+        }
+
+        $data = ['active' => $active];
+        if ($active) {
+            $data['activated_at'] = Carbon::now();
+        }
+
+        $tenant->update($data);
+
+        return [
+            'id' => $tenant->id,
+            'name' => $tenant->name,
+            'active' => (bool) $tenant->active,
+        ];
+    }
+
     private function formatDate(mixed $value): ?string
     {
         if ($value === null || $value === '') {
@@ -109,7 +159,7 @@ class TenantAdminService
         }
 
         try {
-            return \Illuminate\Support\Carbon::parse((string) $value)->format('d/m/Y H:i');
+            return Carbon::parse((string) $value)->format('d/m/Y H:i');
         } catch (Throwable) {
             return null;
         }

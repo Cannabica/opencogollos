@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Action;
 use App\Models\ActionType;
 use App\Models\Indoor;
+use App\Models\Plant;
+use App\Models\Seed;
 use App\Models\Tenant;
 use App\Models\UsageEvent;
 use App\Models\User;
@@ -131,5 +133,83 @@ class UsageDashboardWidgetsTest extends TestCase
         $this->assertCount(7, $matrix['labels']);
         $this->assertCount(24, $matrix['data']);
         $this->assertSame(1, array_sum($matrix['data'][now()->hour]));
+    }
+
+    public function test_stuck_by_step_lists_tenants_in_each_gap(): void
+    {
+        $this->actingAs(User::factory()->create()); // superadmin: aplica TenantScope, el fix debe ignorarlo
+
+        $withNothing = Tenant::factory()->create();
+        $withIndoor = Tenant::factory()->create();
+        $indoor = Indoor::create([
+            'name' => 'Indoor 1',
+            'tenant_id' => $withIndoor->id,
+            'large' => 100,
+            'width' => 100,
+            'height' => 200,
+        ]);
+
+        $seed = Seed::create([
+            'name' => 'Genética',
+            'seed_type' => 'fotoperiodica',
+            'flowering_time' => 60,
+            'ratio_thc' => 10,
+            'ratio_cbd' => 1,
+        ]);
+        Plant::create([
+            'name' => 'Planta 1',
+            'seed_id' => $seed->id,
+            'indoor_id' => $indoor->id,
+            'state' => 'vegetativo',
+            'flowerpot' => 'Maceta 10L',
+            'capacity' => 10,
+        ]);
+
+        $stuck = UsageStats::stuckByStep();
+
+        $this->assertTrue($stuck['sin_indoor']->contains('id', $withNothing->id));
+        $this->assertFalse($stuck['sin_indoor']->contains('id', $withIndoor->id));
+        $this->assertTrue($stuck['con_plantas_sin_acciones']->contains('id', $withIndoor->id));
+        $this->assertFalse($stuck['con_indoor_sin_plantas']->contains('id', $withIndoor->id));
+    }
+
+    public function test_funnel_by_segment_groups_by_user_type(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $individual = Tenant::factory()->create(['user_type' => 'individual']);
+        Tenant::factory()->create(['user_type' => 'individual']);
+        Tenant::factory()->create(['user_type' => 'cooperativa']);
+
+        $indoor = Indoor::create([
+            'name' => 'Indoor 1',
+            'tenant_id' => $individual->id,
+            'large' => 100,
+            'width' => 100,
+            'height' => 200,
+        ]);
+
+        $rows = collect(UsageStats::funnelBySegment('user_type'))->keyBy('label');
+
+        $this->assertSame(2, $rows['Individual']['registered']);
+        $this->assertSame(1, $rows['Individual']['with_indoor']);
+        $this->assertSame(1, $rows['Cooperativa']['registered']);
+        $this->assertSame(0, $rows['Cooperativa']['with_indoor']);
+    }
+
+    public function test_usage_analytics_page_shows_stuck_and_segments_sections(): void
+    {
+        $superadmin = User::factory()->create();
+        $tenant = Tenant::factory()->create(['user_type' => 'individual']);
+        $stuckTenant = Tenant::factory()->create(['user_type' => 'cooperativa']);
+
+        $this->actingAs($superadmin)
+            ->get('/superadmin/usage-analytics')
+            ->assertOk()
+            ->assertSee('Tenants estancados por paso', false)
+            ->assertSee('Conversión por perfil', false)
+            ->assertSee($stuckTenant->email, false)
+            ->assertSee('Tipo de usuario', false)
+            ->assertSee('Cooperativa', false);
     }
 }

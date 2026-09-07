@@ -16,7 +16,7 @@ class CancelarCommand extends AdminCommand
             return;
         }
 
-        $userId = $this->getUpdate()->getMessage()->getFrom()->getId();
+        $userId = $this->currentUserId();
         app(AdminPendingActionService::class)->clear($userId);
 
         $this->reply('✅ Acción pendiente descartada. No se hizo ningún cambio.');

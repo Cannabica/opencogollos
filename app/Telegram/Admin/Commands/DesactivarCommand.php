@@ -39,7 +39,7 @@ class DesactivarCommand extends AdminCommand
             return;
         }
 
-        $userId = $this->getUpdate()->getMessage()->getFrom()->getId();
+        $userId = $this->currentUserId();
         app(AdminPendingActionService::class)->set('deactivate', (int) $id, $userId);
 
         $name = htmlspecialchars((string) $tenant['name'], ENT_QUOTES, 'UTF-8');

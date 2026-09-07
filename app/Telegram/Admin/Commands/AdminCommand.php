@@ -5,6 +5,7 @@ namespace App\Telegram\Admin\Commands;
 use App\Services\Admin\AdminAuthorizer;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Commands\Command;
+use Telegram\Bot\Objects\Message;
 
 /**
  * Base para todos los comandos del bot de administración.
@@ -19,7 +20,7 @@ abstract class AdminCommand extends Command
 {
     protected function ensureAuthorized(): bool
     {
-        $userId = $this->getUpdate()?->getMessage()?->getFrom()?->getId();
+        $userId = $this->currentUserId();
 
         if (app(AdminAuthorizer::class)->isAllowed($userId)) {
             return true;
@@ -35,6 +36,26 @@ abstract class AdminCommand extends Command
         ]);
 
         return false;
+    }
+
+    protected function currentUserId(): ?int
+    {
+        $message = $this->getUpdate()->getMessage();
+
+        if (! $message instanceof Message) {
+            return null;
+        }
+
+        $from = $message->get('from');
+        $id = null;
+
+        if (is_array($from)) {
+            $id = $from['id'] ?? null;
+        } elseif (is_object($from) && method_exists($from, 'get')) {
+            $id = $from->get('id');
+        }
+
+        return is_numeric($id) ? (int) $id : null;
     }
 
     protected function reply(string $text, string $parseMode = 'HTML'): mixed

@@ -28,6 +28,16 @@ class PlatformStatusService
 
     public function checkRedis(): ?bool
     {
+        // Solo tiene sentido chequear Redis si el stack lo usa (cache, cola o
+        // sesiones). Si no, devolvemos null (no aplica) y no genera ruido.
+        $usesRedis = config('cache.default') === 'redis'
+            || config('queue.default') === 'redis'
+            || config('session.driver') === 'redis';
+
+        if (! $usesRedis) {
+            return null;
+        }
+
         try {
             Redis::connection()->ping();
             return true;

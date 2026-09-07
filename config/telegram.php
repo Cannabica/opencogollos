@@ -57,6 +57,10 @@ return [
             'allowed_updates' => ['message'],
             'commands' => [
                 'admin_start',
+                'admin_estado',
+                'admin_tenants',
+                'admin_tenant',
+                'admin_metricas',
             ],
         ],
     ],
@@ -261,5 +265,9 @@ return [
 
         // Comandos del bot de administración (superadmin)
         'admin_start' => App\Telegram\Admin\Commands\StartCommand::class,
+        'admin_estado' => App\Telegram\Admin\Commands\EstadoCommand::class,
+        'admin_tenants' => App\Telegram\Admin\Commands\TenantsCommand::class,
+        'admin_tenant' => App\Telegram\Admin\Commands\TenantCommand::class,
+        'admin_metricas' => App\Telegram\Admin\Commands\MetricasCommand::class,
     ],
 ];

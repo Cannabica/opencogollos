@@ -87,4 +87,32 @@ class TenantAdminServiceTest extends TestCase
         $this->assertSame(0, $metrics['actions']);
         $this->assertSame(0, $metrics['seeds']);
     }
+
+    public function test_it_activates_a_tenant(): void
+    {
+        $tenant = Tenant::factory()->inactive()->create();
+
+        $result = $this->service->setActive($tenant->id, true);
+
+        $this->assertNotNull($result);
+        $this->assertTrue($result['active']);
+        $this->assertTrue((bool) Tenant::find($tenant->id)->active);
+        $this->assertNotNull(Tenant::find($tenant->id)->activated_at);
+    }
+
+    public function test_it_deactivates_a_tenant(): void
+    {
+        $tenant = Tenant::factory()->create();
+
+        $result = $this->service->setActive($tenant->id, false);
+
+        $this->assertNotNull($result);
+        $this->assertFalse($result['active']);
+        $this->assertFalse((bool) Tenant::find($tenant->id)->active);
+    }
+
+    public function test_set_active_returns_null_for_a_missing_tenant(): void
+    {
+        $this->assertNull($this->service->setActive(9999, true));
+    }
 }

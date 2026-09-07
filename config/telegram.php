@@ -50,6 +50,15 @@ return [
                 'photo'
             ],
         ],
+
+        'admin' => [
+            'token' => env('TELEGRAM_ADMIN_BOT_TOKEN'),
+            'webhook_url' => env('TELEGRAM_ADMIN_WEBHOOK_URL', env('APP_URL') . '/api/telegram/admin/webhook/'),
+            'allowed_updates' => ['message'],
+            'commands' => [
+                'admin_start',
+            ],
+        ],
     ],
 
     /*
@@ -62,6 +71,29 @@ return [
     |
     */
     'default' => 'default',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Bot Security
+    |--------------------------------------------------------------------------
+    |
+    | Secret token que Telegram incluye en el header
+    | X-Telegram-Bot-Api-Secret-Token al llamar al webhook del bot admin.
+    | Sin este valor el webhook admin rechaza todo (fail closed).
+    |
+    */
+    'admin_secret' => env('TELEGRAM_ADMIN_SECRET_TOKEN'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Bot Allowed User Ids
+    |--------------------------------------------------------------------------
+    |
+    | Ids numéricos de Telegram autorizados a usar el bot de administración
+    | (separados por coma). Solo el superadmin de la plataforma.
+    |
+    */
+    'admin_allowed_user_ids' => env('TELEGRAM_ADMIN_ALLOWED_USER_IDS', ''),
 
     /*
     |--------------------------------------------------------------------------
@@ -226,5 +258,8 @@ return [
         'photo' => App\Telegram\Commands\PhotoHandlerCommand::class,
         'callback' => App\Telegram\Commands\CallbackHandlerCommand::class,
         'repetirriego' => App\Telegram\Commands\RepeatLastIrrigationCommand::class,
+
+        // Comandos del bot de administración (superadmin)
+        'admin_start' => App\Telegram\Admin\Commands\StartCommand::class,
     ],
 ];

@@ -91,6 +91,93 @@
         </x-filament::section>
     </div>
 
+    {{-- Tenants estancados (drill-down A) --}}
+    <div class="mt-4">
+        <x-filament::section>
+            <x-slot name="heading">Tenants estancados por paso</x-slot>
+            <x-slot name="description">Dónde se pierde cada tenant — lista accionable para reactivación</x-slot>
+
+            @php($stuck = \App\Support\UsageStats::stuckByStep())
+            @php($stuckGroups = [
+                'sin_indoor' => 'Registrados sin indoor',
+                'con_indoor_sin_plantas' => 'Con indoor, sin plantas',
+                'con_plantas_sin_acciones' => 'Con plantas, sin acciones',
+            ])
+
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                @foreach ($stuckGroups as $key => $title)
+                    <div>
+                        <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $title }}</h4>
+                        @if ($stuck[$key]->isEmpty())
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Sin estancados 🎉</p>
+                        @else
+                            <ul class="space-y-1.5">
+                                @foreach ($stuck[$key] as $t)
+                                    <li class="text-xs">
+                                        <span class="font-medium text-gray-900 dark:text-white">{{ $t->name }}</span>
+                                        <span class="text-gray-500 dark:text-gray-400">· {{ $t->email }}</span>
+                                        <span class="text-gray-400 dark:text-gray-500">
+                                            (registrado {{ $t->created_at->diffForHumans() }})
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </x-filament::section>
+    </div>
+
+    {{-- Conversión por perfil (drill-down B) --}}
+    <div class="mt-4">
+        <x-filament::section>
+            <x-slot name="heading">Conversión por perfil</x-slot>
+            <x-slot name="description">Qué segmento de cultivador activa mejor</x-slot>
+
+            @php($segmentFields = [
+                'user_type' => 'Tipo de usuario',
+                'usage_type' => 'Tipo de uso',
+                'plants_per_cycle' => 'Escala declarada',
+            ])
+
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                @foreach ($segmentFields as $field => $title)
+                    @php($rows = \App\Support\UsageStats::funnelBySegment($field))
+                    <div>
+                        <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $title }}</h4>
+                        @if (count($rows) === 0)
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Sin datos de segmento.</p>
+                        @else
+                            <table class="w-full text-xs">
+                                <thead>
+                                    <tr class="border-b border-gray-200 text-left text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                        <th class="py-1 pr-2">Segmento</th>
+                                        <th class="py-1 pr-2 text-right">Reg.</th>
+                                        <th class="py-1 pr-2 text-right">Indoor</th>
+                                        <th class="py-1 pr-2 text-right">Plantas</th>
+                                        <th class="py-1 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($rows as $row)
+                                        <tr class="border-b border-gray-100 dark:border-gray-800">
+                                            <td class="py-1 pr-2 font-medium text-gray-900 dark:text-white">{{ $row['label'] }}</td>
+                                            <td class="py-1 pr-2 text-right text-gray-600 dark:text-gray-300">{{ $row['registered'] }}</td>
+                                            <td class="py-1 pr-2 text-right text-gray-600 dark:text-gray-300">{{ $row['with_indoor'] }}</td>
+                                            <td class="py-1 pr-2 text-right text-gray-600 dark:text-gray-300">{{ $row['with_plants'] }}</td>
+                                            <td class="py-1 text-right text-gray-600 dark:text-gray-300">{{ $row['with_actions'] }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </x-filament::section>
+    </div>
+
     {{-- Heatmap de actividad (día x hora) --}}
     <div class="mt-4">
         <x-filament::section>

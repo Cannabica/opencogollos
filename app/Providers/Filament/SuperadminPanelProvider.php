@@ -18,6 +18,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\View\PanelsRenderHook;
+use App\Http\Middleware\LogUsageMiddleware;
 
 
 class SuperadminPanelProvider extends PanelProvider
@@ -53,6 +54,7 @@ class SuperadminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                LogUsageMiddleware::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

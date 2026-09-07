@@ -372,6 +372,9 @@ class Registration extends Register
             
             // Store the tenant for use in afterRegister if needed
             $this->tenant = $tenant;
+
+            // Aviso inmediato al superadmin por el bot de administración
+            \App\Services\Admin\AdminNotifierService::notifyNewTenant($tenant);
             
         } catch (\Exception $e) {
             \Log::error('Failed to create tenant in handleRegistration: ' . $e->getMessage(), [

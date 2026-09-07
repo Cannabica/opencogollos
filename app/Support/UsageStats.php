@@ -57,6 +57,106 @@ class UsageStats
         }, $steps);
     }
 
+    /**
+     * Tenants estancados por paso del embudo (drill-down A).
+     *
+     * @return array{sin_indoor: \Illuminate\Database\Eloquent\Collection, con_indoor_sin_plantas: \Illuminate\Database\Eloquent\Collection, con_plantas_sin_acciones: \Illuminate\Database\Eloquent\Collection}
+     */
+    public static function stuckByStep(): array
+    {
+        $noTenantScope = fn ($q) => $q->withoutGlobalScope(TenantScope::class);
+        $base = fn () => Tenant::query();
+        // Relación anidada: el scope de Indoor aplica en la subquery intermedia,
+        // por eso se anida el whereHas con withoutGlobalScope en cada nivel.
+        $hasIndoorWithPlants = fn ($q) => $q
+            ->withoutGlobalScope(TenantScope::class)
+            ->whereHas('plants', $noTenantScope);
+
+        return [
+            'sin_indoor' => $base()
+                ->whereDoesntHave('indoors', $noTenantScope)
+                ->orderByDesc('created_at')
+                ->limit(20)
+                ->get(['id', 'name', 'email', 'created_at']),
+            'con_indoor_sin_plantas' => $base()
+                ->whereHas('indoors', $noTenantScope)
+                ->whereDoesntHave('indoors', $hasIndoorWithPlants)
+                ->orderByDesc('created_at')
+                ->limit(20)
+                ->get(['id', 'name', 'email', 'created_at']),
+            'con_plantas_sin_acciones' => $base()
+                ->whereHas('indoors', $hasIndoorWithPlants)
+                ->whereDoesntHave('actions')
+                ->orderByDesc('created_at')
+                ->limit(20)
+                ->get(['id', 'name', 'email', 'created_at']),
+        ];
+    }
+
+    /**
+     * Conversión del embudo agrupada por un campo del tenant (drill-down B).
+     */
+    public static function funnelBySegment(string $field): array
+    {
+        if (! in_array($field, ['user_type', 'usage_type', 'plants_per_cycle'], true)) {
+            return [];
+        }
+
+        $noTenantScope = fn ($q) => $q->withoutGlobalScope(TenantScope::class);
+
+        $segments = Tenant::query()
+            ->select($field)
+            ->whereNotNull($field)
+            ->distinct()
+            ->orderBy($field)
+            ->pluck($field)
+            ->map(fn ($v) => (string) $v)
+            ->values();
+
+        $rows = [];
+        foreach ($segments as $value) {
+            $base = fn () => Tenant::query()->where($field, $value);
+
+            $rows[] = [
+                'label' => self::segmentLabel($field, $value),
+                'registered' => $base()->count(),
+                'with_indoor' => $base()->whereHas('indoors', $noTenantScope)->count(),
+                'with_plants' => $base()->whereHas('indoors', fn ($q) => $q
+                    ->withoutGlobalScope(TenantScope::class)
+                    ->whereHas('plants', $noTenantScope)
+                )->count(),
+                'with_actions' => $base()->whereHas('actions')->count(),
+            ];
+        }
+
+        return $rows;
+    }
+
+    private static function segmentLabel(string $field, string $value): string
+    {
+        if ($field === 'plants_per_cycle') {
+            return match ($value) {
+                '1' => '1-5 plantas',
+                '2' => '6-10 plantas',
+                '3' => '11-20 plantas',
+                '4' => '21-50 plantas',
+                '5' => 'Más de 50 plantas',
+                default => $value,
+            };
+        }
+
+        $labels = [
+            'individual' => 'Individual',
+            'cooperativa' => 'Cooperativa',
+            'ong' => 'ONG',
+            'personal' => 'Personal',
+            'comercial' => 'Comercial',
+            'solidario' => 'Solidario',
+        ];
+
+        return $labels[$value] ?? ucfirst(str_replace('_', ' ', $value));
+    }
+
     public static function topModules(int $days = 30): array
     {
         $labels = [

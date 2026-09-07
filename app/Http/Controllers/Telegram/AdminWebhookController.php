@@ -44,12 +44,18 @@ class AdminWebhookController
             $update = $bot->getWebhookUpdate();
 
             $message = $update->getMessage();
-            $userId = $message instanceof \Telegram\Bot\Objects\Message
-                ? $message->getFrom()?->getId()
-                : null;
+            $userId = null;
+            if ($message instanceof \Telegram\Bot\Objects\Message) {
+                $from = $message->get('from');
+                $id = is_array($from) ? ($from['id'] ?? null) : null;
+                if (is_object($from) && method_exists($from, 'get')) {
+                    $id = $from->get('id');
+                }
+                $userId = is_numeric($id) ? (int) $id : null;
+            }
 
             Log::info('Admin bot: update recibido', [
-                'update_id' => $update->getUpdateId(),
+                'update_id' => $update->get('update_id'),
                 'type' => $update->objectType(),
                 'telegram_user_id' => $userId,
             ]);

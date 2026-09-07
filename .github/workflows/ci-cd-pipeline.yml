@@ -129,6 +129,7 @@ jobs:
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
+          trivyignores: .trivyignore
           skip-files: 'usr/src/php/ext/fileinfo/data_file.c'
 
       - name: Login to Docker Hub

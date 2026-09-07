@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Services\TenantTokenService;
 use App\Services\TelegramLogger;
 use Telegram\Bot\Laravel\Facades\Telegram;
+use App\Http\Controllers\Telegram\AdminWebhookController;
 
 // Temporary test route for token service
 Route::get('/test-token', function (TenantTokenService $service) {
@@ -58,6 +59,10 @@ Route::post('/telegram/webhook', function (\Illuminate\Http\Request $request) {
         return response('Error', 500);
     }
 });
+
+// Webhook del bot de administración (superadmin). Seguridad: exige
+// TELEGRAM_ADMIN_SECRET_TOKEN configurado y el header de secret de Telegram.
+Route::post('/telegram/admin/webhook', AdminWebhookController::class);
 
 // Tenant API Routes
 Route::middleware('tenant.token')->group(function () {

@@ -37,13 +37,16 @@ class ActivityHeatmapWidget extends ChartWidget
         $endDate = now();
 
         $query = Action::select(
-            DB::raw("strftime('%w', action_date) as day_of_week"),
-            DB::raw("strftime('%H', action_date) as hour"),
+            DB::raw("EXTRACT(DOW FROM action_date::timestamp) as day_of_week"),
+            DB::raw("EXTRACT(HOUR FROM action_date::timestamp) as hour"),
             DB::raw('COUNT(*) as total')
         )
         ->whereHas('plants', function($query) {
             $query->whereHas('indoor', function($q) {
-                $q->where('tenant_id', auth()->user()->tenant_id);
+                $q->where(function($query) {
+                    $query->where('tenant_id', auth()->user()->tenant_id)
+                          ->orWhereNull('tenant_id');
+                });
             });
         })
         ->whereBetween('action_date', [

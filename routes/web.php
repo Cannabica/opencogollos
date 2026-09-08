@@ -1,9 +1,8 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
-use App\Jobs\SendDelayedProductNotification;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,26 +16,29 @@ use Illuminate\Support\Facades\Log;
 */
 
 Route::get('/', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
-        return redirect($user->tenant_id != null ? '/tenant' : '/superadmin');
-    }
-    return redirect('/tenant');
+    return redirect('/tenant/login');
 });
 
-Route::get('/health', function () {
-    return response()->json(['status' => 'healthy'], 200);
+// Aliasing para auth de Laravel: los invitados que caen en rutas con
+// middleware 'auth' (ej. /dashboard) se redirigen al login del panel tenant.
+Route::get('/login', function () {
+    return redirect('/tenant/login');
+})->name('login');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+// Protected storage files - auth + tenant ownership check
+Route::get('/storage/{path}', [StorageController::class, 'show'])
+    ->where('path', '.*')
+    ->name('storage.protected');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/tenant/actions/postpone-notification', function (Request $request) {
-    Log::info('Postpone notification requested', $request->all());
-    
-    dispatch(new SendDelayedProductNotification(
-        $request->query('type'),
-        (int) $request->query('count'),
-        (int) $request->query('tenant'),
-        $request->query('action') ? (int) $request->query('action') : null
-    ))->delay(now()->addDay());
-
-    return redirect()->back();
-})->name('actions.postpone-notification');
+require __DIR__ . '/auth.php';
+require __DIR__ . '/test_403.php';

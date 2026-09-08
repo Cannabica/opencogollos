@@ -1,4 +1,5 @@
 import preset from '../../../../vendor/filament/filament/tailwind.config.preset'
+import colors from 'tailwindcss/colors'
 
 export default {
     presets: [preset],
@@ -10,6 +11,8 @@ export default {
     theme: {
         extend: {
             colors: {
+                green: colors.green,
+                yellow: colors.yellow,
                 primary: {
                     50: '#E6F2FA',
                     100: '#D1E5F5',

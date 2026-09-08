@@ -24,6 +24,9 @@ use App\Models\Tenant as T;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Navigation\MenuItem;
+use App\Filament\Tenant\Widgets\ProductNotificationsWidget;
+
+use Rupadana\ApiService\ApiServicePlugin;
 
 class TenantPanelProvider extends PanelProvider
 {
@@ -32,13 +35,19 @@ class TenantPanelProvider extends PanelProvider
         FilamentAsset::register([
             Css::make('custom-css', asset('css/custom.css')),
         ]);
+
         return $panel
             ->id('tenant')
+            ->plugin(
+                ApiServicePlugin::make()
+            )
             ->path('tenant')
             ->font('Space Grotesk')
             ->login()
-            ->authGuard('tenant')        
-            ->default()              
+            ->registration(\App\Filament\Tenant\Pages\Registration::class)
+            ->passwordReset()
+            ->authGuard('web')
+            ->default()
             ->favicon(asset(path: 'images/favicon.png'))
             ->brandLogo(fn() => view('filament.admin.logo'))
             ->darkModeBrandLogo(fn() => view('filament.admin.logo-darkmode'))
@@ -48,6 +57,9 @@ class TenantPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/tenant/theme.css')
             ->pages([
                 Dashboard::class,
+                \App\Filament\Tenant\Pages\TenantPage::class,
+                \App\Filament\Tenant\Pages\ActivationPending::class,
+                \App\Filament\Tenant\Pages\PasswordChange::class,
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('10s')
@@ -131,7 +143,13 @@ class TenantPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\CheckPasswordChange::class,
+                \App\Http\Middleware\CheckTenantActivation::class,
             ])
-            ->authGuard('web');
+            ->renderHook(
+                'panels::body.end',
+                fn () => view('filament.tenant.notifications')
+            )
+            ->databaseNotifications();
     }
 }

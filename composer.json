@@ -1,7 +1,7 @@
 {
   "name": "laravel/laravel",
   "type": "project",
-  "version": "0.18.0",
+  "version": "0.19.2",
   "description": "Welcome to hell",
   "keywords": [
     "laravel",
@@ -11,7 +11,7 @@
   "require": {
     "php": "^8.3",
     "codeat3/blade-phosphor-icons": "^2.2",
-    "filament/filament": "^3.3.53",
+    "filament/filament": "^3.2",
     "filament/notifications": "^3.3",
     "flowframe/laravel-trend": "^0.4.0",
     "guzzlehttp/guzzle": "^7.2",
@@ -20,8 +20,7 @@
     "laravel/sanctum": "^3.3",
     "laravel/tinker": "^2.8",
     "leandrocfe/filament-apex-charts": "^3.1",
-    "rupadana/filament-api-service": "dev-main",
-    "symfony/mime": "^6.4.40",
+    "rupadana/filament-api-service": "^3.4.10",
     "symfony/polyfill-intl-icu": "^1.32",
     "tymon/jwt-auth": "^2.2",
     "fakerphp/faker": "^1.23"
@@ -78,12 +77,5 @@
     }
   },
   "minimum-stability": "stable",
-  "prefer-stable": true,
-  "repositories": {
-    "filament-api-service": {
-      "type": "vcs",
-      "url": "https://github.com/rupadana/filament-api-service"
-    }
-  }
+  "prefer-stable": true
 }
-

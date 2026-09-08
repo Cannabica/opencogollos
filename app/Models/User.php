@@ -13,14 +13,30 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Filament\Panel;
 
-class User extends Authenticatable implements FilamentUser, HasTenants
+use Tymon\JWTAuth\Contracts\JWTSubject;
+
+class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
     public function canAccessTenant(Model $tenant): bool
     {
-
-        return true; // TODO: Implement canAccessTenant() method.
+        if (!$tenant instanceof \App\Models\Tenant) {
+            return false;
+        }
+        
+        return $this->tenant_id === $tenant->id
+            && $tenant->active;
     }
 
     public function getTenants(Panel $panel): array|Collection
@@ -35,9 +51,10 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     public function canAccessPanel(Panel $panel): bool
     {
-
         if ($panel->getId() === 'tenant') {
-            return $this->tenant?->active ?? false;
+            // Permitir acceso al panel incluso si el tenant está inactivo
+            // La lógica de redirección se manejará en un middleware o en el panel mismo
+            return $this->tenant !== null;
         }
 
         if ($panel->getId() === 'superadmin') {
@@ -56,7 +73,21 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'name',
         'email',
         'password',
+        'user_type',
+        'usage_type',
+        'team_emails',
+        'plants_per_cycle',
+        'harvest_products',
+        'force_password_change',
+        'tenant_id',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['plants_per_cycle_description'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -76,5 +107,58 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'harvest_products' => 'array',
+        'force_password_change' => 'boolean',
+        'plants_per_cycle' => 'integer',
     ];
+
+    /**
+     * Get the plants per cycle description
+     */
+    public function getPlantsPerCycleDescriptionAttribute(): ?string
+    {
+        $descriptions = [
+            1 => '1-5 plantas',
+            2 => '6-10 plantas',
+            3 => '11-20 plantas',
+            4 => '21-50 plantas',
+            5 => 'Más de 50 plantas',
+        ];
+
+        return $descriptions[$this->plants_per_cycle] ?? null;
+    }
+
+    /**
+     * Check if the user is the owner of the tenant
+     */
+    public function isTenantOwner(): bool
+    {
+        return $this->tenant && $this->email === $this->tenant->email;
+    }
+
+    /**
+     * Check if the user can manage team users
+     */
+    public function canManageTeamUsers(): bool
+    {
+        return $this->isTenantOwner();
+    }
+
+    /**
+     * Check if the user can be managed by the given user
+     */
+    public function canBeManagedBy(User $manager): bool
+    {
+        // A user can only be managed by tenant owner
+        // and cannot manage themselves
+        return $manager->isTenantOwner() && $this->id !== $manager->id;
+    }
+
+    /**
+     * Scope to get users that belong to the same tenant
+     */
+    public function scopeSameTenant($query)
+    {
+        return $query->where('tenant_id', auth()->user()->tenant_id);
+    }
 }

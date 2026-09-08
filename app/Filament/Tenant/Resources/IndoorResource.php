@@ -28,6 +28,9 @@ class IndoorResource extends Resource
     protected static ?string $model = Indoor::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Plantas';
+
 
     public static function getPluralLabel(): string
     {
@@ -201,11 +204,13 @@ class IndoorResource extends Resource
     }
     public static function table(Table $table): Table
     {
-        $createAction = Tables\Actions\CreateAction::make()
-            ->icon('heroicon-o-plus-circle')
-            ->label(__('Add Indoor'));
-
         return $table
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->icon('heroicon-o-plus')
+                    ->button()
+                    ->size('sm'),
+            ])
             ->contentGrid([
                 'default' => 1,
                 'sm' => 1,
@@ -231,7 +236,7 @@ class IndoorResource extends Resource
                             ->schema([
                                 TextColumn::make('plants_count')
                                     ->label(__('Plants in Indoor'))
-                                    ->icon('heroicon-o-squares-plus')
+                                    ->icon('heroicon-o-archive-box-arrow-down')
                                     ->counts('plants')
                                     ->badge()
                                     ->color('success')

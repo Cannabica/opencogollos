@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -29,6 +30,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
+        DB::statement('ALTER TABLE tenants DROP CONSTRAINT IF EXISTS tenants_owner_id_foreign');
         Schema::dropIfExists('users');
+        Schema::enableForeignKeyConstraints();
     }
 };

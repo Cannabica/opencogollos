@@ -33,7 +33,7 @@
                         </p>
                         <div class="mt-2">
                             <button
-                                wire:click="markAsRead('{{ $notification->id }}')"
+                                wire:click="$dispatch('markNotificationAsRead', {id: '{{ $notification->id }}'})"
                                 type="button"
                                 class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                             >
@@ -44,10 +44,5 @@
                 </div>
             </div>
         @endforeach
-    @else
-        <div class="text-center text-gray-500 dark:text-gray-400">
-            No hay notificaciones pendientes
-            <p class="text-sm mt-1">Última actualización: {{ now()->format('H:i:s') }}</p>
-        </div>
     @endif
-</div> 
+</div>

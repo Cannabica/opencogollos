@@ -1,0 +1,59 @@
+name: Staging Deploy (Trantor)
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  REGISTRY: 192.168.68.110:30500
+  IMAGE_NAME: cannabica/openindoor
+  GITOPS_REPO: frankietoledo/homelab-gitops
+  GITOPS_PATH: services/cannabica/openindoor/application.yaml
+
+jobs:
+  build-and-deploy-staging:
+    name: Build & Deploy to Staging
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Compute image tag
+        id: tag
+        run: echo "tag=develop-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Build and push to internal registry
+        run: |
+          cat > /tmp/buildkitd.toml <<'EOF'
+          [registry."192.168.68.110:30500"]
+            http = true
+            insecure = true
+          EOF
+          docker buildx create --use --name staging-builder --config /tmp/buildkitd.toml
+          docker buildx build \
+            --push \
+            --file docker/php/Dockerfile \
+            --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }} \
+            --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop \
+            .
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.GITOPS_REPO }}
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Update image tag in K8s manifest
+        run: |
+          sed -i 's|image: .*/cannabica/openindoor:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}|g' \
+            gitops/${{ env.GITOPS_PATH }}
+
+      - name: Commit and push
+        run: |
+          cd gitops
+          git config --local user.name "Staging Deploy Bot"
+          git config --local user.email "staging-bot@cannabica.app"
+          git add -A
+          git commit -m "chore(openindoor): deploy staging develop-${{ steps.tag.outputs.tag }}" || echo "No changes"
+          git push

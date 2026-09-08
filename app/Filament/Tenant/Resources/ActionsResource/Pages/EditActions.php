@@ -22,8 +22,8 @@ class EditActions extends EditRecord
         $record = parent::getRecord();
 
         $action = Action::query()
-            ->whereHas('plants', function($query) {
-                $query->whereHas('indoor', function($q) {
+            ->whereHas('plants', function ($query) {
+                $query->whereHas('indoor', function ($q) {
                     $q->where('tenant_id', auth()->user()->tenant_id);
                 });
             })
@@ -100,12 +100,7 @@ class EditActions extends EditRecord
         $actionClass = $action->action_type->action_class;
 
         if (class_exists($actionClass)) {
-            $actionInstance = new $actionClass();
-            
-            // Execute the trigger for each related plant
-            foreach ($action->plants as $plant) {
-                $actionInstance->trigger($plant);
-            }
+            static::getResource()::executeActionTrigger($action);
         }
     }
 
@@ -124,7 +119,7 @@ class EditActions extends EditRecord
                 ->label(__('Guardar'))
                 ->icon('heroicon-o-check')
                 ->submit('save'),
-            
+
             FilamentAction::make('cancel')
                 ->label(__('Cancelar'))
                 ->icon('heroicon-o-x-mark')

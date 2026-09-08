@@ -1,170 +1,111 @@
-# Cannabica Indoor SaaS
+# Cannabica OpenIndoor SaaS
 
 Sistema de gestión para cultivos indoor basado en Laravel y Filament.
 
-## Requisitos
+## 🚀 Características Principales
 
-- PHP 8.3 o superior
-- Composer
-- Node.js 18 o superior
-- SQLite3
-- Docker (opcional)
+- **Dashboard:** Onboarding rápido, configuración de bot de Telegram y acciones rápidas.
+- **Indoors:** Define el hardware y los entornos (Watts, tipo de LEDs, Sensores) además de establecer parámetros basales.
+- **Semillas:** Base de datos genética detallada de variedades cultivadas, perfil de cannabinoides (THC/CBD), procedencia.
+- **Ciclo de Vida de Plantas:** Seguimiento individual continuo trazando el progreso biológico de las plantas (Germinación -> Plántula -> Vegetativo -> Floración).
+- **Planes de Cultivo:** Plantillas maestras de cultivo (fotoperiodo óptimo, rangos de temperatura, humedad, VPD y recuperación).
+- **Sistema de Acciones y Bitácora:** Registro de riegos o podas que disparan transiciones en el estado lógico de cada planta acorde a su plan.
 
-## Instalación Local
+## ⚙️ Configuración Inicial
 
-1. Clonar el repositorio:
+Para arrancar necesitas configurar el archivo de variables de entorno:
+
 ```bash
-git clone <repository-url>
-cd indoor-saas
+cp .env.local.example .env
 ```
 
-2. Instalar dependencias:
+**Variables importantes a verificar:**
+- Configuración de conexión de base de datos (`DB_CONNECTION`, `DB_HOST`, etc.).
+- **TELEGRAM_BOT_TOKEN** para habilitar y probar envío de alertas locales.
+
+## 💻 Instalación Local (Entorno nativo sin Docker)
+
+1. Clonar el repositorio e ingresar:
+```bash
+git clone <repository-url>
+cd OpenIndoor
+```
+
+2. Instalar todas las dependencias del proyecto:
 ```bash
 composer install
 npm install
 ```
 
-3. Configurar el entorno:
+3. Preparar Laravel y la base SQLite por defecto (rápido):
 ```bash
-cp .env.example .env
 php artisan key:generate
+touch database/database.sqlite
 ```
+*(Asegúrate de cambiar `DB_CONNECTION=sqlite` en tu `.env` y eliminar las variables `DB_HOST`/`DB_PORT` si no las usas)*.
 
-4. Configurar la base de datos SQLite:
-```bash
-# En el archivo .env
-DB_CONNECTION=sqlite
-DB_DATABASE=../database/cannabica_db.sqlite
-
-# Crear el archivo de base de datos
-touch database/cannabica_db.sqlite
-```
-
-5. Ejecutar migraciones y seeders:
+4. Ejecutar las migraciones y sembrar datos de prueba (seeders):
 ```bash
 php artisan migrate --seed
 ```
 
-6. Compilar assets:
+5. Inicializar la app:
 ```bash
 npm run build
-```
-
-7. Iniciar el servidor:
-```bash
 php artisan serve
 ```
 
-## Instalación con Docker
+## 🐳 Instalación con Docker (Desarrollo Local)
 
-### Método Automatizado (Recomendado)
+El proyecto incluye un entorno preconfigurado que facilita levantar todos los servicios juntos en 2 pasos usando `docker-compose.local.yml`; esto incluye la App, Base de Datos, Caddy (Servidor) y Mailpit para mock de emails.
 
-El proyecto incluye un script `build.sh` que automatiza el proceso de construcción:
-
+1. Otorgar permisos y ejecutar el script de construcción de la imagen inicial:
 ```bash
-# Dar permisos de ejecución al script
 chmod +x build.sh
-
-# Ejecutar el script de construcción
 ./build.sh
 ```
+*(Este script crea contenedores temporales para instalar el bloque de dependencias de Composer y NPM limpiamente).*
 
-El script realiza las siguientes acciones:
-1. Crea un contenedor temporal para instalar dependencias de Composer
-2. Crea un contenedor temporal para instalar dependencias NPM y construir assets
-3. Construye la imagen final del proyecto
-
-### Ejecutar el Contenedor (Desarrollo Local)
-
+2. Levantar el entorno local:
 ```bash
-docker run --rm -d --name cannabica-app \
-    -v $(pwd)/cannabica_db.sqlite:/var/www/database/cannabica_db.sqlite \
-    -v $(pwd)/.env:/var/www/.env \
-    -p 8000:8088 cannabica-app
+docker-compose -f docker-compose.local.yml up -d
 ```
 
-Este comando:
-- Monta la base de datos SQLite local
-- Monta el archivo .env para configuración
-- Mapea el puerto 8000 local al 8088 del contenedor
-- Ejecuta en modo detached (-d)
+> **Nota:** La automatización `entrypoint.sh` dentro del contenedor se encarga de correr `php artisan migrate --seed` automáticamente al arranque, luego de asegurar que la DB esté receptiva.
 
-### Detalles del Contenedor
+**Puertos y Servicios Excluidos Localmente:**
+- **APP (Caddy):** `localhost:8090`
+- **Adminer (DB UI):** `localhost:8080`
+- **Mailpit:** `localhost:8025` (UI web) y `1025` (SMTP interno).
 
-El contenedor utiliza un script `entrypoint.sh` que:
-1. Espera 2 segundos para asegurar que todos los servicios estén listos
-2. Ejecuta las migraciones y seeders de la base de datos
-3. Inicia el servidor Laravel en el puerto 8088
+## 🔑 Credenciales de Prueba por Defecto
 
-## CI/CD Pipeline
+Después de correr los seeders, el sistema queda con la siguiente información poblada para acceder a los paneles:
 
-El proyecto utiliza GitHub Actions para la integración y despliegue continuo. El pipeline se activa en:
+- **Panel Superadmin**
+  - URL: `/superadmin`
+  - Email: `test@example.com`
+  - Pass: `password`
 
-- Push a `main`, `develop`, `feature/*`, y `hotfix/*`
-- Pull requests a `main` y `develop`
+- **Panel Tenant / Cultivador**
+  - URL: `/tenant` (o `/` directo dependiendo rutas)
+  - Email: `user@tenant.com`
+  - Pass: `password`
 
-### Etapas del Pipeline
+## 🛠 Comandos Útiles en Desarrollo
 
-1. **Build**
-   - Configuración de PHP 8.3 y extensiones
-   - Instalación de dependencias
-   - Configuración del entorno
-   - Construcción de assets frontend
-   - Migraciones de base de datos
-
-2. **Versionado**
-   - Genera tags automáticos basados en la rama:
-     - `main` → `vX.Y.Z`
-     - `develop` → `vX.Y.Z-beta`
-     - `feature/*` → `vX.Y.Z-alpha`
-     - `hotfix/*` → `vX.Y.Z-hotfix`
-
-3. **Docker**
-   - Se ejecuta solo en push a `main` o `develop`
-   - Construye y publica la imagen en Docker Hub
-   - Tags: `latest` y SHA del commit
-
-## Credenciales de Prueba
-
-### Panel de Superadmin
-- URL: `/superadmin`
-- Email: test@example.com
-- Password: password
-
-### Panel de Tenant
-- URL: `/tenant`
-- Email: user@tenant.com
-- Password: password
-
-## Comandos Útiles
-
-### Base de Datos
 ```bash
-# Recrear base de datos y seedear
+# Limpiar toda la base de datos y recrear registros desde los comandos seeder:
 php artisan migrate:fresh --seed
 
-# Ejecutar migraciones y seeders por separado
-php artisan migrate:fresh
-php artisan db:seed
-
-# Ejecutar un seeder específico
-php artisan db:seed --class=NombreDelSeeder
+# Limpiar cacheos completos frente a errores visuales o lógicos de vistas
+php artisan optimize:clear
 ```
 
-## Salud del Sistema
-
-El contenedor Docker incluye un health check que verifica el estado del servicio cada 30 segundos en:
-```
-http://localhost:8088/health
-```
-
-### Monitoreo del Contenedor
-```bash
-# Ver logs del contenedor
-docker logs cannabica-app
-
-# Ver estado del contenedor
-docker ps -a | grep cannabica-app
-
-# Entrar al contenedor
-docker exec -it cannabica-app bash
+## 🌐 Enlaces Oficiales
+- [Cafecito (Apoyo al proyecto)](https://cafecito.app/cannabica_app)
+- [Página central: Cannabica.ar](https://cannabica.ar)
+- [Unirse a Discord](https://discord.gg/jN9Tje3eJe)
+- [Instagram @cannabica.app3](https://www.instagram.com/cannabica.app3/)
+- [Twitter/X](https://x.com/CannabicaApp)
+- [Facebook Oficial](https://www.facebook.com/profile.php?id=61574070621986)

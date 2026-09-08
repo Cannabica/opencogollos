@@ -6,6 +6,7 @@
 /storage/*.key
 /vendor
 .env
+.env.local.example
 .env.backup
 .env.production
 .phpunit.result.cache
@@ -19,3 +20,38 @@ yarn-error.log
 /.vscode
 *.sqlite
 *.sqlite-journal
+.env.local
+default.local.conf
+
+.modes
+.workflows
+.templates
+.roo
+.roo-code
+.processes
+.roomodes
+build_mode_summary.js
+build_roomodes.js
+create_build.js
+
+api-notes.md
+notas.md
+
+ssla
+ssl/*
+/ssl/*
+/ssl/*
+
+vps-deploy.md
+
+# Agent & AI Tools
+/.agents
+/.agent
+/.gemini
+/.cursorrules
+
+# Marketing & Adoption Assets (local only)
+/marketing
+
+# Server deployment scaling and infra config scripts
+/server-bootstrap

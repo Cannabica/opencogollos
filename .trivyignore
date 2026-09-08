@@ -1,0 +1,5 @@
+# Excepción documentada: GHSA-5vg9-5847-vvmq (CVE-2026-48019) — Laravel CRLF
+# injection en la rule de email. NO tiene fix en Laravel 10: el parche existe
+# solo en >=12.60.0 / >=13.10.0. Requiere migración de framework (ver kanban
+# mejoras-superadmin). Quitar esta línea al completar la migración.
+GHSA-5vg9-5847-vvmq

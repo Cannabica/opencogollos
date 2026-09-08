@@ -1,0 +1,106 @@
+services:
+  caddy:
+    image: caddy:alpine
+    ports:
+      - "${APP_HTTP_PORT:-8090}:80"
+      - "${APP_HTTPS_PORT:-8040}:443"
+    env_file:
+      - .env.local
+    volumes:
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - .:/var/www/html
+      - caddy_data_local:/data
+      - caddy_config_local:/config
+    depends_on:
+      - php
+      - mailpit
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      # network: host
+    user: "1000:1000"
+    env_file: .env.local
+    environment:
+      - APP_USER_ID=1000
+      - APP_GROUP_ID=1000
+      - APP_ENV=local
+      - APP_DEBUG=true
+    expose:
+      - "9000"
+      - "8000"
+    volumes:
+      - .:/var/www/html
+      - ./vendor:/var/www/html/vendor
+      - ./node_modules:/var/www/html/node_modules
+      - ./storage:/var/www/html/storage
+    working_dir: /var/www/html
+    depends_on:
+      - db
+
+  db:
+    build:
+      context: .
+      dockerfile: docker/db/Dockerfile
+    env_file: .env.local
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+  adminer: #TMP
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  loki:
+    image: grafana/loki:3.0.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./docker/loki/loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro
+    command: -config.file=/etc/promtail/config.yaml
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:11.0.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana-provisioning/dashboards-config:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana-provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./docker/grafana-provisioning/dashboards:/etc/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: unless-stopped
+
+volumes:
+  postgres_data_dev:
+  laravel_storage:
+  laravel_logs:
+  grafana_data:
+  loki_data:
+  caddy_data_local:
+  caddy_config_local:

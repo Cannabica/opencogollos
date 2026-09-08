@@ -71,12 +71,6 @@ class ListPlants extends ListRecords
     protected function getTableQuery(): Builder
     {
         $query = parent::getTableQuery();
-        
-        // Log the final table query
-        \Log::info('ListPlants table query SQL: ' . $query->toSql());
-        \Log::info('ListPlants table query bindings: ' . json_encode($query->getBindings()));
-        \Log::info('ListPlants table query count: ' . $query->count());
-
-        return $query;
+                return $query;
     }
 }

@@ -40,7 +40,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-        'tenant' => [  // New guard
+        'tenant' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+        'filament' => [
             'driver' => 'session',
             'provider' => 'users',
         ],

@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Resumen proactivo del bot de administración al superadmin.
+        $schedule->command('admin:digest')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**
@@ -21,6 +25,10 @@ class Kernel extends ConsoleKernel
     protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');
+
+        // Registrar comandos personalizados de Telegram (ya cargados en Commands por el load arriba, pero por si acaso)
+        $this->load(__DIR__.'/Commands/Telegram');
+        $this->load(__DIR__.'/Commands/Admin');
 
         require base_path('routes/console.php');
     }

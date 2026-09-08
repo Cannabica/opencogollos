@@ -55,3 +55,8 @@ vps-deploy.md
 
 # Server deployment scaling and infra config scripts
 /server-bootstrap
+# Herramientas locales y kanban (movido a repo board)
+/.kiro/
+/.opencode/
+/.jekyll-cache/
+/management/

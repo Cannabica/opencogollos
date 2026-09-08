@@ -25,6 +25,7 @@ use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Navigation\MenuItem;
 use App\Filament\Tenant\Widgets\ProductNotificationsWidget;
+use App\Http\Middleware\LogUsageMiddleware;
 
 use Rupadana\ApiService\ApiServicePlugin;
 
@@ -140,6 +141,7 @@ class TenantPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                LogUsageMiddleware::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

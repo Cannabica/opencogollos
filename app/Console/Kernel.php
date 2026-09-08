@@ -12,9 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Resumen proactivo del bot de administración al superadmin.
+        // Resumen proactivo del bot de administración al superadmin (1 vez por día).
         $schedule->command('admin:digest')
-            ->everyFifteenMinutes()
+            ->dailyAt('09:00')
             ->withoutOverlapping()
             ->onOneServer();
 

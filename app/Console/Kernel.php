@@ -17,6 +17,12 @@ class Kernel extends ConsoleKernel
             ->everyFifteenMinutes()
             ->withoutOverlapping()
             ->onOneServer();
+
+        // Purga diaria del detalle de uso (telemetría server-side).
+        $schedule->command('usage:prune')
+            ->daily()
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**

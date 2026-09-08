@@ -46,7 +46,6 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Grid as FormsGrid;
 use Filament\Forms\Components\Hidden;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Filament\Tenant\Resources\Actions\Components\PlantSelector;
 use App\Filament\Tenant\Resources\Actions\Rules\ActionValidationRules;
 use App\Filament\Tenant\Resources\Actions\Services\ActionRecordService;
@@ -61,6 +60,8 @@ class ActionsResource extends Resource
     protected ActionRecordService $actionService;
 
     protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
+    protected static ?int $navigationSort = 5;
+    protected static ?string $navigationGroup = 'Plantas';
 
     protected static ?string $navigationLabel = 'Seguimiento de cultivos';
 
@@ -211,8 +212,8 @@ class ActionsResource extends Resource
                                     ->numeric()
                                     ->suffix(label: 'lts')
                                     ->default(function () {
-                                        return request()->get('irrigation_type') === 'liters' 
-                                            ? request()->get('irrigation_value') 
+                                        return request()->get('irrigation_type') === 'liters'
+                                            ? request()->get('irrigation_value')
                                             : null;
                                     })
                                     ->helperText(new HtmlString(__('fixed_liters_helper')))
@@ -224,8 +225,8 @@ class ActionsResource extends Resource
                                     ->helperText(new HtmlString(__('timed_irrigation_helper')))
                                     ->numeric()
                                     ->default(function () {
-                                        return request()->get('irrigation_type') === 'timer' 
-                                            ? request()->get('irrigation_value') 
+                                        return request()->get('irrigation_type') === 'timer'
+                                            ? request()->get('irrigation_value')
                                             : null;
                                     })
                                     ->suffix(label: 'min')
@@ -262,11 +263,19 @@ class ActionsResource extends Resource
 
                                 Select::make('data.product_application.reminder_time')
                                     ->label('Recordatorio adicional')
-                                    ->options([
-                                        '5s' => 'En 5 segundos',
-                                        '1m' => 'En 1 minuto',
-                                        '1d' => 'En 1 día'
-                                    ])
+                                    ->options(function () {
+                                        $options = [
+                                            '1d' => 'En 1 día',
+                                            '7d' => 'En 7 días',
+                                            '14d' => 'En 14 días'
+                                        ];
+
+                                        if (config('app.debug')) {
+                                            $options['5s'] = 'En 5 segundos (DEBUG)';
+                                        }
+
+                                        return $options;
+                                    })
                                     ->default('none'),
                                 Textarea::make('data.product_application.observation')
                                     ->label(__('Observations'))
@@ -293,7 +302,7 @@ class ActionsResource extends Resource
 
                                         Select::make('data.transplant.new_capacity')
                                             ->label(__('Nueva Capacidad'))
-                                    ->options([
+                                            ->options([
                                                 3 => '3L',
                                                 5 => '5L',
                                                 7 => '7L',
@@ -317,7 +326,7 @@ class ActionsResource extends Resource
                                             ->content(function ($get) {
                                                 // Forzar actualización usando preview_key
                                                 $previewKey = $get('data.transplant.preview_key');
-                                                
+
                                                 $plants = Plant::whereIn('id', $get('plants'))->get();
                                                 if ($plants->isEmpty()) {
                                                     return new HtmlString('
@@ -333,7 +342,7 @@ class ActionsResource extends Resource
                                                 $html = "<div class='space-y-4 p-4 rounded-lg border border-gray-200'>";
                                                 $html .= "<div class='text-lg font-medium border-b pb-2 mb-3'>Resumen de Cambios</div>";
                                                 $html .= "<div class='container-flex justify-to-center'>";
-                                                
+
                                                 foreach ($plants as $plant) {
                                                     $html .= "
                                                         <div class='card-tutorial p-3 bg-white dark:bg-gray-800'>
@@ -342,7 +351,7 @@ class ActionsResource extends Resource
                                                                 <span class='text-gray-600 dark:text-gray-400'>Actual:</span><br/>
                                                                 <span class='font-medium'>{$plant->flowerpot} ({$plant->capacity}L)</span>
                                                             </div>";
-                                                    
+
                                                     if ($newFlowerpot && $newCapacity) {
                                                         $html .= "
                                                             <div class='text-sm'>
@@ -352,10 +361,10 @@ class ActionsResource extends Resource
                                                                 </span>
                                                             </div>";
                                                     }
-                                                    
+
                                                     $html .= "</div>";
                                                 }
-                                                
+
                                                 $html .= "</div></div>";
                                                 return new HtmlString($html);
                                             })
@@ -386,9 +395,9 @@ class ActionsResource extends Resource
                                     ->reorderable()
                                     ->appendFiles()
                                     ->panelLayout('grid')
-                                    ->imagePreviewHeight('150')
+                                    ->imagePreviewHeight('300')
                                     ->rules(['nullable', 'array'])
-                                    ->maxSize(5120)
+                                    ->maxSize(10240)
                                     ->uploadingMessage('Subiendo imágenes...')
                                     ->loadingIndicatorPosition('left')
                                     ->removeUploadedFileButtonPosition('right')
@@ -397,12 +406,12 @@ class ActionsResource extends Resource
                                             $component->state([]);
                                             return;
                                         }
-                                        
+
                                         if (is_string($state)) {
                                             $component->state([$state]);
                                             return;
                                         }
-                                        
+
                                         if (is_array($state)) {
                                             $component->state(array_values(array_filter($state)));
                                         }
@@ -439,67 +448,18 @@ class ActionsResource extends Resource
             ->statePath('data');
     }
 
-    public function afterCreate(): void
-    {
-        parent::afterCreate();
-        
-        // Recargar el registro con sus relaciones
-        $this->record->load(['plants']);
-        
-        Log::debug('Después de crear acción', [
-            'action_id' => $this->record->id,
-            'tiene_plantas' => $this->record->plants()->exists(),
-            'plantas_count' => $this->record->plants()->count(),
-            'plantas_ids' => $this->record->plants()->pluck('id')
-        ]);
-    }
 
-    protected function executeActionTrigger(Action $action)
-    {
-        $actionClass = $action->action_type->action_class;
-
-        if (class_exists($actionClass)) {
-            $actionInstance = new $actionClass();
-
-            foreach ($action->plants as $plant) {
-                $actionInstance->trigger($plant);
-            }
-
-            // Si es una aplicación de producto y tiene recordatorio
-            if (
-                $action->action_type_id === 3 &&
-                isset($action->data['product_application']['reminder_time']) &&
-                $action->data['product_application']['reminder_time'] !== 'none'
-            ) {
-
-                $delay = match ($action->data['product_application']['reminder_time']) {
-                    '5s' => 5,
-                    '1m' => 60,
-                    '1d' => 86400,
-                    default => 0
-                };
-
-                if ($delay > 0) {
-                    dispatch(new SendDelayedProductNotification(
-                        $action->data['product_application']['application_type'],
-                        $action->plants()->count(),
-                        $action->tenant_id,
-                        url(ActionsResource::getUrl('edit', ['record' => $action->id]))  // URL de edición de la acción
-                    ))->delay(now()->addSeconds($delay));
-                }
-            }
-        }
-    }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn(Builder $query) => $query
-                ->with('plants')
-                ->withCount('plants')
-                ->whereHas('indoor', function ($query) {
-                    $query->where('tenant_id', auth()->user()->tenant_id);
-                })
+            ->modifyQueryUsing(
+                fn(Builder $query) => $query
+                    ->with('plants')
+                    ->withCount('plants')
+                    ->whereHas('indoor', function ($query) {
+                        $query->where('tenant_id', auth()->user()->tenant_id);
+                    })
             )
             ->searchPlaceholder(__('actions_searchable_placeholder'))
             ->columns([
@@ -509,6 +469,13 @@ class ActionsResource extends Resource
                     ->description(__('Registrado el'))
                     ->sortable()
                     ->searchable()
+                    ->size('sm'),
+
+                TextColumn::make('indoor.name')
+                    ->label(__('Indoor'))
+                    ->searchable()
+                    ->wrap()
+                    ->sortable()
                     ->size('sm'),
 
                 TextColumn::make('plants_count')
@@ -521,15 +488,96 @@ class ActionsResource extends Resource
 
                 TextColumn::make('detalle_accion')
                     ->label(__('Detalle'))
-                    ->description(fn($record) => $record->detalle_accion)
+                    ->formatStateUsing(function ($state, $record) {
+
+                        $data = is_string($record->data) ? json_decode($record->data, true) : $record->data;
+
+                        if ($record->action_type->id == 6) {
+                            return "La planta ha muerto";
+                        }
+
+                        if (isset($data['irrigation'])) {
+                            $irrigation = $data['irrigation'];
+                            if ($irrigation['irrigation_type'] === 'timer') {
+                                return "Riego por {$irrigation['timer']} minutos ";
+                            } else {
+                                return "Riego {$irrigation['liters']} lts ";
+                            }
+                        } elseif (isset($data['pruning'])) {
+                            $types = $data['pruning']['pruning_type'];
+                            $typesText = [];
+                            foreach ($types as $type) {
+                                $typesText[] = match ($type) {
+                                    'scrog' => 'scrog',
+                                    'excess' => 'exceso de hojas',
+                                    'dry' => 'hojas secas',
+                                    'apical' => 'apical',
+                                    'topping' => 'topping',
+                                    'defoliation' => 'defoliación',
+                                    'lollipop' => 'lollipop',
+                                    default => $type
+                                };
+                            }
+
+                            $text = "Poda";
+                            if (count($typesText) > 1) {
+                                $text .= ' ' . implode(', ', $typesText);
+                            } else {
+                                $text .= ' ' . $typesText[0];
+                            }
+                            return "{$text}";
+                        } elseif (isset($data['transplant'])) {
+                            // dd($data);
+                            return "Transplante a {$data['transplant']['new_flowerpot']} {$data['transplant']['new_capacity']}L";
+                        } elseif (isset($data['change_state'])) {
+                            return "Cambio de estado a {$data['change_state']['state']}";
+                        } elseif (isset($data['observation'])) {
+                            $images = is_array($data['observation']['image'])
+                                ? $data['observation']['image']
+                                : [$data['observation']['image']];
+                            $imageCount = count($images);
+
+                            $messageText = '';
+                            $messageText .= "\n" . (strlen($data['observation']['comments']) > 30
+                                ? substr($data['observation']['comments'], 0, 30) . '...'
+                                : $data['observation']['comments']);
+                            if ($imageCount > 0) {
+                                if ($imageCount > 1) {
+                                    $messageText .= " ({$imageCount} fotos)";
+                                } else {
+                                    $messageText .= " (1 foto)";
+                                }
+                            }
+
+                            return $messageText;
+
+                        } elseif (isset($data['product_application'])) {
+                            $appType = $data['product_application']['application_type'];
+                            $observation = substr($data['product_application']['observation'] ?? '', 0, 20);
+
+                            switch ($appType) {
+                                case 'flora':
+                                    return "Aplicación de producto para flora" . ($observation ? " - $observation" : '');
+                                case 'vege':
+                                    return "Aplicación de producto para vegetativo" . ($observation ? " - $observation" : '');
+                                case 'plantula':
+                                    return "Aplicación de producto para plántula" . ($observation ? " - $observation" : '');
+                                case 'plague':
+                                    return "Aplicación antiplagas" . ($observation ? " - $observation" : '');
+                                default:
+                                    return "Aplicación de producto ($appType)";
+                            }
+                        }
+                        return $state;
+                    })
                     ->wrap()
                     ->searchable()
                     ->size('sm'),
 
                 BadgeColumn::make('action_type')
                     ->label(__('Tipo'))
-                    ->formatStateUsing(fn($record) => str_replace('Registrar ', '', $record->action_type->name))
-                    ->icon(fn($record) => match($record->action_type->name) {
+                    ->formatStateUsing(callback: fn($record) => str_replace('Registrar ', '', $record->action_type->name))
+                    ->icon(fn($record) => match ($record->action_type->name) {
                         'Registrar Poda' => 'heroicon-o-scissors',
                         'Registrar Transplante' => 'heroicon-o-arrow-path',
                         'Registrar Riego' => 'heroicon-o-cloud',
@@ -583,8 +631,6 @@ class ActionsResource extends Resource
                     ])
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->iconButton(),
                 Tables\Actions\EditAction::make()
                     ->iconButton(),
             ])
@@ -600,8 +646,8 @@ class ActionsResource extends Resource
                 'md' => 15,
                 'lg' => 20,
             ])
-            ->recordClasses(fn ($record) => 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800')
-            ->recordUrl(fn ($record) => route('filament.tenant.resources.actions.edit', ['record' => $record]))
+            ->recordClasses(fn($record) => 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800')
+            ->recordUrl(fn($record) => route('filament.tenant.resources.actions.edit', ['record' => $record]))
             ->defaultPaginationPageOption(10);
     }
 
@@ -621,71 +667,40 @@ class ActionsResource extends Resource
         ];
     }
 
-    public function create(bool $another = false): void
+    public static function executeActionTrigger($record): void
     {
-        try {
-            $formState = $this->form->getState();
-            
-            Log::debug('🚀 Iniciando creación', [
-                'form_state' => $formState,
-                'plantas' => $formState['plants'] ?? [],
-                'indoor_id' => $formState['indoor_id'] ?? null
-            ]);
+        $actionClass = $record->action_type->action_class ?? null;
 
-            if (empty($formState['plants'])) {
-                throw new \Exception('No se han seleccionado plantas');
+        if ($actionClass && class_exists($actionClass)) {
+            $actionTypeInstance = new $actionClass();
+            $plants = $record->plants()->get();
+            foreach ($plants as $plant) {
+                $actionTypeInstance->trigger($plant, $record->data);
             }
-
-            $record = $this->handleRecordCreation($formState);
-
-            Log::debug('✅ Creación completada', [
-                'action_id' => $record->id,
-                'plantas_count' => $record->plants()->count(),
-                'plantas_ids' => $record->plants()->pluck('id')->toArray()
-            ]);
-
-            $this->record = $record;
-
-            if ($another) {
-                $this->redirect($this->getResource()::getUrl('create'));
-            } else {
-                $this->redirect($this->getResource()::getUrl('edit', ['record' => $record]));
-            }
-
-        } catch (\Exception $e) {
-            Log::error('💥 Error en create', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            throw $e;
-        }
-    }
-
-    protected function handleRecordCreation(array $data): Model
-    {
-        // Asegurarnos de que tenemos todos los datos
-        $data['_plants_state'] = $data['_plants_state'] ?? null;
-        $data['plants'] = $data['plants'] ?? [];
-
-        return $this->actionService->handleRecordCreation($data);
-    }
-
-    protected function handleRecordUpdate(Model $record, array $data): Model
-    {
-        return $this->actionService->handleRecordUpdate($record, $data);
-    }
-
-    // Asegurar que las plantas no se modifiquen en la edición
-    public function afterSave(): void
-    {
-        if ($this->record->wasRecentlyCreated) {
-            return; // Si es creación, no hacer nada adicional
         }
 
-        // Si es edición, restaurar las plantas originales
-        $originalPlants = $this->record->getOriginal('plants');
-        if ($originalPlants) {
-            $this->record->plants()->sync($originalPlants);
+        // Programación de notificaciones retardadas (Tipo 3: Aplicación de producto)
+        if ($record->action_type_id == 3) {
+            $reminderTime = $record->data['product_application']['reminder_time'] ?? 'none';
+
+            if ($reminderTime !== 'none') {
+                $delay = match($reminderTime) {
+                    '5s' => now()->addSeconds(5),
+                    '1d' => now()->addDay(),
+                    '7d' => now()->addDays(7),
+                    '14d' => now()->addDays(14),
+                    default => null,
+                };
+
+                if ($delay) {
+                    \App\Jobs\SendDelayedProductNotification::dispatch(
+                        $record->data['product_application']['application_type'] ?? 'other',
+                        $record->plants()->count(),
+                        $record->tenant_id,
+                        $record->id
+                    )->delay($delay);
+                }
+            }
         }
     }
 }

@@ -128,26 +128,156 @@ class ActionsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('action_type_id')
             ->columns([
-                Tables\Columns\TextColumn::make('action_type.name')
-                    ->label(__('Action Type')),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('Register date')),
+                    ->label(__('Fecha'))
+                    ->dateTime('d/m/Y')
+                    ->description(__('Registrado el'))
+                    ->sortable()
+                    ->searchable()
+                    ->size('sm'),
+
+                Tables\Columns\TextColumn::make('detalle_accion')
+                    ->label(__('Detalle'))
+                    ->formatStateUsing(function ($state, $record) {
+                        $data = is_string($record->data) ? json_decode($record->data, true) : $record->data;
+
+                        if ($record->action_type->id == 6) {
+                            return "La planta ha muerto";
+                        }
+
+                        if (isset($data['irrigation'])) {
+                            $irrigation = $data['irrigation'];
+                            if ($irrigation['irrigation_type'] === 'timer') {
+                                return "Riego por {$irrigation['timer']} minutos";
+                            } else {
+                                return "Riego {$irrigation['liters']} lts";
+                            }
+                        } elseif (isset($data['pruning'])) {
+                            $types = $data['pruning']['pruning_type'];
+                            $typesText = [];
+                            foreach ($types as $type) {
+                                $typesText[] = match ($type) {
+                                    'scrog' => 'scrog',
+                                    'excess' => 'exceso de hojas',
+                                    'dry' => 'hojas secas',
+                                    'apical' => 'apical',
+                                    'topping' => 'topping',
+                                    'defoliation' => 'defoliación',
+                                    'lollipop' => 'lollipop',
+                                    default => $type
+                                };
+                            }
+
+                            $text = "Poda";
+                            if (count($typesText) > 1) {
+                                $text .= ' ' . implode(', ', $typesText);
+                            } else {
+                                $text .= ' ' . $typesText[0];
+                            }
+                            return $text;
+                        } elseif (isset($data['transplant'])) {
+                            return "Transplante a {$data['transplant']['new_flowerpot']} {$data['transplant']['new_capacity']}L";
+                        } elseif (isset($data['change_state'])) {
+                            return "Cambio de estado a {$data['change_state']['state']}";
+                        } elseif (isset($data['observation'])) {
+                            $images = is_array($data['observation']['image'])
+                                ? $data['observation']['image']
+                                : [$data['observation']['image']];
+                            $imageCount = count($images);
+                            
+                            $messageText = '';
+                            $messageText .= (strlen($data['observation']['comments']) > 30
+                                ? substr($data['observation']['comments'], 0, 30) . '...'
+                                : $data['observation']['comments']);
+                            if ($imageCount > 0) {
+                                if ($imageCount > 1) {
+                                    $messageText .= " ({$imageCount} fotos)";
+                                } else {
+                                    $messageText .= " (1 foto)";
+                                }
+                            }
+
+                            return $messageText;
+                        } elseif (isset($data['product_application'])) {
+                            $appType = $data['product_application']['application_type'];
+                            $observation = substr($data['product_application']['observation'] ?? '', 0, 20);
+                            
+                            switch ($appType) {
+                                case 'flora':
+                                    return "Aplicación de producto para flora" . ($observation ? " - $observation" : '');
+                                case 'vege':
+                                    return "Aplicación de producto para vegetativo" . ($observation ? " - $observation" : '');
+                                case 'plantula':
+                                    return "Aplicación de producto para plántula" . ($observation ? " - $observation" : '');
+                                case 'plague':
+                                    return "Aplicación antiplagas" . ($observation ? " - $observation" : '');
+                                default:
+                                    return "Aplicación de producto ($appType)";
+                            }
+                        }
+                        return $state;
+                    })
+                    ->wrap()
+                    ->searchable()
+                    ->size('sm'),
+
+                Tables\Columns\BadgeColumn::make('action_type')
+                    ->label(__('Tipo'))
+                    ->formatStateUsing(fn($record) => str_replace('Registrar ', '', $record->action_type->name))
+                    ->icon(fn($record) => match ($record->action_type->name) {
+                        'Registrar Poda' => 'heroicon-o-scissors',
+                        'Registrar Transplante' => 'heroicon-o-arrow-path',
+                        'Registrar Riego' => 'heroicon-o-cloud',
+                        'Registrar Aplique producto' => 'heroicon-o-beaker',
+                        'Registrar Observación con foto' => 'heroicon-o-camera',
+                        'Registrar Muerte de la planta' => 'heroicon-o-x-circle',
+                        'Registrar Cambio de Estado' => 'heroicon-o-arrow-path-rounded-square',
+                        default => null
+                    })
+                    ->colors([
+                        'tertiary' => fn($record) => $record->action_type->name === 'Registrar Poda',
+                        'accent' => fn($record) => $record->action_type->name === 'Registrar Transplante',
+                        'primary' => fn($record) => $record->action_type->name === 'Registrar Riego',
+                        'dark' => fn($record) => $record->action_type->name === 'Registrar Aplique producto',
+                        'warning' => fn($record) => $record->action_type->name === 'Registrar Observación con foto',
+                        'danger' => fn($record) => $record->action_type->name === 'Registrar Muerte de la planta',
+                        'gray' => fn($record) => $record->action_type->name === 'Registrar Cambio de Estado',
+                    ])
+                    ->size('sm'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('action_type_id')
+                    ->label(__('Tipo de acción'))
+                    ->options([
+                        1 => __('Irrigación'),
+                        2 => __('Poda'),
+                        3 => __('Aplicación de Producto'),
+                        4 => __('Transplante'),
+                        5 => __('Observación'),
+                        6 => __('Muerte'),
+                        7 => __('Cambio de Estado'),
+                    ])
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
+            ->actions([])
+            ->striped()
+            ->paginated([
+                'default' => 10,
+                'sm' => 10,
+                'md' => 15,
+                'lg' => 20,
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->modalHeading(__('Edit action')),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->recordUrl(function ($record) {
+                if (!$record || !$record->plant_id || !$record->id) {
+                    return null;
+                }
+                return route('filament.tenant.resources.actions.edit', [
+                    'record' => $record->getKey(),
+                    'tenant' => \Filament\Facades\Filament::getTenant()?->id,
+                    'relatedRecord' => $record->plant_id
+                ]) . '" target="_blank';
+            })
+            ->recordClasses(fn($record) => 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800')
+            ->defaultSort('actions.created_at', 'desc')
+            ->defaultPaginationPageOption(10);
     }
 }

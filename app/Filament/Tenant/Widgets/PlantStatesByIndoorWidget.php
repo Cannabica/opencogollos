@@ -11,6 +11,14 @@ class PlantStatesByIndoorWidget extends ChartWidget
 {
     protected static ?string $heading = 'Estados de Plantas por Indoor';
 
+    protected static array $colors = [
+        'rgb(111, 211, 44)',
+        'rgb(55, 152, 216)',
+        'rgb(235, 123, 18)',
+        'rgb(110, 70, 255)',
+        'rgba(111, 67, 199, 0.8)',
+    ];
+
     protected function getData(): array
     {
         $indoors = Indoor::where('tenant_id', auth()->user()->tenant_id)
@@ -19,17 +27,18 @@ class PlantStatesByIndoorWidget extends ChartWidget
         $states = Plant::whereHas('indoor', function($query) {
                 $query->where('tenant_id', auth()->user()->tenant_id);
             })
+            ->where('state', '!=', 'muerta')
             ->distinct('state')
             ->pluck('state')
             ->filter();
         
-        $datasets = $states->map(function ($state) use ($indoors) {
+        $datasets = $states->map(function ($state, $index) use ($indoors) {
             return [
                 'label' => ucfirst($state),
                 'data' => $indoors->map(function ($indoor) use ($state) {
                     return $indoor->plants->where('state', $state)->count();
                 })->toArray(),
-                'backgroundColor' => 'rgba(' . rand(0, 255) . ',' . rand(0, 255) . ',' . rand(0, 255) . ',0.8)',
+                'backgroundColor' => self::$colors[$index % count(self::$colors)],
             ];
         });
 
@@ -55,6 +64,7 @@ class PlantStatesByIndoorWidget extends ChartWidget
                     'stacked' => true,
                 ],
             ],
+            'aspectRatio' => 1,
         ];
     }
 } 

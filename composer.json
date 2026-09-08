@@ -1,7 +1,7 @@
 {
   "name": "laravel/laravel",
   "type": "project",
-  "version": "0.18.0",
+  "version": "0.19.2",
   "description": "Welcome to hell",
   "keywords": [
     "laravel",
@@ -79,4 +79,3 @@
   "minimum-stability": "stable",
   "prefer-stable": true
 }
-

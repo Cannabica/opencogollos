@@ -6,9 +6,10 @@
 
     /* Variables para los temas claro y oscuro */
     :root {
-        --primary: #4174DD;
-        --primary-light: #E6F2FA;
-        --primary-dark: #355CB2;
+        /* Paleta de marca Cannabica (W1): primary = azul #2369B5, dark = gris pizarra neutro (sin violeta) */
+        --primary: #2369B5;
+        --primary-light: #EFF5FC;
+        --primary-dark: #1A4F88;
 
         --secondary: #65CDAF;
         --secondary-light: #F0FAF2;
@@ -18,38 +19,37 @@
         --tertiary-light: #E9F2E9;
         --tertiary-dark: #558A55;
 
-        --dark: #564C72;
-        --dark-light: #F1EFF3;
-        --dark-dark: #423957;
+        --dark: #3E5055;
+        --dark-light: #F1F4F5;
+        --dark-dark: #2B3A3F;
 
-        --accent: #B97272;
-        --accent-light: #FAEBEB;
-        --accent-dark: #A55E5E;
+        --accent: #DC2626;
+        --accent-light: #FEE2E2;
+        --accent-dark: #B91C1C;
 
         color-scheme: light;
         /* Esquema de color claro por defecto */
     }
 
     :root.dark {
-        --primary: #355CB2;
-        --primary-light: #D1E5F5;
-        --primary-dark: #294587;
+        --primary: #5E9CE6;
+        --primary-light: #DCE9FA;
+        --primary-dark: #3E80CB;
 
         --secondary: #52A78C;
         --secondary-light: #E1F5E5;
         --secondary-dark: #3F8169;
-        padding: px;
         --tertiary: #558A55;
         --tertiary-light: #D4E5D4;
         --tertiary-dark: #426742;
 
-        --dark: #423957;
-        --dark-light: #E2DFE7;
-        --dark-dark: #2E263C;
+        --dark: #0F1218;
+        --dark-light: #2B3A3F;
+        --dark-dark: #08080C;
 
-        --accent: #A55E5E;
-        --accent-light: #F5D7D7;
-        --accent-dark: #914A4A;
+        --accent: #F87171;
+        --accent-light: #7F1D1D;
+        --accent-dark: #FCA5A5;
 
         color-scheme: dark;
     }
@@ -60,67 +60,46 @@
     }
 
     .fi-sidebar-item-active {
-        background-color: var(--dark) !important;
+        background-color: rgb(var(--primary-500) / 0.14) !important;
         border-radius: 5px !important;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.08);
+        box-shadow: none;
     }
 
     .fi-sidebar-item-active a {
         background-color: inherit !important;
     }
 
-
     .fi-sidebar-item-active .fi-sidebar-item-label,
     .fi-sidebar-item-active .fi-sidebar-item-icon {
-        color: var(--accent-light) !important;
+        color: rgb(var(--primary-600)) !important;
     }
 
+    .dark .fi-sidebar-item-active {
+        background-color: rgb(var(--primary-400) / 0.18) !important;
+    }
+
+    .dark .fi-sidebar-item-active .fi-sidebar-item-label,
+    .dark .fi-sidebar-item-active .fi-sidebar-item-icon {
+        color: rgb(var(--primary-400)) !important;
+    }
+
+    /* Botones: se respeta el color de rol de Filament (primary/danger/secondary).
+       Se quitó el override global que pintaba TODOS los botones de verde (var(--tertiary)),
+       lo que dejaba acciones destructivas ("Borrar"/"Cancelar") en verde (W6). */
     .fi-btn {
-        background: var(--tertiary) !important;
-        filter: brightness(1.05); /* Lighter in light mode */
-        color: white !important;
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
-        border-radius: 0.5rem !important;
-        transition: all 0.2s ease-out !important;
-        box-shadow: none !important; /* Estilo plano */
+        border-radius: 0.5rem;
+        transition: all 0.2s ease-out;
+        box-shadow: none;
     }
 
     .fi-btn:hover {
         transform: translateY(-1px);
-        filter: brightness(0.95);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     .fi-btn:active {
         transform: translateY(0);
-        box-shadow: none !important;
-        filter: brightness(0.9);
-    }
-
-    .fi-btn~.fi-btn {
-        background: var(--secondary) !important;
-    }
-
-    /* Dark mode adjustments */
-    .dark .fi-btn {
-        background: var(--tertiary-dark) !important;
-        filter: brightness(1); /* No extra brightness in dark mode */
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        color: rgba(255, 255, 255, 0.85) !important;
-        box-shadow: none !important;
-    }
-
-    .dark .fi-btn:hover {
-        background: var(--tertiary) !important;
-        color: #ffffff !important;
-    }
-
-    .dark .fi-btn~.fi-btn {
-        background: var(--secondary-dark) !important;
-    }
-
-    .dark .fi-btn~.fi-btn:hover {
-        background: var(--secondary) !important;
+        box-shadow: none;
     }
 
     .fi-header {

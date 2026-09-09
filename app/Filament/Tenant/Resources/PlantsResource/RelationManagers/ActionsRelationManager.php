@@ -147,13 +147,16 @@ class ActionsRelationManager extends RelationManager
 
                         if (isset($data['irrigation'])) {
                             $irrigation = $data['irrigation'];
-                            if ($irrigation['irrigation_type'] === 'timer') {
-                                return "Riego por {$irrigation['timer']} minutos";
+                            if (($irrigation['irrigation_type'] ?? '') === 'timer') {
+                                return "Riego por " . ($irrigation['timer'] ?? '?') . " minutos";
                             } else {
-                                return "Riego {$irrigation['liters']} lts";
+                                return "Riego " . ($irrigation['liters'] ?? '?') . " lts";
                             }
                         } elseif (isset($data['pruning'])) {
-                            $types = $data['pruning']['pruning_type'];
+                            $types = $data['pruning']['pruning_type'] ?? [];
+                            if (!is_array($types)) {
+                                $types = [$types];
+                            }
                             $typesText = [];
                             foreach ($types as $type) {
                                 $typesText[] = match ($type) {
@@ -176,19 +179,20 @@ class ActionsRelationManager extends RelationManager
                             }
                             return $text;
                         } elseif (isset($data['transplant'])) {
-                            return "Transplante a {$data['transplant']['new_flowerpot']} {$data['transplant']['new_capacity']}L";
+                            return "Transplante a " . ($data['transplant']['new_flowerpot'] ?? '?') . " " . ($data['transplant']['new_capacity'] ?? '?') . "L";
                         } elseif (isset($data['change_state'])) {
-                            return "Cambio de estado a {$data['change_state']['state']}";
+                            return "Cambio de estado a " . ($data['change_state']['state'] ?? '?');
                         } elseif (isset($data['observation'])) {
-                            $images = is_array($data['observation']['image'])
-                                ? $data['observation']['image']
-                                : [$data['observation']['image']];
+                            // tolera observaciones sin foto/comentario (data parcial no rompe)
+                            $imageData = $data['observation']['image'] ?? null;
+                            $images = $imageData === null ? [] : (is_array($imageData) ? $imageData : [$imageData]);
                             $imageCount = count($images);
-                            
+
+                            $comments = $data['observation']['comments'] ?? '';
                             $messageText = '';
-                            $messageText .= (strlen($data['observation']['comments']) > 30
-                                ? substr($data['observation']['comments'], 0, 30) . '...'
-                                : $data['observation']['comments']);
+                            $messageText .= strlen($comments) > 30
+                                ? substr($comments, 0, 30) . '...'
+                                : $comments;
                             if ($imageCount > 0) {
                                 if ($imageCount > 1) {
                                     $messageText .= " ({$imageCount} fotos)";
@@ -199,7 +203,7 @@ class ActionsRelationManager extends RelationManager
 
                             return $messageText;
                         } elseif (isset($data['product_application'])) {
-                            $appType = $data['product_application']['application_type'];
+                            $appType = $data['product_application']['application_type'] ?? 'desconocido';
                             $observation = substr($data['product_application']['observation'] ?? '', 0, 20);
                             
                             switch ($appType) {

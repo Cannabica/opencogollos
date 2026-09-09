@@ -532,9 +532,8 @@ class ActionsResource extends Resource
                         } elseif (isset($data['change_state'])) {
                             return "Cambio de estado a {$data['change_state']['state']}";
                         } elseif (isset($data['observation'])) {
-                            $images = is_array($data['observation']['image'])
-                                ? $data['observation']['image']
-                                : [$data['observation']['image']];
+                            $imageData = $data['observation']['image'] ?? null;
+                            $images = $imageData === null ? [] : (is_array($imageData) ? $imageData : [$imageData]);
                             $imageCount = count($images);
 
                             $messageText = '';

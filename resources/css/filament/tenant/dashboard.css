@@ -315,28 +315,53 @@ input[type="radio"]:checked + label.fi-btn {
 }
 
 .state-badge-germinación {
-    background-color: #818cf8;
-    color: white;
+    background-color: rgba(2, 132, 199, 0.10);
+    color: #0369A1;
+}
+
+.dark .state-badge-germinación {
+    background-color: rgba(56, 189, 248, 0.14);
+    color: #7DD3FC;
 }
 
 .state-badge-plantula {
-    background-color: #34d399;
-    color: white;
+    background-color: rgba(2, 132, 199, 0.10);
+    color: #0369A1;
+}
+
+.dark .state-badge-plantula {
+    background-color: rgba(56, 189, 248, 0.14);
+    color: #7DD3FC;
 }
 
 .state-badge-vegetativa {
-    background-color: #fbbf24;
-    color: white;
+    background-color: rgba(52, 199, 89, 0.12);
+    color: #15803D;
+}
+
+.dark .state-badge-vegetativa {
+    background-color: rgba(76, 217, 100, 0.14);
+    color: #4ADE80;
 }
 
 .state-badge-floracion {
-    background-color: #ec4899;
-    color: white;
+    background-color: rgba(35, 105, 181, 0.12);
+    color: #1A4F88;
+}
+
+.dark .state-badge-floracion {
+    background-color: rgba(94, 156, 230, 0.16);
+    color: #5E9CE6;
 }
 
 .state-badge-muerta {
-    background-color: #6b7280;
-    color: white;
+    background-color: rgba(220, 38, 38, 0.10);
+    color: #B91C1C;
+}
+
+.dark .state-badge-muerta {
+    background-color: rgba(248, 113, 113, 0.14);
+    color: #F87171;
 }
 
 /* Estilos para el dashboard */

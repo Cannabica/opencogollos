@@ -220,4 +220,19 @@ jobs:
             # Zero-downtime deployment by only recreating changed containers
             docker compose up -d --remove-orphans
             
+            # Sync del public de la imagen al volumen compartido (public-php).
+            # Caddy sirve los assets estáticos DESDE ese volumen; sin este sync el
+            # volumen congela el public de un deploy viejo y tapa el build nuevo de la
+            # imagen (incidente v0.20.0: UI sin marca + manifest viejo rompía artisan).
+            PUBLIC_VOLUME=$(docker volume ls -q | grep 'public-php' | head -1)
+            if [ -n "$PUBLIC_VOLUME" ]; then
+              NEW_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/cannabica-php:${{ needs.prepare.outputs.tag }}"
+              docker run --rm --user root --entrypoint sh -v "${PUBLIC_VOLUME}:/target" "$NEW_IMAGE" \
+                -c 'rm -rf /target/build && cp -r /var/www/html/public/. /target/' \
+                && echo "public sincronizado al volumen $PUBLIC_VOLUME" \
+                || echo "WARN: sync del public al volumen fallo"
+            else
+              echo "WARN: no se encontro volumen public-php (saltando sync)"
+            fi
+            
             docker image prune -f

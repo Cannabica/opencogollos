@@ -34,7 +34,9 @@ class TenantPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         FilamentAsset::register([
-            Css::make('custom-css', asset('css/custom.css')),
+            // CSS del dashboard/panel que vivía en public/css/custom.css (legacy),
+            // migrado a entrada Vite: resources/css/filament/tenant/dashboard.css
+            Css::make('custom-css', \Illuminate\Support\Facades\Vite::asset('resources/css/filament/tenant/dashboard.css')),
         ]);
 
         return $panel
@@ -43,7 +45,7 @@ class TenantPanelProvider extends PanelProvider
                 ApiServicePlugin::make()
             )
             ->path('tenant')
-            ->font('Space Grotesk')
+            ->font('Inter')
             ->login()
             ->registration(\App\Filament\Tenant\Pages\Registration::class)
             ->passwordReset()
@@ -66,17 +68,17 @@ class TenantPanelProvider extends PanelProvider
             ->databaseNotificationsPolling('10s')
             ->colors([
                 'primary' => [
-                    50 => '230, 242, 250', // #E6F2FA
-                    100 => '209, 229, 245', // #D1E5F5
-                    200 => '173, 200, 239', // #ADC8EF
-                    300 => '137, 171, 233', // #89ABE9
-                    400 => '101, 144, 227', // #6590E3
-                    500 => '65, 116, 221',  // #4174DD
-                    600 => '53, 92, 178',   // #355CB2
-                    700 => '41, 69, 135',   // #294587
-                    800 => '29, 46, 92',    // #1D2E5C
-                    900 => '17, 23, 49',    // #111731
-                    950 => '8, 11, 24',     // #080B18
+                    50 => '239, 245, 252', // #EFF5FC
+                    100 => '220, 233, 250', // #DCE9FA
+                    200 => '187, 213, 244', // #BBD5F4
+                    300 => '142, 186, 238', // #8EBAEE
+                    400 => '94, 156, 230',  // #5E9CE6 (dark)
+                    500 => '62, 128, 203',  // #3E80CB
+                    600 => '35, 105, 181',  // #2369B5 (light — marca)
+                    700 => '26, 79, 136',   // #1A4F88
+                    800 => '19, 58, 100',   // #133A64
+                    900 => '13, 40, 69',    // #0D2845
+                    950 => '8, 23, 40',     // #081728
                 ],
                 'secondary' => [
                     50 => '240, 250, 242',  // #F0FAF2
@@ -105,30 +107,30 @@ class TenantPanelProvider extends PanelProvider
                     950 => '14, 16, 14',    // #0E100E
                 ],
                 'dark' => [
-                    50 => '241, 239, 243',  // #F1EFF3
-                    100 => '226, 223, 231', // #E2DFE7
-                    200 => '196, 191, 209', // #C4BFD1
-                    300 => '166, 159, 185', // #A69FB9
-                    400 => '136, 127, 163', // #887FA3
-                    500 => '106, 95, 141',  // #6A5F8D
-                    600 => '86, 76, 114',   // #564C72
-                    700 => '66, 57, 87',    // #423957
-                    800 => '46, 38, 60',    // #2E263C
-                    900 => '26, 19, 33',    // #1A1321
-                    950 => '13, 9, 16',     // #0D0910
+                    50 => '248, 250, 252',  // #F8FAFC (slate neutro — fuera el violeta)
+                    100 => '241, 245, 249', // #F1F5F9
+                    200 => '226, 232, 240', // #E2E8F0
+                    300 => '203, 213, 225', // #CBD5E1
+                    400 => '148, 163, 184', // #94A3B8
+                    500 => '100, 116, 139', // #64748B
+                    600 => '71, 85, 105',   // #475569
+                    700 => '51, 65, 85',    // #334155
+                    800 => '30, 41, 59',    // #1E293B
+                    900 => '15, 23, 42',    // #0F172A
+                    950 => '2, 6, 23',      // #020617
                 ],
                 'accent' => [
-                    50 => '250, 235, 235',  // #FAEBEB
-                    100 => '245, 215, 215', // #F5D7D7
-                    200 => '235, 195, 195', // #EBC3C3
-                    300 => '225, 174, 174', // #E1AEAE
-                    400 => '215, 154, 154', // #D79A9A
-                    500 => '205, 134, 134', // #CD8686
-                    600 => '185, 114, 114', // #B97272
-                    700 => '165, 94, 94',   // #A55E5E
-                    800 => '145, 74, 74',   // #914A4A
-                    900 => '125, 54, 54',   // #7D3636
-                    950 => '63, 27, 27',    // #3F1B1B
+                    50 => '254, 242, 242',  // #FEF2F2 (red danger de marca — fuera el rosa)
+                    100 => '254, 226, 226', // #FEE2E2
+                    200 => '254, 202, 202', // #FECACA
+                    300 => '252, 165, 165', // #FCA5A5
+                    400 => '248, 113, 113', // #F87171
+                    500 => '239, 68, 68',   // #EF4444
+                    600 => '220, 38, 38',   // #DC2626
+                    700 => '185, 28, 28',   // #B91C1C
+                    800 => '153, 27, 27',   // #991B1B
+                    900 => '127, 29, 29',   // #7F1D1D
+                    950 => '69, 10, 10',    // #450A0A
                 ],
             ])
             ->middleware([
@@ -148,10 +150,6 @@ class TenantPanelProvider extends PanelProvider
                 \App\Http\Middleware\CheckPasswordChange::class,
                 \App\Http\Middleware\CheckTenantActivation::class,
             ])
-            ->renderHook(
-                'panels::body.end',
-                fn () => view('filament.tenant.notifications')
-            )
             ->databaseNotifications();
     }
 }

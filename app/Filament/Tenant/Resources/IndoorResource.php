@@ -346,7 +346,7 @@ class IndoorResource extends Resource
                     ->icon('heroicon-o-eye')
                     ->button()
                     ->size('sm')
-                    ->color('secondary'),
+                    ->color('gray'),
                 Tables\Actions\EditAction::make()
                     ->icon('heroicon-o-pencil-square')
                     ->button()

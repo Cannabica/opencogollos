@@ -1,9 +1,4 @@
 <x-filament::page>
-    @push('styles')
-        <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
-        <link href="{{ asset('css/filament/tenant/theme.css') }}" rel="stylesheet">
-    @endpush
-
     <div class="dashboard-container">
         {{-- Alerta de Bug --}}
         <div x-data="{ show: true }" x-show="show"

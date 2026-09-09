@@ -33,6 +33,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Wizard;
 use Carbon\Carbon;
 use Filament\Forms\Get;
 use Illuminate\Support\HtmlString;
@@ -87,10 +88,9 @@ class ActionsResource extends Resource
     {
         return $form
             ->schema([
-                Split::make([
-                    Section::make(__('action_basic_data'))
+                Wizard::make([
+                    \Filament\Forms\Components\Wizard\Step::make(__('Datos básicos'))
                         ->description(__('action_basic_description'))
-                        ->extraAttributes(['class' => 'first-step'])
                         ->schema([
                             Placeholder::make('warning')
                                 ->label(__(''))
@@ -135,10 +135,8 @@ class ActionsResource extends Resource
                             Hidden::make('_plants_state'),
                         ])
                     ,
-                    Section::make(__('action_action_type_data'))
-                        ->disabled(fn($record) => $record !== null)
+                    \Filament\Forms\Components\Wizard\Step::make(__('Tipo de acción'))
                         ->description(__('action_action_type_description'))
-                        ->extraAttributes(['class' => 'second-step'])
                         ->schema([
                             Placeholder::make('warning')
                                 ->label(__(''))
@@ -165,21 +163,19 @@ class ActionsResource extends Resource
                                 ->required()
                                 ->default(function () {
                                     return request()->get('action_type_id');
-                                }),
+                                })
+                                ->disabled(fn($record) => $record !== null),
                         ])
-                        ->grow(),
-                ])->from('md'),
-
-                Section::make(__('action_data'))
-                    ->description(__('action_data_description'))
-                    ->extraAttributes(['class' => 'third-step'])
-                    ->schema([
+                    ,
+                    \Filament\Forms\Components\Wizard\Step::make(__('Datos de la acción'))
+                        ->description(__('action_data_description'))
+                        ->schema([
                         Placeholder::make('Disclaimer')
                             ->content(function (Get $get) {
                                 if ($get('action_type_id') != null) {
                                     $actionClass = new (ActionType::find($get('action_type_id'))->action_class);
                                     return $actionClass->disclaimer() ? new HtmlString(
-                                        '<div style="width: 100%;padding:15px;background: #caca00; color: #5a5a00;border: 1px solid #5a5a00;border-radius: 10px;">' .
+                                        '<div class="rounded-lg border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-700 dark:text-warning-300">' .
                                         $actionClass->disclaimer() .
                                         '</div>'
                                     ) : '';
@@ -449,6 +445,7 @@ class ActionsResource extends Resource
                             ])
                             ->visible(fn(Get $get) => $get('action_type_id') == 7),
                     ])
+                ])
             ])->columns(1)
             ->statePath('data');
     }

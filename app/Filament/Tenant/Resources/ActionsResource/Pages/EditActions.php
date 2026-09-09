@@ -68,6 +68,14 @@ class EditActions extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        // hidratar plantas existentes para TODOS los tipos de acción (el CheckboxList ya
+        // no usa ->relationship; el fill es manual). Debe ir ANTES del return temprano de
+        // observation, si no las acciones sin observation (riegos, podas...) no la marcaban.
+        $plantIds = $this->record->plants()->pluck('plants.id')->toArray();
+        if (!empty($plantIds)) {
+            $data['plants'] = $plantIds;
+        }
+
         if (!isset($data['data']['observation'])) {
             $data['data']['observation'] = [
                 'image' => [],
@@ -82,12 +90,6 @@ class EditActions extends EditRecord
             $data['data']['observation']['image'] = [];
         } elseif (is_string($data['data']['observation']['image'])) {
             $data['data']['observation']['image'] = [$data['data']['observation']['image']];
-        }
-
-        // hidratar plantas existentes (sin ->relationship en el CheckboxList, el fill es manual)
-        $plantIds = $record->plants()->pluck('plants.id')->toArray();
-        if (!empty($plantIds)) {
-            $data['plants'] = $plantIds;
         }
 
         return $data;

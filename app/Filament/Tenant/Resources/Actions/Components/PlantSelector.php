@@ -15,13 +15,11 @@ class PlantSelector
     public static function make(): CheckboxList
     {
         return CheckboxList::make('plants')
-            ->relationship(
-                'plants',
-                'name',
-                modifyQueryUsing: fn ($query) => $query
-                    ->select(['plants.id', 'plants.name'])
-                    ->where('state', '!=', 'muerta')
-            )
+            // SIN ->relationship: con relationship Filament ignora ->default y el estado lo
+            // maneja la relación vacía en create → el prefill por query (selected_plants de
+            // "Repetir última acción/riego") nunca aplicaba. El guardado (ActionRecordService)
+            // usa $data['plants'] = ids, igual con o sin relationship. En edit las plantas
+            // existentes se hidratan en EditActions::mutateFormDataBeforeFill.
             ->options(function (callable $get, ?Model $record = null) {
                 $indoor_id = $get('indoor_id');
                 
@@ -55,6 +53,15 @@ class PlantSelector
                     'selected' => $state,
                     'indoor_id' => $get('indoor_id')
                 ]);
+            })
+            // Prefill desde "Repetir última acción/riego" (query param selected_plants)
+            ->default(function () {
+                $raw = request()->get('selected_plants');
+                if (!$raw) {
+                    return [];
+                }
+                $decoded = json_decode($raw, true);
+                return is_array($decoded) ? array_filter($decoded) : [];
             })
             ->required()
             ->dehydrated(true)

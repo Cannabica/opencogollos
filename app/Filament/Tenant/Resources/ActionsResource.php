@@ -446,6 +446,9 @@ class ActionsResource extends Resource
                             ->visible(fn(Get $get) => $get('action_type_id') == 7),
                     ])
                 ])
+                // En edición el dato a corregir vive en el paso 3: arrancar ahí directo
+                // (los pasos 1-2 quedan accesibles con Anterior para revisar indoor/plantas/tipo).
+                ->startOnStep(fn($record) => $record !== null ? 3 : 1)
             ])->columns(1)
             ->statePath('data');
     }

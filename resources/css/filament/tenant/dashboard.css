@@ -1,0 +1,1926 @@
+/* Estilos globales */
+* {
+    font-family: inherit;
+}
+
+/* Contenedor principal */
+.fi-main-ctn {
+    background-color: #eeeeee;
+    border-width: inherit;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.dark .fi-main-ctn {
+    background-color: rgba(24, 24, 27, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 0px;
+}
+
+/* Contenedores flexibles */
+.container-flex{
+    display: flex;
+    overflow-x: auto;
+}
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+.container-flex > div {
+    --tw-space-y-reverse: 0;
+    margin-bottom: calc(.5rem* var(--tw-space-y-reverse));
+    margin-top: calc(.5rem*(1 - var(--tw-space-y-reverse)));
+    flex: 0 0 auto;
+    width: 200px;
+    margin-right: 10px;
+    border-radius: 8px;
+}
+
+.justify-to-center {
+    justify-content: center;
+}
+
+/* Disable interactions on read notification actions */
+.is-read-notification .fi-no-notification-actions {
+    pointer-events: none;
+}
+
+/* Fade out the "Posponer" and "Revisar" buttons and remove solid backgrounds */
+.is-read-notification .fi-no-notification-actions > *:not(:first-child) {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+/* Transform the "Marcar como leída" button into a "Leída" indicator */
+.is-read-notification .fi-no-notification-actions > *:first-child {
+    background-color: transparent !important;
+    /* border: 1px solid rgba(var(--success-500), 0.6) !important; */
+    color: rgba(var(--success-500), 1) !important;
+    box-shadow: none !important;
+}
+
+/* Hide the original "Marcar como leída" text - DEPRECATED: PHP label is already "Leída"
+.is-read-notification .fi-no-notification-actions > *:first-child .fi-btn-label {
+    display: none !important;
+} */
+
+/* Inject the "Leída" text - DEPRECATED: PHP label already provides this */
+/* .is-read-notification .fi-no-notification-actions > *:first-child::after {
+    content: "Leída";
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+} */
+
+
+/* Alerta de Bug con tonos naranja */
+.bug-notification {
+    background-color: #d9534f !important;
+    color: white !important;
+    border: 2px solid #f4511e;
+    box-shadow: 0 2px 4px rgba(244, 81, 30, 0.2);
+}
+
+.bug-notification:hover {
+    background-color: #f4511e !important;
+}
+
+.bug-notification:is(.dark *) {
+    /* Modo oscuro */
+    background-color: #d9534f !important; /* Rojo oscuro apagado */
+    color: #fff !important;
+    border-color: #4d1b18;
+}
+
+.first-steps {
+    background-color: cadetblue;
+    color: black;
+    padding: 20px;
+    border-radius: 8px;
+}
+.first-steps {
+    background-color: cadetblue;
+    color: black;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.card-tutorial {
+    max-width: 300px;
+    border: 1px solid rgb(77, 128, 129);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 10px;
+    z-index: 1;
+}
+
+.card-tutorial:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para modo oscuro */
+.dark .first-steps {
+    background-color: #2c3e50; /* Un azul oscuro */
+    color: #ecf0f1; /* Color claro para el texto */
+}
+
+.dark .card-tutorial {
+    border: 1px solid #34495e; /* Borde ligeramente más oscuro */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* Sombras más marcadas para resaltar en fondo oscuro */
+}
+
+.dark .card-tutorial:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.7); /* Aumenta la opacidad de la sombra en hover */
+}
+/* Estado normal */
+label.fi-btn {
+    background-color: #f0f0f0 !important;
+    border: 1px solid rgba(62, 104, 105, 0.548);
+    color: #333 !important;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Elevación al pasar el mouse */
+label.fi-btn:hover {
+    color: #333 !important;
+    background-color: #e0e0e0 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Efecto de presionado */
+label.fi-btn:active {
+    color: #2c3e50 !important;
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Estado activo para radio seleccionado */
+input[type="radio"]:checked + label.fi-btn {
+    background-color: cadetblue !important;
+    border-color: cadetblue !important;
+    box-shadow: 0 4px 8px rgba(0, 139, 139, 0.3);
+}
+
+/* Efectos en modo oscuro */
+.dark label.fi-btn {
+    background-color: #3c3c3c !important;
+    color: #ccc !important;
+    border: 1px solid #555;
+}
+
+.dark label.fi-btn:hover {
+    background-color: #444 !important;
+}
+
+.dark input[type="radio"]:checked + label.fi-btn {
+    background-color: #2c3e50 !important;
+    border-color: #2c3e50 !important;
+    color: #ecf0f1 !important;
+}
+
+/* Estilos para las tarjetas de plantas */
+
+.plant-content {
+    padding-bottom: 1rem;
+    transition: all 0.3s ease;
+    max-width: 100%;
+    position: relative;
+}
+
+
+.plant-content .flex.items-center.justify-between {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 32px;
+}
+
+.plant-content h3 {
+    flex: 1;
+    min-width: 0;
+}
+
+.plant-content-dashboard{
+    padding: 1rem;
+    border: 1px solid rgba(95, 158, 160, 0.4) !important;
+}
+
+.plant-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.plant-state-icon {
+    padding: 0.5rem;
+    border-radius: 50%;
+    background-color: rgba(95, 158, 160, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.plant-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.plant-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.85);
+    min-width: 0;
+    width: 100%;
+}
+
+.plant-info-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.plant-info-item.seed-info span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+.dark .plant-info-item {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.plant-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.dark .plant-metrics {
+    border-color: rgba(236, 240, 241, 0.1);
+}
+
+.metric-item {
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background-color: rgba(95, 158, 160, 0.12);
+    border: 1px solid rgba(95, 158, 160, 0.25);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.metric-value {
+    font-weight: bold;
+    font-size: 1.125rem;
+    color: cadetblue;
+}
+
+.dark .metric-value {
+    color: #7fb1b3;
+}
+
+.state-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: fit-content;
+    height: 24px;
+    margin: 0;
+}
+
+.state-badge-germinación {
+    background-color: #818cf8;
+    color: white;
+}
+
+.state-badge-plantula {
+    background-color: #34d399;
+    color: white;
+}
+
+.state-badge-vegetativa {
+    background-color: #fbbf24;
+    color: white;
+}
+
+.state-badge-floracion {
+    background-color: #ec4899;
+    color: white;
+}
+
+.state-badge-muerta {
+    background-color: #6b7280;
+    color: white;
+}
+
+/* Estilos para el dashboard */
+.dashboard-container {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.dashboard-alert {
+    background-color: rgba(95, 158, 160, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.dashboard-alert.warning {
+    background-color: #fff3e0;
+    border: 1px solid #ff9800;
+    box-shadow: 0 2px 4px rgba(255, 152, 0, 0.1);
+}
+.dashboard-alert.warning div div img{
+    max-width: 100px;
+}
+
+/* Tema oscuro para el aviso de desarrollo */
+.dark .dashboard-alert.warning {
+    background-color: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(255, 152, 0, 0.2);
+}
+
+.dark .dashboard-alert.warning h3 {
+    color: #ffa726 !important;
+}
+
+.dark .dashboard-alert.warning p {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark .dashboard-alert.warning a {
+    color: #ffa726 !important;
+}
+
+.dark .dashboard-alert.warning a:hover {
+    color: #ffb74d !important;
+}
+
+.dark .dashboard-alert.warning button {
+    color: #ffa726 !important;
+}
+
+.dark .dashboard-alert.warning button:hover {
+    color: #ffb74d !important;
+}
+
+.dark .dashboard-alert.warning .text-orange-600 {
+    color: #ffa726 !important;
+}
+
+.indoor-card {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(95, 158, 160, 0.4);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dark .indoor-card {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.indoor-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(95, 158, 160, 0.3);
+    background-color: rgba(95, 158, 160, 0.15);
+}
+
+.dark .indoor-header {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.indoor-content {
+    padding: 1.5rem;
+}
+
+.lamp-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(95, 158, 160, 0.12);
+    border: 1px solid rgba(95, 158, 160, 0.25);
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.lamp-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(95, 158, 160, 0.35);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    min-width: 200px;
+}
+
+.dark .lamp-item {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.plants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.action-history {
+    background-color: rgba(95, 158, 160, 0.12);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    border: 1px solid rgba(95, 158, 160, 0.25);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.action-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(95, 158, 160, 0.25);
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.action-item:last-child {
+    border-bottom: none;
+}
+
+.action-date {
+    background-color: cadetblue;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+}
+
+.floating-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background-color: cadetblue;
+    color: white;
+    padding: 1rem;
+    border-radius: 9999px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 50;
+}
+
+.floating-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark .floating-button {
+    background-color: rgba(95, 158, 160, 0.8);
+}
+
+.tutorial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+/* Input y botones con mayor contraste */
+input, select, textarea {
+    border: 2px solid rgba(95, 158, 160, 0.4) !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: rgba(95, 158, 160, 0.8) !important;
+    box-shadow: 0 0 0 3px rgba(95, 158, 160, 0.2) !important;
+}
+
+/* Mejoras para checkboxes */
+input[type="checkbox"].fi-checkbox-input {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    border-radius: 0.25rem !important;
+    background-color: #ffffff !important;
+    cursor: pointer !important;
+    position: relative !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid rgba(95, 158, 160, 0.6) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+input[type="checkbox"].fi-checkbox-input:hover:not(:checked) {
+    border-color: rgba(95, 158, 160, 0.8) !important;
+    background-color: rgba(95, 158, 160, 0.05) !important;
+}
+
+input[type="checkbox"].fi-checkbox-input:checked {
+    background-color: rgb(79, 70, 229) !important;
+    border-color: transparent !important;
+}
+
+input[type="checkbox"].fi-checkbox-input:checked::after {
+    content: '' !important;
+    position: absolute !important;
+    left: 6px !important;
+    top: 2px !important;
+    width: 6px !important;
+    height: 12px !important;
+    border: solid white !important;
+    border-width: 0 2px 2px 0 !important;
+    transform: rotate(45deg) !important;
+}
+
+/* Tema oscuro para checkboxes */
+.dark input[type="checkbox"].fi-checkbox-input {
+    background-color: rgba(28, 28, 31, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.dark input[type="checkbox"].fi-checkbox-input:hover:not(:checked) {
+    background-color: rgba(39, 39, 42, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Formularios en tema oscuro */
+.dark input:not([type="checkbox"]), 
+.dark select, 
+.dark textarea {
+    background-color: rgb(36 36 39) !important;
+    border: 0px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark input:not([type="checkbox"]):focus, 
+.dark select:focus, 
+.dark textarea:focus {
+    border-color: rgba(95, 158, 160, 0.6) !important;
+    box-shadow: 0 4px 6px rgba(95, 158, 160, 0.2) !important;
+}
+.fi-ta-record{
+    border: 1px solid rgba(93, 155, 157, 0.4) !important;
+    border-color: inherit !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    background-color: inherit !important;
+    transition: all 0.3s ease;
+}
+.fi-ta-record:hover{
+    border: 2px solid rgba(95, 158, 160, 0.2) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px);
+    background-color: inherit;
+}
+/* Dark theme variations */
+.dark .fi-ta-record {
+    border: 1px solid rgba(63, 104, 105, 0.2) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6),
+                0 0 10px rgba(93, 155, 157, 0.1) !important;
+}
+
+.dark .fi-ta-record:hover {
+    border: 2px solid rgba(72, 120, 122, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8),
+                0 0 15px rgba(93, 155, 157, 0.2);
+    transform: translateY(-5px);
+}
+
+/* Inner sections for both themes */
+.fi-ta-record .bg-white {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(8px);
+}
+
+.dark .fi-ta-record .bg-white {
+    background-color: rgba(31, 41, 55, 0.7) !important;
+    backdrop-filter: blur(8px);
+}
+
+/* Headers and borders for dark theme */
+.dark .fi-ta-record .border-primary-100 {
+    border-color: rgba(93, 155, 157, 0.2) !important;
+}
+
+.dark .fi-ta-record .bg-primary-50\/30 {
+    background-color: rgba(93, 155, 157, 0.1) !important;
+}
+
+.dark .fi-ta-record .border-gray-100 {
+    border-color: rgba(55, 65, 81, 0.5) !important;
+}
+.fi-ta-text{
+    background-color: inherit !important;
+}
+.fi-ta-panel.ring-1{
+    background-color: inherit !important;
+    --tw-ring-shadow: none !important;
+}
+/* Tema oscuro - Tarjetas y Contenedores */
+.dark .plant-content {
+    background-color:inherit;
+}
+
+.dark .plant-content:hover {
+    border-color: inherit;
+}
+
+
+.dark .indoor-header {
+    background-color: rgba(39, 39, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .action-item {
+    background-color: rgba(28, 28, 31, 0.6);
+    border-color: rgba(95, 158, 160, 0.15);
+}
+
+.dark .action-history {
+    background-color: rgba(24, 24, 27, 0.6);
+    border-color: rgba(95, 158, 160, 0.15);
+}
+
+.dark .lamp-section {
+    background-color: rgba(24, 24, 27, 0.6);
+    border-color: rgba(95, 158, 160, 0.15);
+}
+
+.dark .lamp-item {
+    background-color: rgba(28, 28, 31, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .metric-item {
+    background-color: rgba(28, 28, 31, 0.6);
+    border-color: rgba(95, 158, 160, 0.15);
+}
+
+/* Tema oscuro - Textos y Elementos */
+.dark .plant-info-item {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.dark .text-gray-500,
+.dark .text-gray-600 {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.dark h2,
+.dark h3,
+.dark .font-semibold,
+.dark .font-bold {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Tema oscuro - Iconos */
+.dark .text-cadetblue {
+    color: #7fb1b3 !important;
+}
+
+/* Tema oscuro - Badges y Estados */
+.dark .state-badge {
+    opacity: 0.9;
+}
+
+.dark .action-date {
+    background-color: rgba(95, 158, 160, 0.8);
+}
+
+/* Tema oscuro - Bordes y Separadores */
+.dark .border-t,
+.dark .border-b,
+.dark .border {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Tema oscuro - Efectos Hover */
+.dark .hover\:text-gray-700:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Tema oscuro - Botones y Acciones */
+.dark .floating-button {
+    background-color: rgba(95, 158, 160, 0.9);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark .floating-button:hover {
+    background-color: rgba(95, 158, 160, 1);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Tema oscuro - First Steps */
+.dark .first-steps {
+    background-color: rgba(39, 39, 42, 0.8);
+    color: #ecf0f1;
+}
+
+.dark .card-tutorial {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(28, 28, 31, 0.8);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+.dark .card-tutorial:hover {
+    background-color: rgba(39, 39, 42, 0.9);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* Estilos para selects dentro de inputs */
+.fi-input .fi-select-input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.fi-input .fi-select-input select {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    padding-left: 0 !important;
+}
+
+.dark .fi-input .fi-select-input,
+.dark .fi-input .fi-select-input select {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+/* Ajustes para el contenedor del input */
+.fi-input {
+    border: 1px solid rgba(95, 158, 160, 0.4) !important;
+    background-color: #ffffff !important;
+    border-radius: 0.375rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.fi-input:focus-within {
+    border-color: rgba(95, 158, 160, 0.8) !important;
+    box-shadow: 0 0 0 3px rgba(95, 158, 160, 0.2) !important;
+}
+
+/* Tema oscuro para el contenedor */
+.dark .fi-input {
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background-color: rgba(28, 28, 31, 0.8) !important;
+}
+
+.dark .fi-input:focus-within {
+    border-color: rgba(95, 158, 160, 0.6) !important;
+    box-shadow: 0 0 0 2px rgba(95, 158, 160, 0.2) !important;
+}
+
+/* Mejoras de contraste para encabezados de sección */
+.fi-section {
+    border: 1px solid rgba(95, 158, 160, 0.2);
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.fi-section-header {
+    border-bottom: 1px solid rgba(95, 158, 160, 0.3);
+    background-color: rgba(95, 158, 160, 0.08);
+    padding: 1rem 1.25rem;
+}
+
+.fi-section-header-heading {
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.fi-section-header-description {
+    color: rgba(0, 0, 0, 0.7);
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.fi-ta-actions{
+    justify-content: center !important;
+}
+
+/* Mejoras para el subheading de plantas */
+.fi-header-subheading {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Estilos para el encabezado de tabla */
+.fi-ta-header {
+    background-color: rgba(95, 158, 160, 0.08);
+    border-bottom: 0px solid rgba(95, 158, 160, 0.2);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.fi-ta-header-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: white;
+    border: 1px solid rgba(95, 158, 160, 0.15);
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.fi-ta-header-toolbar button,
+.fi-ta-header-toolbar select,
+.fi-ta-header-toolbar input {
+    border-color: rgba(95, 158, 160, 0.3) !important;
+    transition: all 0.2s ease;
+}
+
+.fi-ta-header-toolbar button:hover,
+.fi-ta-header-toolbar select:hover,
+.fi-ta-header-toolbar input:focus {
+    border-color: rgba(95, 158, 160, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(95, 158, 160, 0.1);
+}
+
+/* Tema oscuro para encabezado de tabla */
+.dark .fi-ta-header {
+    background-color: rgba(95, 158, 160, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .fi-ta-header-toolbar {
+    background-color: rgba(28, 28, 31, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark .fi-ta-header-toolbar button,
+.dark .fi-ta-header-toolbar select,
+.dark .fi-ta-header-toolbar input {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark .fi-ta-header-toolbar button:hover,
+.dark .fi-ta-header-toolbar select:hover,
+.dark .fi-ta-header-toolbar input:focus {
+    border-color: rgba(95, 158, 160, 0.4) !important;
+    box-shadow: 0 0 0 2px rgba(95, 158, 160, 0.15);
+}
+
+.plant-stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 0.75rem;
+    padding: 1rem;
+    background-color: rgba(95, 158, 160, 0.08);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(95, 158, 160, 0.15);
+}
+
+.plant-stats-total {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.87);
+    padding-right: 1rem;
+    border-right: 2px solid rgba(95, 158, 160, 0.2);
+}
+
+.plant-stats-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: white;
+    border-radius: 0.375rem;
+    border: 1px solid rgba(95, 158, 160, 0.2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.plant-stats-item span {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.plant-stats-item strong {
+    color: rgba(0, 0, 0, 0.87);
+    font-weight: 600;
+}
+
+/* Tema oscuro para stats */
+.dark .plant-stats-container {
+    background-color: rgba(95, 158, 160, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .plant-stats-total {
+    color: rgba(255, 255, 255, 0.9);
+    border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .plant-stats-item {
+    background-color: rgba(28, 28, 31, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .plant-stats-item span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .plant-stats-item strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Estilos para el componente de primer paso */
+.fi-section.first-step {
+    position: relative;
+    border: 2px solid rgba(95, 158, 160, 0.4);
+    background-color: rgba(95, 158, 160, 0.05);
+    box-shadow: 0 4px 12px rgba(95, 158, 160, 0.15);
+    overflow: hidden;
+}
+
+.fi-section.first-step::before {
+    content: '1';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 50px;
+    height: 50px;
+    background-color: cadetblue;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: rotate(15deg);
+}
+
+.fi-section.first-step .fi-section-header {
+    background-color: rgba(95, 158, 160, 0.15);
+    border-bottom: 2px solid rgba(95, 158, 160, 0.3);
+    padding: 1.5rem;
+}
+
+.fi-section.first-step .fi-section-header-heading {
+    color: cadetblue;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Tema oscuro para el componente de primer paso */
+.dark .fi-section.first-step {
+    background-color: rgba(95, 158, 160, 0.1);
+    border-color: rgba(95, 158, 160, 0.3);
+}
+
+.dark .fi-section.first-step::before {
+    background-color: rgba(95, 158, 160, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.dark .fi-section.first-step .fi-section-header {
+    background-color: rgba(95, 158, 160, 0.2);
+    border-bottom-color: rgba(95, 158, 160, 0.4);
+}
+
+.dark .fi-section.first-step .fi-section-header-heading {
+    color: #7fb1b3;
+}
+
+/* Estilos para el segundo paso */
+.fi-section.second-step {
+    position: relative;
+    border: 2px solid rgba(95, 158, 160, 0.4);
+    background-color: rgba(95, 158, 160, 0.05);
+    box-shadow: 0 4px 12px rgba(95, 158, 160, 0.15);
+    overflow: hidden;
+}
+
+.fi-section.second-step::before {
+    content: '2';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 50px;
+    height: 50px;
+    background-color: rgb(79, 70, 229);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: rotate(15deg);
+}
+
+.fi-section.second-step .fi-section-header {
+    background-color: rgba(79, 70, 229, 0.1);
+    border-bottom: 2px solid rgba(79, 70, 229, 0.2);
+    padding: 1.5rem;
+}
+
+.fi-section.second-step .fi-section-header-heading {
+    color: rgb(79, 70, 229);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Tema oscuro para el segundo paso */
+.dark .fi-section.second-step {
+    background-color: rgba(79, 70, 229, 0.1);
+    border-color: rgba(79, 70, 229, 0.3);
+}
+
+.dark .fi-section.second-step::before {
+    background-color: rgba(79, 70, 229, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.dark .fi-section.second-step .fi-section-header {
+    background-color: rgba(79, 70, 229, 0.15);
+    border-bottom-color: rgba(79, 70, 229, 0.3);
+}
+
+.dark .fi-section.second-step .fi-section-header-heading {
+    color: rgb(129, 140, 248);
+}
+
+/* Estilos para el tercer paso */
+.fi-section.third-step {
+    position: relative;
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    background-color: rgba(16, 185, 129, 0.05);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.fi-section.third-step::before {
+    content: '3';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 50px;
+    height: 50px;
+    background-color: rgb(16, 185, 129);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: rotate(15deg);
+}
+
+.fi-section.third-step .fi-section-header {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-bottom: 2px solid rgba(16, 185, 129, 0.2);
+    padding: 1.5rem;
+}
+
+.fi-section.third-step .fi-section-header-heading {
+    color: rgb(16, 185, 129);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* Tema oscuro para el tercer paso */
+.dark .fi-section.third-step {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.dark .fi-section.third-step::before {
+    background-color: rgba(16, 185, 129, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.dark .fi-section.third-step .fi-section-header {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-bottom-color: rgba(16, 185, 129, 0.3);
+}
+
+.dark .fi-section.third-step .fi-section-header-heading {
+    color: rgb(52, 211, 153);
+}
+
+/* Ajustes responsivos para el dashboard */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+
+    .tutorial-grid {
+        grid-template-columns: 1fr;
+        padding: 0.75rem;
+    }
+
+    .card-tutorial {
+        max-width: 100%;
+    }
+
+    .dashboard-alert {
+        padding: 1rem;
+    }
+
+    .dashboard-alert .flex {
+        flex-direction: column;
+    }
+
+    .dashboard-alert img {
+        display: none;
+    }
+
+    .plants-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        display: contents;
+    }
+
+    .lamp-section {
+        padding: 0.75rem;
+    }
+
+    .lamp-item {
+        width: 100%;
+    }
+
+    .indoor-content {
+        padding: 0.75rem;
+    }
+
+    .indoor-header {
+        padding: 1rem;
+    }
+
+    .indoor-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .action-history {
+        padding: 0.75rem;
+    }
+
+    .floating-button {
+        bottom: 1rem;
+        right: 1rem;
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .floating-button .w-6 {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    /* Ajustes específicos para los botones de cierre en alertas */
+    .dashboard-alert .flex.items-center.justify-between {
+        position: relative;
+        padding-right: 2rem;
+    }
+
+    .dashboard-alert button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0.5rem;
+        z-index: 10;
+    }
+
+    .dashboard-alert button .w-8 {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .dashboard-alert button .w-6 {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    /* Ajuste del contenido de las alertas */
+    .dashboard-alert .flex-1 {
+        width: 100%;
+    }
+
+    .dashboard-alert h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .dashboard-alert p {
+        font-size: 0.95rem;
+    }
+
+    /* Ajuste específico para el ícono de exclamación */
+    .dashboard-alert .flex-shrink-0 .w-12 {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
+/* Estilos para widgets de análisis */
+.fi-widget {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.fi-widget-header {
+    padding: 1rem;
+    background-color: rgba(95, 158, 160, 0.1);
+    border-bottom: 1px solid rgba(95, 158, 160, 0.2);
+}
+
+.fi-widget-content {
+    padding: 1rem;
+    background-color: white;
+}
+
+.dark .fi-widget-content {
+    background-color: rgba(28, 28, 31, 0.8);
+}
+
+/* Ajustes responsivos para analytics */
+@media (max-width: 768px) {
+    /* Contenedor de widgets */
+    .fi-page.fi-tenant-analytics {
+        padding: 0.5rem !important;
+    }
+
+    /* Ajustes para los widgets */
+    .fi-widget {
+        margin-bottom: 0.75rem;
+    }
+
+    .fi-widget-header {
+        padding: 0.75rem;
+    }
+
+    .fi-widget-content {
+        padding: 0.75rem;
+        overflow-x: auto;
+    }
+
+    /* Ajustes para gráficos */
+    .fi-widget canvas {
+        max-width: 100%;
+        height: auto !important;
+    }
+
+    /* Timeline widget */
+    .fi-widget.actions-timeline {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Pie chart widget */
+    .fi-widget.action-types-pie {
+        max-height: 300px;
+    }
+
+    /* Heatmap widget */
+    .fi-widget.activity-heatmap {
+        overflow-x: scroll;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .fi-widget.activity-heatmap .react-calendar-heatmap {
+        min-width: 750px;
+    }
+
+    /* Estados por indoor widget */
+    .fi-widget.plant-states {
+        overflow-x: auto;
+    }
+
+    /* Ajustes para filtros y controles */
+    .fi-widget .fi-form-control {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .fi-widget .fi-select,
+    .fi-widget .fi-input {
+        max-width: 100%;
+    }
+
+    /* Ajustes para leyendas y etiquetas */
+    .fi-widget .legend-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .fi-widget .legend-item {
+        font-size: 0.875rem;
+    }
+}
+
+/* Tema oscuro para widgets */
+.dark .fi-widget {
+    background-color: rgba(28, 28, 31, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .fi-widget-header {
+    background-color: rgba(95, 158, 160, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Estilos específicos para la página de analytics */
+.analytics-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
+    max-width: 100%;
+}
+
+.analytics-container > * {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Ajustes responsivos para analytics */
+@media (max-width: 768px) {
+    .analytics-container {
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+
+    /* Ajustes para los widgets */
+    .fi-widget {
+        width: 100% !important;
+        margin-bottom: 1rem;
+        overflow: hidden;
+        border-radius: 0.5rem;
+    }
+
+    .fi-widget-header {
+        padding: 0.75rem;
+    }
+
+    .fi-widget-content {
+        padding: 0.75rem;
+    }
+
+    /* Ajustes para gráficos */
+    .fi-widget canvas {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 250px;
+        max-height: 350px;
+    }
+
+    /* Timeline widget */
+    .fi-widget.actions-timeline {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Pie chart widget */
+    .fi-widget.action-types-pie {
+        height: 300px;
+    }
+
+    /* Heatmap widget */
+    .fi-widget.activity-heatmap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Estados por indoor widget */
+    .fi-widget.plant-states {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+    }
+
+    /* Ajustes para filtros y controles */
+    .fi-widget .fi-form-control {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Ajustes para leyendas y etiquetas */
+    .fi-widget .legend-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        justify-content: center;
+    }
+
+    .fi-widget .legend-item {
+        font-size: 0.875rem;
+        text-align: center;
+    }
+}
+
+/* Ajustes para la tabla de acciones */
+.fi-ta-text {
+    @apply text-sm;
+}
+
+.fi-ta-cell {
+    @apply p-2 sm:p-3;
+}
+
+/* Mejoras para móviles */
+@media (max-width: 640px) {
+    .fi-ta-text {
+        @apply text-sm;
+    }
+    
+    .fi-ta-cell {
+        @apply p-1.5;
+    }
+    
+    .fi-badge {
+        @apply text-xs px-2 py-1;
+    }
+}
+
+/* Mejoras para la vista de detalles */
+.fi-ta-text-item {
+    @apply break-words;
+}
+
+/* Mejoras para los badges de estado */
+.fi-badge.fi-badge-outlined {
+    @apply border-opacity-50;
+}
+
+/* Ajustes para las tarjetas de planes de cultivo */
+.fi-ta-panel {
+    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+}
+
+/* Mejoras para móviles */
+@media (max-width: 640px) {
+    .fi-ta-text {
+        @apply text-sm;
+    }
+    
+    .fi-ta-panel {
+        @apply p-2;
+    }
+    
+    .markdown-content {
+        @apply text-xs leading-tight;
+    }
+}
+
+/* Mejoras para el tema oscuro */
+.dark .fi-ta-panel {
+    @apply bg-gray-900/50 border-gray-800;
+}
+
+.dark .bg-gray-50 {
+    @apply bg-gray-800/50;
+}
+
+/* Estilos específicos para IndoorResource */
+.indoor-grid {
+    @apply grid gap-2;
+}
+
+/* Ajustes para móviles */
+@media (max-width: 640px) {
+    .indoor-grid {
+        @apply gap-2;
+    }
+    
+    .fi-ta-panel {
+        @apply p-2;
+    }
+    
+    .indoor-info-text {
+        @apply text-sm leading-tight;
+    }
+    
+    .indoor-equipment-text {
+        @apply text-xs;
+    }
+}
+
+/* Mejoras para el tema oscuro */
+.dark .indoor-info {
+    @apply bg-gray-800/50;
+    @apply border-gray-700;
+}
+
+.dark .indoor-equipment {
+    @apply bg-gray-800/50;
+    @apply border-gray-700;
+}
+
+.indoor-info-section {
+    @apply p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700;
+}
+
+.indoor-info-section ul {
+    @apply space-y-1 list-none pl-0;
+}
+
+.indoor-info-section li {
+    @apply py-1 px-2 rounded-md bg-white/50 dark:bg-gray-700/50;
+}
+
+/* Mejoras para móviles */
+@media (max-width: 640px) {
+    .indoor-info-section {
+        @apply p-2;
+    }
+    
+    .indoor-info-section li {
+        @apply text-sm;
+    }
+}
+
+/* Tema oscuro */
+.dark .indoor-info-section {
+    @apply bg-gray-800/50 border-gray-700;
+}
+
+.dark .indoor-info-section li {
+    @apply text-gray-300 bg-gray-700/50;
+}
+
+/* Estilos para iconos en Indoor */
+.indoor-info-section {
+    @apply p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700;
+}
+
+.indoor-info-section .fi-ta-text-item {
+    @apply flex items-center gap-2;
+}
+
+.indoor-info-section svg {
+    @apply w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0;
+}
+
+.indoor-info-section:hover svg {
+    color: rgb(var(--primary-500));
+    transition: color 0.2s ease-in-out;
+}
+
+.dark .indoor-info-section:hover svg {
+    color: rgb(var(--primary-400));
+}
+
+/* Mejoras para móviles */
+@media (max-width: 640px) {
+    .indoor-info-section svg {
+        @apply w-4 h-4;
+    }
+    
+    .indoor-info-section {
+        @apply p-2;
+    }
+}
+
+/* Animaciones para iconos */
+.indoor-info-section svg {
+    transition: transform 0.2s ease-in-out;
+}
+
+.indoor-info-section:hover svg {
+    transform: scale(1.1);
+}
+
+/* Ajustes responsivos para el dashboard */
+@media (max-width: 640px) {
+    .dashboard-container {
+        padding: 0.5rem;
+        display: contents;
+        gap: 1rem;
+    }
+
+    .dashboard-alert {
+        padding: 1rem;
+        position: relative;
+    }
+
+    .dashboard-alert .flex {
+        flex-direction: column;
+    }
+
+    .tutorial-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0;
+    }
+
+    .card-tutorial {
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .indoor-card {
+        border-radius: 0.5rem;
+    }
+
+    .indoor-header {
+        padding: 0.75rem;
+    }
+
+    .lamp-section {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .lamp-item {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .plants-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .plant-content-dashboard {
+        padding: 0.75rem;
+    }
+
+    .action-history {
+        padding: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .action-item {
+        padding: 0.5rem;
+    }
+
+    .floating-button {
+        bottom: 1rem;
+        right: 1rem;
+        padding: 0.75rem;
+        border-radius: 9999px;
+    }
+
+    .state-badge {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Mejoras generales de usabilidad móvil */
+.indoor-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.lamp-item, .plant-content-dashboard, .action-item {
+    transition: all 0.3s ease;
+}
+
+.floating-button {
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.pildora {
+    background-color: transparent;
+    color: #1f2937; /* Improved contrast - darker gray for better readability */
+    padding: 0.5rem 0.875rem; /* Slightly increased padding for better text spacing */
+    border: 2px solid #d1d5db; /* Lighter border for better contrast with text */
+    border-radius: 9999px;
+    font-size: 0.8125rem; /* Slightly larger font size (13px) */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em; /* Slightly increased letter spacing */
+    transition: all 0.2s ease-in-out;
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem; /* Increased minimum height for better touch targets */
+    line-height: 1.2; /* Improved line height for better vertical spacing */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle text shadow for better readability */
+}
+
+/* Dark mode support */
+.dark .pildora {
+    color: #f9fafb; /* Light text for dark backgrounds */
+    border-color: #4b5563; /* Darker border for dark mode */
+    background-color: rgba(255, 255, 255, 0.05); /* Subtle background for better contrast */
+}
+
+/* Hover state for interactive pildoras */
+.pildora:hover {
+    background-color: #374151;
+    color: #ffffff;
+    border-color: #374151; /* Match border to background on hover */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Enhanced text shadow for hover state */
+}
+
+/* Dark mode hover state */
+.dark .pildora:hover {
+    background-color: #6b7280;
+    color: #ffffff;
+    border-color: #6b7280;
+}
+
+/* Focus state for accessibility */
+.pildora:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Active state */
+.pildora:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Color variations with improved contrast */
+.pildora.pildora-primary {
+    color: #1d4ed8; /* Darker blue for better contrast */
+    border-color: #3b82f6;
+}
+
+.dark .pildora.pildora-primary {
+    color: #60a5fa; /* Lighter blue for dark mode */
+    border-color: #3b82f6;
+}
+
+.pildora.pildora-primary:hover {
+    background-color: #3b82f6;
+    color: #ffffff;
+    border-color: #3b82f6;
+}
+
+.dark .pildora.pildora-primary:hover {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.pildora.pildora-success {
+    color: #047857; /* Darker green for better contrast */
+    border-color: #10b981;
+}
+
+.dark .pildora.pildora-success {
+    color: #34d399; /* Lighter green for dark mode */
+    border-color: #10b981;
+}
+
+.pildora.pildora-success:hover {
+    background-color: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+}
+
+.dark .pildora.pildora-success:hover {
+    background-color: #059669;
+    color: #ffffff;
+}
+
+.pildora.pildora-warning {
+    color: #d97706; /* Darker orange for better contrast */
+    border-color: #f59e0b;
+}
+
+.dark .pildora.pildora-warning {
+    color: #fbbf24; /* Lighter orange for dark mode */
+    border-color: #f59e0b;
+}
+
+.pildora.pildora-warning:hover {
+    background-color: #f59e0b;
+    color: #ffffff;
+    border-color: #f59e0b;
+}
+
+.dark .pildora.pildora-warning:hover {
+    background-color: #d97706;
+    color: #ffffff;
+}
+
+.pildora.pildora-danger {
+    color: #dc2626; /* Darker red for better contrast */
+    border-color: #ef4444;
+}
+
+.dark .pildora.pildora-danger {
+    color: #f87171; /* Lighter red for dark mode */
+    border-color: #ef4444;
+}
+
+.pildora.pildora-danger:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+.dark .pildora.pildora-danger:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+/* Filled variant with improved contrast */
+.pildora.pildora-filled {
+    background-color: #374151;
+    color: #ffffff;
+    border-color: transparent;
+    font-weight: 600; /* Ensure good contrast with background */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); /* Text shadow for filled variants */
+}
+
+.dark .pildora.pildora-filled {
+    background-color: #4b5563;
+    color: #f9fafb; /* Slightly off-white for better readability */
+}
+
+.pildora.pildora-filled:hover {
+    background-color: #4b5563;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+}
+
+.dark .pildora.pildora-filled:hover {
+    background-color: #6b7280;
+    color: #ffffff;
+}
+
+/* Small size variant with improved readability */
+.pildora.pildora-sm {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem; /* Slightly larger for better readability */
+    min-height: 1.75rem;
+    letter-spacing: 0.04em; /* Adjusted spacing for smaller text */
+    text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.08); /* Subtle shadow for small text */
+}
+
+.dark .pildora.pildora-sm {
+    background-color: rgba(255, 255, 255, 0.08); /* Enhanced contrast for small text */
+}
+
+/* Large size variant with enhanced typography */
+.pildora.pildora-lg {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem; /* Slightly larger for better hierarchy */
+    min-height: 2.5rem;
+    letter-spacing: 0.07em; /* Increased spacing for larger text */
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Enhanced shadow for larger text */
+}
+
+.dark .pildora.pildora-lg {
+    background-color: rgba(255, 255, 255, 0.03); /* Subtle background for large text */
+}

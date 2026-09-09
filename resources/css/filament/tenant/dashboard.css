@@ -315,28 +315,53 @@ input[type="radio"]:checked + label.fi-btn {
 }
 
 .state-badge-germinación {
-    background-color: #818cf8;
-    color: white;
+    background-color: rgba(2, 132, 199, 0.10);
+    color: #0369A1;
+}
+
+.dark .state-badge-germinación {
+    background-color: rgba(56, 189, 248, 0.14);
+    color: #7DD3FC;
 }
 
 .state-badge-plantula {
-    background-color: #34d399;
-    color: white;
+    background-color: rgba(2, 132, 199, 0.10);
+    color: #0369A1;
+}
+
+.dark .state-badge-plantula {
+    background-color: rgba(56, 189, 248, 0.14);
+    color: #7DD3FC;
 }
 
 .state-badge-vegetativa {
-    background-color: #fbbf24;
-    color: white;
+    background-color: rgba(52, 199, 89, 0.12);
+    color: #15803D;
+}
+
+.dark .state-badge-vegetativa {
+    background-color: rgba(76, 217, 100, 0.14);
+    color: #4ADE80;
 }
 
 .state-badge-floracion {
-    background-color: #ec4899;
-    color: white;
+    background-color: rgba(35, 105, 181, 0.12);
+    color: #1A4F88;
+}
+
+.dark .state-badge-floracion {
+    background-color: rgba(94, 156, 230, 0.16);
+    color: #5E9CE6;
 }
 
 .state-badge-muerta {
-    background-color: #6b7280;
-    color: white;
+    background-color: rgba(220, 38, 38, 0.10);
+    color: #B91C1C;
+}
+
+.dark .state-badge-muerta {
+    background-color: rgba(248, 113, 113, 0.14);
+    color: #F87171;
 }
 
 /* Estilos para el dashboard */
@@ -968,186 +993,6 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* Estilos para el componente de primer paso */
-.fi-section.first-step {
-    position: relative;
-    border: 2px solid rgba(95, 158, 160, 0.4);
-    background-color: rgba(95, 158, 160, 0.05);
-    box-shadow: 0 4px 12px rgba(95, 158, 160, 0.15);
-    overflow: hidden;
-}
-
-.fi-section.first-step::before {
-    content: '1';
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 50px;
-    height: 50px;
-    background-color: cadetblue;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transform: rotate(15deg);
-}
-
-.fi-section.first-step .fi-section-header {
-    background-color: rgba(95, 158, 160, 0.15);
-    border-bottom: 2px solid rgba(95, 158, 160, 0.3);
-    padding: 1.5rem;
-}
-
-.fi-section.first-step .fi-section-header-heading {
-    color: cadetblue;
-    font-size: 1.25rem;
-    font-weight: 700;
-}
-
-/* Tema oscuro para el componente de primer paso */
-.dark .fi-section.first-step {
-    background-color: rgba(95, 158, 160, 0.1);
-    border-color: rgba(95, 158, 160, 0.3);
-}
-
-.dark .fi-section.first-step::before {
-    background-color: rgba(95, 158, 160, 0.9);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.dark .fi-section.first-step .fi-section-header {
-    background-color: rgba(95, 158, 160, 0.2);
-    border-bottom-color: rgba(95, 158, 160, 0.4);
-}
-
-.dark .fi-section.first-step .fi-section-header-heading {
-    color: #7fb1b3;
-}
-
-/* Estilos para el segundo paso */
-.fi-section.second-step {
-    position: relative;
-    border: 2px solid rgba(95, 158, 160, 0.4);
-    background-color: rgba(95, 158, 160, 0.05);
-    box-shadow: 0 4px 12px rgba(95, 158, 160, 0.15);
-    overflow: hidden;
-}
-
-.fi-section.second-step::before {
-    content: '2';
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 50px;
-    height: 50px;
-    background-color: rgb(79, 70, 229);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transform: rotate(15deg);
-}
-
-.fi-section.second-step .fi-section-header {
-    background-color: rgba(79, 70, 229, 0.1);
-    border-bottom: 2px solid rgba(79, 70, 229, 0.2);
-    padding: 1.5rem;
-}
-
-.fi-section.second-step .fi-section-header-heading {
-    color: rgb(79, 70, 229);
-    font-size: 1.25rem;
-    font-weight: 700;
-}
-
-/* Tema oscuro para el segundo paso */
-.dark .fi-section.second-step {
-    background-color: rgba(79, 70, 229, 0.1);
-    border-color: rgba(79, 70, 229, 0.3);
-}
-
-.dark .fi-section.second-step::before {
-    background-color: rgba(79, 70, 229, 0.9);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.dark .fi-section.second-step .fi-section-header {
-    background-color: rgba(79, 70, 229, 0.15);
-    border-bottom-color: rgba(79, 70, 229, 0.3);
-}
-
-.dark .fi-section.second-step .fi-section-header-heading {
-    color: rgb(129, 140, 248);
-}
-
-/* Estilos para el tercer paso */
-.fi-section.third-step {
-    position: relative;
-    border: 2px solid rgba(16, 185, 129, 0.4);
-    background-color: rgba(16, 185, 129, 0.05);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-    overflow: hidden;
-    margin-top: 2rem;
-}
-
-.fi-section.third-step::before {
-    content: '3';
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 50px;
-    height: 50px;
-    background-color: rgb(16, 185, 129);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    transform: rotate(15deg);
-}
-
-.fi-section.third-step .fi-section-header {
-    background-color: rgba(16, 185, 129, 0.1);
-    border-bottom: 2px solid rgba(16, 185, 129, 0.2);
-    padding: 1.5rem;
-}
-
-.fi-section.third-step .fi-section-header-heading {
-    color: rgb(16, 185, 129);
-    font-size: 1.25rem;
-    font-weight: 700;
-}
-
-/* Tema oscuro para el tercer paso */
-.dark .fi-section.third-step {
-    background-color: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.3);
-}
-
-.dark .fi-section.third-step::before {
-    background-color: rgba(16, 185, 129, 0.9);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.dark .fi-section.third-step .fi-section-header {
-    background-color: rgba(16, 185, 129, 0.15);
-    border-bottom-color: rgba(16, 185, 129, 0.3);
-}
-
-.dark .fi-section.third-step .fi-section-header-heading {
-    color: rgb(52, 211, 153);
-}
 
 /* Ajustes responsivos para el dashboard */
 @media (max-width: 768px) {
@@ -1565,7 +1410,9 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .indoor-info-section {
-    @apply p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700;
+    @apply p-3 rounded-lg;
+    background-color: #F4F7FA;
+    border: 1px solid #E5E7EB;
 }
 
 .indoor-info-section ul {
@@ -1573,7 +1420,7 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .indoor-info-section li {
-    @apply py-1 px-2 rounded-md bg-white/50 dark:bg-gray-700/50;
+    @apply py-1 px-1 rounded-md flex items-center gap-2;
 }
 
 /* Mejoras para móviles */
@@ -1581,26 +1428,15 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     .indoor-info-section {
         @apply p-2;
     }
-    
-    .indoor-info-section li {
-        @apply text-sm;
-    }
 }
 
-/* Tema oscuro */
+/* Tema oscuro: la sección agrupa con borde sutil, los items van sin fondo (solo icono + texto) */
 .dark .indoor-info-section {
-    @apply bg-gray-800/50 border-gray-700;
-}
-
-.dark .indoor-info-section li {
-    @apply text-gray-300 bg-gray-700/50;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.06);
 }
 
 /* Estilos para iconos en Indoor */
-.indoor-info-section {
-    @apply p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700;
-}
-
 .indoor-info-section .fi-ta-text-item {
     @apply flex items-center gap-2;
 }
@@ -1610,8 +1446,12 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .indoor-info-section:hover svg {
-    @apply text-primary-500 dark:text-primary-400;
+    color: rgb(var(--primary-500));
     transition: color 0.2s ease-in-out;
+}
+
+.dark .indoor-info-section:hover svg {
+    color: rgb(var(--primary-400));
 }
 
 /* Mejoras para móviles */

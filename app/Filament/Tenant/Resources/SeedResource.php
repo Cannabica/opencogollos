@@ -114,7 +114,7 @@ class SeedResource extends Resource
                     Tables\Actions\Action::make('showGlobal')
                         ->label('Globales')
                         ->icon('heroicon-o-globe-alt')
-                        ->color('secondary')
+                        ->color('gray')
                         ->extraAttributes(['class' => 'filter-button'])
                         ->action(function ($livewire) {
                             $livewire->tableFilters['origen']['value'] = 'global';

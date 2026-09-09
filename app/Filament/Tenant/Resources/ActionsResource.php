@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\DateFilter;
@@ -32,6 +33,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Wizard;
 use Carbon\Carbon;
 use Filament\Forms\Get;
 use Illuminate\Support\HtmlString;
@@ -86,10 +88,9 @@ class ActionsResource extends Resource
     {
         return $form
             ->schema([
-                Split::make([
-                    Section::make(__('action_basic_data'))
+                Wizard::make([
+                    \Filament\Forms\Components\Wizard\Step::make(__('Datos básicos'))
                         ->description(__('action_basic_description'))
-                        ->extraAttributes(['class' => 'first-step'])
                         ->schema([
                             Placeholder::make('warning')
                                 ->label(__(''))
@@ -134,10 +135,8 @@ class ActionsResource extends Resource
                             Hidden::make('_plants_state'),
                         ])
                     ,
-                    Section::make(__('action_action_type_data'))
-                        ->disabled(fn($record) => $record !== null)
+                    \Filament\Forms\Components\Wizard\Step::make(__('Tipo de acción'))
                         ->description(__('action_action_type_description'))
-                        ->extraAttributes(['class' => 'second-step'])
                         ->schema([
                             Placeholder::make('warning')
                                 ->label(__(''))
@@ -164,21 +163,19 @@ class ActionsResource extends Resource
                                 ->required()
                                 ->default(function () {
                                     return request()->get('action_type_id');
-                                }),
+                                })
+                                ->disabled(fn($record) => $record !== null),
                         ])
-                        ->grow(),
-                ])->from('md'),
-
-                Section::make(__('action_data'))
-                    ->description(__('action_data_description'))
-                    ->extraAttributes(['class' => 'third-step'])
-                    ->schema([
+                    ,
+                    \Filament\Forms\Components\Wizard\Step::make(__('Datos de la acción'))
+                        ->description(__('action_data_description'))
+                        ->schema([
                         Placeholder::make('Disclaimer')
                             ->content(function (Get $get) {
                                 if ($get('action_type_id') != null) {
                                     $actionClass = new (ActionType::find($get('action_type_id'))->action_class);
                                     return $actionClass->disclaimer() ? new HtmlString(
-                                        '<div style="width: 100%;padding:15px;background: #caca00; color: #5a5a00;border: 1px solid #5a5a00;border-radius: 10px;">' .
+                                        '<div class="rounded-lg border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm text-warning-700 dark:text-warning-300">' .
                                         $actionClass->disclaimer() .
                                         '</div>'
                                     ) : '';
@@ -396,7 +393,11 @@ class ActionsResource extends Resource
                                     ->appendFiles()
                                     ->panelLayout('grid')
                                     ->imagePreviewHeight('300')
-                                    ->rules(['nullable', 'array'])
+                                    // OJO: NO usar regla 'array' acá. Con UN archivo existente en edición,
+                                    // Filament deshidrata el FileUpload como string (no array) y la regla
+                                    // 'array' rompe el guardado con validation.array. El resto del código
+                                    // (detalle/listado/handleRecordUpdate) ya normaliza string o array.
+                                    ->rules(['nullable'])
                                     ->maxSize(10240)
                                     ->uploadingMessage('Subiendo imágenes...')
                                     ->loadingIndicatorPosition('left')
@@ -444,6 +445,10 @@ class ActionsResource extends Resource
                             ])
                             ->visible(fn(Get $get) => $get('action_type_id') == 7),
                     ])
+                ])
+                // En edición el dato a corregir vive en el paso 3: arrancar ahí directo
+                // (los pasos 1-2 quedan accesibles con Anterior para revisar indoor/plantas/tipo).
+                ->startOnStep(fn($record) => $record !== null ? 3 : 1)
             ])->columns(1)
             ->statePath('data');
     }
@@ -504,7 +509,8 @@ class ActionsResource extends Resource
                             if ($irrigation['irrigation_type'] === 'timer') {
                                 return "Riego por {$irrigation['timer']} minutos ";
                             } else {
-                                return "Riego {$irrigation['liters']} lts ";
+                                // tolera data parcial (riego sin 'liters' no rompe el listado)
+                                return "Riego " . ($irrigation['liters'] ?? '?') . " lts ";
                             }
                         } elseif (isset($data['pruning'])) {
                             $types = $data['pruning']['pruning_type'];
@@ -575,6 +581,13 @@ class ActionsResource extends Resource
                     ->wrap()
                     ->searchable()
                     ->size('sm'),
+
+                ViewColumn::make('fotos')
+                    ->label(__('Fotos'))
+                    ->view('filament.tables.columns.action-photos')
+                    ->placeholder('')
+                    ->toggleable()
+                    ->alignStart(),
 
                 BadgeColumn::make('action_type')
                     ->label(__('Tipo'))

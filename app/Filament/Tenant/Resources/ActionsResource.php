@@ -397,7 +397,11 @@ class ActionsResource extends Resource
                                     ->appendFiles()
                                     ->panelLayout('grid')
                                     ->imagePreviewHeight('300')
-                                    ->rules(['nullable', 'array'])
+                                    // OJO: NO usar regla 'array' acá. Con UN archivo existente en edición,
+                                    // Filament deshidrata el FileUpload como string (no array) y la regla
+                                    // 'array' rompe el guardado con validation.array. El resto del código
+                                    // (detalle/listado/handleRecordUpdate) ya normaliza string o array.
+                                    ->rules(['nullable'])
                                     ->maxSize(10240)
                                     ->uploadingMessage('Subiendo imágenes...')
                                     ->loadingIndicatorPosition('left')

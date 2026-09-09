@@ -1590,7 +1590,9 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .indoor-info-section {
-    @apply p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700;
+    @apply p-3 rounded-lg;
+    background-color: #F4F7FA;
+    border: 1px solid #E5E7EB;
 }
 
 .indoor-info-section ul {
@@ -1598,7 +1600,9 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .indoor-info-section li {
-    @apply py-1 px-2 rounded-md bg-white/50 dark:bg-gray-700/50;
+    @apply py-1 px-2 rounded-md flex items-center gap-2;
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
 }
 
 /* Mejoras para móviles */
@@ -1606,26 +1610,20 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     .indoor-info-section {
         @apply p-2;
     }
-    
-    .indoor-info-section li {
-        @apply text-sm;
-    }
 }
 
-/* Tema oscuro */
+/* Tema oscuro (superficies de marca: elevación por borde, no gris plomo) */
 .dark .indoor-info-section {
-    @apply bg-gray-800/50 border-gray-700;
+    background-color: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.06);
 }
 
 .dark .indoor-info-section li {
-    @apply text-gray-300 bg-gray-700/50;
+    background-color: #0F1218;
+    border-color: rgba(255, 255, 255, 0.06);
 }
 
 /* Estilos para iconos en Indoor */
-.indoor-info-section {
-    @apply p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700;
-}
-
 .indoor-info-section .fi-ta-text-item {
     @apply flex items-center gap-2;
 }

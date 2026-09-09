@@ -148,10 +148,6 @@ class TenantPanelProvider extends PanelProvider
                 \App\Http\Middleware\CheckPasswordChange::class,
                 \App\Http\Middleware\CheckTenantActivation::class,
             ])
-            ->renderHook(
-                'panels::body.end',
-                fn () => view('filament.tenant.notifications')
-            )
             ->databaseNotifications();
     }
 }

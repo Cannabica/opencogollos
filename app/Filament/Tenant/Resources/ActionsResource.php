@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\DateFilter;
@@ -504,7 +505,8 @@ class ActionsResource extends Resource
                             if ($irrigation['irrigation_type'] === 'timer') {
                                 return "Riego por {$irrigation['timer']} minutos ";
                             } else {
-                                return "Riego {$irrigation['liters']} lts ";
+                                // tolera data parcial (riego sin 'liters' no rompe el listado)
+                                return "Riego " . ($irrigation['liters'] ?? '?') . " lts ";
                             }
                         } elseif (isset($data['pruning'])) {
                             $types = $data['pruning']['pruning_type'];
@@ -575,6 +577,13 @@ class ActionsResource extends Resource
                     ->wrap()
                     ->searchable()
                     ->size('sm'),
+
+                ViewColumn::make('fotos')
+                    ->label(__('Fotos'))
+                    ->view('filament.tables.columns.action-photos')
+                    ->placeholder('')
+                    ->toggleable()
+                    ->alignStart(),
 
                 BadgeColumn::make('action_type')
                     ->label(__('Tipo'))

@@ -44,6 +44,8 @@ class ProductApplicationReminder extends Notification implements ShouldQueue
         return [
             'title' => 'Recordatorio de aplicación pendiente',
             'message' => "Hay que volver a realizar una aplicación de producto",
+            'body' => "Hay que volver a realizar una aplicación de producto", // Filament database modal usa data.body
+            'format' => 'filament', // requerido para que la campana topbar muestre la notificación
             'icon' => 'heroicon-o-exclamation-triangle',
             'iconColor' => 'warning',
             'actions' => [],

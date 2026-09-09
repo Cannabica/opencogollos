@@ -554,10 +554,17 @@ class RealisticDemoSeeder extends Seeder
             $fecha = $this->hoy->copy()->subDays($diasAtras[$i])->setTime(rand(8, 20), rand(0, 59));
             DB::table('notifications')->insert([
                 'id' => (string) Str::uuid(),
-                'type' => 'App\Notifications\ProductApplicationReminder',
+                // Type neutro (no ProductApplicationReminder): el job real de recordatorios
+                // consume las de ese tipo de a una por corrida y vaciaría la demo.
+                'type' => 'App\Notifications\DemoRecordatorio',
                 'notifiable_type' => get_class($user),
                 'notifiable_id' => $user->id,
-                'data' => json_encode(['title' => $title, 'message' => $message], JSON_UNESCAPED_UNICODE),
+                'data' => json_encode([
+                    'title' => $title,
+                    'message' => $message,
+                    'body' => $message, // Filament database modal (campana) usa data.body
+                    'format' => 'filament', // sin esto la campana topbar no muestra la notificación
+                ], JSON_UNESCAPED_UNICODE),
                 'read_at' => $leidas[$i] ? $fecha->copy()->addHours(rand(1, 20)) : null,
                 'created_at' => $fecha,
                 'updated_at' => $fecha,

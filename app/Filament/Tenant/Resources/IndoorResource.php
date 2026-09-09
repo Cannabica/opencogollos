@@ -159,7 +159,7 @@ class IndoorResource extends Resource
                     ->schema([
 
                         Checkbox::make('hygometer')
-                            ->label(__('Tengo higometro para medir temperatura y humedad')),
+                            ->label(__('Tengo higrómetro para medir temperatura y humedad')),
 
                         Checkbox::make('humidifier')
                             ->label(__('Tengo algún humidificador')),
@@ -346,7 +346,7 @@ class IndoorResource extends Resource
                     ->icon('heroicon-o-eye')
                     ->button()
                     ->size('sm')
-                    ->color('secondary'),
+                    ->color('gray'),
                 Tables\Actions\EditAction::make()
                     ->icon('heroicon-o-pencil-square')
                     ->button()

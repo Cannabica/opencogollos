@@ -47,10 +47,10 @@ class PlantsResource extends Resource
     protected static ?string $tenantOwnershipRelationshipName = 'indoor';
 
     public const SOIL_ENRICHMENT_OPTIONS = [
-        'Posos de cafe o te',
-        'Cascaras de huevo',
+        'Posos de café o té',
+        'Cáscaras de huevo',
         'Humus de lombriz',
-        'Pieles de frutas y verd',
+        'Pieles de frutas y verduras',
         'Abono',
         'Fibra de coco',
         'Perlita',

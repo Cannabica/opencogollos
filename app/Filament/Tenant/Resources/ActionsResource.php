@@ -482,7 +482,10 @@ class ActionsResource extends Resource
                     ->label(__('Plantas'))
                     ->badge()
                     ->alignCenter()
-                    ->getStateUsing(fn($record) => $record->plants()->count() . ' ' . __('Plantas'))
+                    ->getStateUsing(function ($record) {
+                        $count = $record->plants()->count();
+                        return $count . ' ' . ($count === 1 ? __('Planta') : __('Plantas'));
+                    })
                     ->sortable()
                     ->size('sm'),
 

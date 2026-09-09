@@ -1,22 +1,4 @@
-@php
-    \Illuminate\Support\Facades\Log::info('ProductNotificationsWidget view - Rendering', [
-        'notificationsCount' => $notifications->count(),
-        'notifications' => $notifications->toArray()
-    ]);
-@endphp
-
 <div class="p-4 space-y-4">
-    <!-- Debug info -->
-    @if(config('app.debug'))
-        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-4">
-            <p class="text-xs">Debug Info:</p>
-            <p class="text-xs">Notifications Count: {{ $notifications->count() }}</p>
-            <p class="text-xs">Last Check: {{ now() }}</p>
-            <p class="text-xs">User ID: {{ auth()->id() }}</p>
-            <p class="text-xs">Tenant ID: {{ auth()->user()->tenant_id ?? 'N/A' }}</p>
-        </div>
-    @endif
-
     @if($notifications->isNotEmpty())
         @foreach($notifications as $notification)
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">

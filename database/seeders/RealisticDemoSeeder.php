@@ -564,6 +564,7 @@ class RealisticDemoSeeder extends Seeder
                     'message' => $message,
                     'body' => $message, // Filament database modal (campana) usa data.body
                     'format' => 'filament', // sin esto la campana topbar no muestra la notificación
+                    'duration' => 'persistent', // sin esto el modal la trata como toast de 5s y la borra (notificationClosed → removeNotification)
                 ], JSON_UNESCAPED_UNICODE),
                 'read_at' => $leidas[$i] ? $fecha->copy()->addHours(rand(1, 20)) : null,
                 'created_at' => $fecha,

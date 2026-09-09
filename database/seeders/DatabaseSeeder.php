@@ -30,5 +30,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(ActionTypesSeeder::class);
         $this->call(RealisticDemoSeeder::class);
+        // Superadmin local/pruebas: lee ADMIN_EMAIL/ADMIN_PASSWORD del entorno
+        // (flujo dev con .env.local: APP_ENV=develop + DB cannibica_dev; ver
+        // .env.local.example). En deploy corre con sus env del VPS.
+        // Condicional: si la variable no está definida, avisa y sigue (no rompe
+        // un migrate:fresh --seed en entornos sin admin configurado).
+        if (env('ADMIN_PASSWORD')) {
+            $this->call(SuperAdminSeeder::class);
+        } else {
+            $this->command?->warn('SuperAdminSeeder saltado: ADMIN_PASSWORD no está definida (usar .env.local con ADMIN_EMAIL/ADMIN_PASSWORD).');
+        }
     }
 }

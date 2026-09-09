@@ -34,7 +34,9 @@ class TenantPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         FilamentAsset::register([
-            Css::make('custom-css', asset('css/custom.css')),
+            // CSS del dashboard/panel que vivía en public/css/custom.css (legacy),
+            // migrado a entrada Vite: resources/css/filament/tenant/dashboard.css
+            Css::make('custom-css', \Illuminate\Support\Facades\Vite::asset('resources/css/filament/tenant/dashboard.css')),
         ]);
 
         return $panel

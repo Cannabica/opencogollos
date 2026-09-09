@@ -1600,9 +1600,7 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .indoor-info-section li {
-    @apply py-1 px-2 rounded-md flex items-center gap-2;
-    background-color: #FFFFFF;
-    border: 1px solid #E5E7EB;
+    @apply py-1 px-1 rounded-md flex items-center gap-2;
 }
 
 /* Mejoras para móviles */
@@ -1612,15 +1610,10 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     }
 }
 
-/* Tema oscuro (chips elevados por encima de la card: translúcido claro, no más oscuro que el fondo) */
+/* Tema oscuro: la sección agrupa con borde sutil, los items van sin fondo (solo icono + texto) */
 .dark .indoor-info-section {
     background-color: rgba(255, 255, 255, 0.02);
     border-color: rgba(255, 255, 255, 0.06);
-}
-
-.dark .indoor-info-section li {
-    background-color: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.08);
 }
 
 /* Estilos para iconos en Indoor */

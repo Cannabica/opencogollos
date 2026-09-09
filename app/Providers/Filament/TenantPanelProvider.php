@@ -45,7 +45,7 @@ class TenantPanelProvider extends PanelProvider
                 ApiServicePlugin::make()
             )
             ->path('tenant')
-            ->font('Space Grotesk')
+            ->font('Inter')
             ->login()
             ->registration(\App\Filament\Tenant\Pages\Registration::class)
             ->passwordReset()

@@ -482,7 +482,10 @@ class ActionsResource extends Resource
                     ->label(__('Plantas'))
                     ->badge()
                     ->alignCenter()
-                    ->getStateUsing(fn($record) => $record->plants()->count() . ' ' . __('Plantas'))
+                    ->getStateUsing(function ($record) {
+                        $count = $record->plants()->count();
+                        return $count . ' ' . ($count === 1 ? __('Planta') : __('Plantas'));
+                    })
                     ->sortable()
                     ->size('sm'),
 
@@ -532,9 +535,8 @@ class ActionsResource extends Resource
                         } elseif (isset($data['change_state'])) {
                             return "Cambio de estado a {$data['change_state']['state']}";
                         } elseif (isset($data['observation'])) {
-                            $images = is_array($data['observation']['image'])
-                                ? $data['observation']['image']
-                                : [$data['observation']['image']];
+                            $imageData = $data['observation']['image'] ?? null;
+                            $images = $imageData === null ? [] : (is_array($imageData) ? $imageData : [$imageData]);
                             $imageCount = count($images);
 
                             $messageText = '';

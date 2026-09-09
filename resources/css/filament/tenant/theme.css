@@ -75,52 +75,23 @@
         color: var(--accent-light) !important;
     }
 
+    /* Botones: se respeta el color de rol de Filament (primary/danger/secondary).
+       Se quitó el override global que pintaba TODOS los botones de verde (var(--tertiary)),
+       lo que dejaba acciones destructivas ("Borrar"/"Cancelar") en verde (W6). */
     .fi-btn {
-        background: var(--tertiary) !important;
-        filter: brightness(1.05); /* Lighter in light mode */
-        color: white !important;
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
-        border-radius: 0.5rem !important;
-        transition: all 0.2s ease-out !important;
-        box-shadow: none !important; /* Estilo plano */
+        border-radius: 0.5rem;
+        transition: all 0.2s ease-out;
+        box-shadow: none;
     }
 
     .fi-btn:hover {
         transform: translateY(-1px);
-        filter: brightness(0.95);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     .fi-btn:active {
         transform: translateY(0);
-        box-shadow: none !important;
-        filter: brightness(0.9);
-    }
-
-    .fi-btn~.fi-btn {
-        background: var(--secondary) !important;
-    }
-
-    /* Dark mode adjustments */
-    .dark .fi-btn {
-        background: var(--tertiary-dark) !important;
-        filter: brightness(1); /* No extra brightness in dark mode */
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        color: rgba(255, 255, 255, 0.85) !important;
-        box-shadow: none !important;
-    }
-
-    .dark .fi-btn:hover {
-        background: var(--tertiary) !important;
-        color: #ffffff !important;
-    }
-
-    .dark .fi-btn~.fi-btn {
-        background: var(--secondary-dark) !important;
-    }
-
-    .dark .fi-btn~.fi-btn:hover {
-        background: var(--secondary) !important;
+        box-shadow: none;
     }
 
     .fi-header {

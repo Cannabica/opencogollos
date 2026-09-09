@@ -49,7 +49,7 @@
     "Additional Information": "Información Adicional",
 
     "Fans Quantity": "Cantidad de Ventiladores",
-    "Lamps": "Lamparas",
+    "Lamps": "Lámparas",
     "Light Type": "Tipo de Luz",
     "Power in Watts": "Poder en Watts",
 
@@ -130,21 +130,21 @@
     "timer_irrigation":"Tiempo de apertura de riego",
     "Observations_product_application":"Ej: BioFizz 1ml por litro de agua",
     "Death_message":"La planta seleccionada se marcará como muerta y no se mostrará en la lista de plantas",
-    "Irrigation_type_description":"Selecciona el método utilizado para regar la planta, como riego directo o a traves de un sistema de riego automático",
+    "Irrigation_type_description":"Seleccioná el método utilizado para regar la planta, como riego directo o a través de un sistema de riego automático",
     "fixed_liters_helper":"Litros de agua que le entregaste a la planta.",
     "timed_irrigation_helper":"Tiempo que se dejó el riego abierto en minutos.",
     "indoor_helper":"Al seleccionar un indoor, se mostrarán las plantas que se encuentran en él.",
     "action_basic_data":"Primer paso",
-    "action_basic_description":"Selecciona la fecha y las plantas a las que deseas crear un registro",
+    "action_basic_description":"Seleccioná la fecha y las plantas a las que querés crear un registro",
     "action_action_type_data":"Segundo paso",
-    "action_action_type_description":"Selecciona el tipo de acción que vas a registrar en la planta",
+    "action_action_type_description":"Seleccioná el tipo de acción que vas a registrar en la planta",
     "action_data":"Tercer paso",
     "action_data_description":"Luego de seleccionar el tipo de acción completa los campos necesarios para terminar el registro",
     "Action Date":"Fecha",
-    "subheading_plant":"Gestiona y haz seguimiento de todas tus plantas. Utiliza la barra de búsqueda para encontrar plantas específicas o filtra por su etapa actual.",
+    "subheading_plant":"Gestioná y hacé seguimiento de todas tus plantas. Usá la barra de búsqueda para encontrar plantas específicas o filtrá por su etapa actual.",
     "Flowering Time": "Tiempo de Floración",
 
-    "subheading_list_seeds":"Gestiona y haz seguimiento de todas tus semillas. Utiliza la barra de búsqueda para encontrar semillas específicas o filtra por su tipo.",
+    "subheading_list_seeds":"Gestioná y hacé seguimiento de todas tus semillas. Usá la barra de búsqueda para encontrar semillas específicas o filtrá por su tipo.",
     "Dimensions":"Dimensiones",
     "light_and_ventilation":"Luz y Ventilación",
 
@@ -153,9 +153,9 @@
 
     "Power":"Potencia",
     "indoor_name":"Indoor: ",
-    "Lamp info tooltip":"Potencia y tipo de lampara",
-    "subheading_list_indoors":"Gestiona tus espacios de cultivo indoor, incluyendo dimensiones, iluminación y ventilación",
+    "Lamp info tooltip":"Potencia y tipo de lámpara",
+    "subheading_list_indoors":"Gestioná tus espacios de cultivo indoor, incluyendo dimensiones, iluminación y ventilación",
     "carpa_cultivo":"Carpa de cultivo",
-    "subheading_analitycs":"Obtén graficos y estadisticas de tus plantas y acciones"
+    "subheading_analitycs":"Obtené gráficos y estadísticas de tus plantas y acciones"
 
 }

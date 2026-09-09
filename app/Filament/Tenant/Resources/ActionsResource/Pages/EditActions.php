@@ -84,6 +84,12 @@ class EditActions extends EditRecord
             $data['data']['observation']['image'] = [$data['data']['observation']['image']];
         }
 
+        // hidratar plantas existentes (sin ->relationship en el CheckboxList, el fill es manual)
+        $plantIds = $record->plants()->pluck('plants.id')->toArray();
+        if (!empty($plantIds)) {
+            $data['plants'] = $plantIds;
+        }
+
         return $data;
     }
 

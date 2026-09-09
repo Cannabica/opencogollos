@@ -19,6 +19,24 @@ class CreateActions extends CreateRecord
         return $this->getResource()::getUrl('index');
     }
 
+    public function mount(): void
+    {
+        parent::mount();
+
+        // Prefill de plantas desde "Repetir última acción/riego": el botón manda
+        // selected_plants (JSON de ids) por query param. Pisar el state del componente
+        // CheckboxList es la vía que hidrata el checkbox en el primer render.
+        $raw = request()->query('selected_plants');
+        if ($raw) {
+            $decoded = json_decode($raw, true);
+            $plants = is_array($decoded) ? array_filter($decoded) : [];
+            $component = $this->form->getComponent('plants');
+            if ($plants && $component) {
+                $component->state($plants);
+            }
+        }
+    }
+
     protected function handleRecordCreation(array $data): Action
     {
         return (new \App\Filament\Tenant\Resources\Actions\Services\ActionRecordService())->handleRecordCreation($data);

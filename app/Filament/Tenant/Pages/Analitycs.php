@@ -20,9 +20,9 @@ class Analitycs extends Page
 
     protected static string $view = 'filament.tenant.pages.analitycs';
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?string $navigationLabel = 'Graficos';
+    protected static ?string $navigationLabel = 'Gráficos';
     protected static ?int $navigationSort = 50;
-    protected static ?string $title = 'Graficos de cuidados';
+    protected static ?string $title = 'Gráficos de cuidados';
 
     protected static bool $shouldRegisterNavigation = true;
 

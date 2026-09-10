@@ -46,7 +46,11 @@ class TenantPanelProvider extends PanelProvider
             $manifest = json_decode((string) file_get_contents($manifestPath), true);
             $entry = is_array($manifest) ? ($manifest['resources/css/filament/tenant/dashboard.css'] ?? null) : null;
             if (is_array($entry) && isset($entry['file'])) {
-                $dashboardCssUrl = '/build/' . $entry['file'];
+                // URL ABSOLUTA (asset()): Filament respeta las URLs con host como asset
+                // externo (link directo al build). Un path relativo ("/build/...") lo trata
+                // como asset propio y lo reescribe a su endpoint /css/{panel}/{id}.css → 404
+                // y el CSS no carga (bug detectado en prod con la UI del dashboard rota).
+                $dashboardCssUrl = asset('build/' . $entry['file']);
             }
         }
 

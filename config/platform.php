@@ -6,7 +6,7 @@
 |--------------------------------------------------------------------------
 |
 | TODOS los valores son `null` por defecto: una instalación nueva (self-hosted)
-| no hereda NINGÚN dato de la operación de Cannabica. Cuando una clave es null
+| no hereda NINGÚN dato de una instalación concreta. Cuando una clave es null
 | la UI simplemente OMITE el bloque que la usa (links de estado, comunidad,
 | logos, footer, textos de Telegram/emails).
 |

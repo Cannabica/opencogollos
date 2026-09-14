@@ -4,36 +4,33 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
-// Route::middleware('guest')->group(function () {
-//     Route::get('register', [RegisteredUserController::class, 'create'])
-//                 ->name('register');
-
-//     Route::post('register', [RegisteredUserController::class, 'store']);
-
-//     Route::get('login', [AuthenticatedSessionController::class, 'create'])
-//                 ->name('login');
-
-//     Route::post('login', [AuthenticatedSessionController::class, 'store']);
-
-//     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-//                 ->name('password.request');
-
-//     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-//                 ->name('password.email');
-
-//     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-//                 ->name('password.reset');
-
-//     Route::post('reset-password', [NewPasswordController::class, 'store'])
-//                 ->name('password.store');
-// });
+/*
+|--------------------------------------------------------------------------
+| Rutas de auth — superficie reducida a propósito
+|--------------------------------------------------------------------------
+|
+| El login, el registro, el olvido y el reset de contraseña NO viven acá: los
+| sirve el panel Filament (`/tenant/login`, `/tenant/register`,
+| `/tenant/password-reset/*`, `/superadmin/login`) y ese login YA rate-limita
+| el intento (`Login::rateLimit(5)` → notificación "throttled").
+|
+| El bloque `guest` del scaffold de Breeze (register / login / forgot-password /
+| reset-password) se ELIMINÓ en vez de dejarlo comentado. Motivo de seguridad:
+| dejarlo ahí era una trampa — descomentarlo habilitaría un SEGUNDO login
+| paralelo al de Filament y **sin throttle** (el `POST /login` del scaffold no
+| tiene rate limiting), que es exactamente el vector de fuerza bruta que este
+| archivo acota. Los controladores y las vistas del scaffold siguen en el repo
+| porque `/profile` los usa (ver abajo), pero sus rutas no vuelven sin decidir
+| antes qué pasa con el rate limiting.
+|
+| Regla al tocar este archivo: toda ruta que (a) acepte una credencial o
+| (b) dispare un envío de mail, va con `throttle`.
+|
+*/
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
@@ -50,9 +47,17 @@ Route::middleware('auth')->group(function () {
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
 
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
+    // Sin throttle, esta ruta deja probar contraseñas contra la del usuario
+    // autenticado (fuerza bruta sobre `current_password`). Mismo criterio que
+    // `verification.send`.
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])
+        ->middleware('throttle:6,1');
 
-    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+    // Igual que la anterior: `PasswordController@update` valida `current_password`
+    // antes de cambiarla (la usa el formulario de /profile).
+    Route::put('password', [PasswordController::class, 'update'])
+        ->middleware('throttle:6,1')
+        ->name('password.update');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');

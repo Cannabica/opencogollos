@@ -37,5 +37,15 @@ class AppServiceProvider extends ServiceProvider
             fn () => view('analyticsTag'),        
         );
 
+        // WS4 · T4.6 / hallazgo H1 (resuelto en T9.5): el manifest dinámico de la PWA
+        // se declara en el head de los paneles Filament, que son las páginas que SÍ se
+        // renderizan. Antes el único `rel="manifest"` vivía en resources/views/
+        // welcome.blade.php, una vista muerta (0 referencias; `/` redirige a
+        // /tenant/login), así que ningún navegador descubría el manifest.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn () => view('filament.manifest-link'),
+        );
+
     }
 }

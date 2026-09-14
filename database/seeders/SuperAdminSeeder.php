@@ -5,12 +5,23 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class SuperAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminEmail = env('ADMIN_EMAIL', 'administrator@cannabica.app');
+        // El email del superadmin sale de config('platform.admin_email')
+        // (PLATFORM_ADMIN_EMAIL). Sin configurar NO se crea un admin con el email
+        // de una instalación ajena: se avisa y el seed sigue sin romper.
+        $adminEmail = config('platform.admin_email');
+
+        if (blank($adminEmail)) {
+            Log::warning('SuperAdminSeeder: platform.admin_email no está configurado — no se crea el superadmin.');
+
+            return;
+        }
+
         $adminPassword = env('ADMIN_PASSWORD');
 
         if (!$adminPassword) {
@@ -24,7 +35,7 @@ class SuperAdminSeeder extends Seeder
 
         if ($admin) {
             // Ya existe un superadmin: refrescar nombre y password (el email encriptado
-            // existente no se pisa aunque ADMIN_EMAIL cambie).
+            // existente no se pisa aunque platform.admin_email cambie).
             $admin->update([
                 'name' => 'Administrator',
                 'password' => Hash::make($adminPassword),

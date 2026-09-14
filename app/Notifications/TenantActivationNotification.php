@@ -37,14 +37,14 @@ class TenantActivationNotification extends Notification // implements ShouldQueu
     public function toMail(object $notifiable): MailMessage
     {
 
-        return (new MailMessage)
+        $message = (new MailMessage)
             ->subject('Activacion de Tenant - ' . $this->tenantName)
-                        
+
             ->line('')
             ->line('')
             ->greeting('Hola ' . $notifiable->name)
             ->line('')
-            
+
             ->line('Tu tenant ' . $this->tenantName . ' ha sido activado exitosamente.')
             ->line('**Detalles de tu cuenta:**')
             ->line('Nombre: ' . $notifiable->name)
@@ -54,9 +54,14 @@ class TenantActivationNotification extends Notification // implements ShouldQueu
             ->line('Ahora puedes acceder a la plataforma.')
             ->action('Iniciar Sesión', url('/tenant/login'))
             ->line('¡Bienvenido a nuestra comunidad!')
-            ->line('')
-            ->line('Para ver el estado de la plataforma, visita: [Monitor del Sistema](https://status.cannabica.ar)')
-            ->salutation('Cualquier duda, no dudes en contactarnos.');
+            ->line('');
+
+        // Sin config('platform.status_page_url') la instalación no anuncia monitor.
+        if (filled(config('platform.status_page_url'))) {
+            $message->line('Para ver el estado de la plataforma, visita: [Monitor del Sistema](' . config('platform.status_page_url') . ')');
+        }
+
+        return $message->salutation('Cualquier duda, no dudes en contactarnos.');
     }
 
     /**

@@ -4,7 +4,7 @@
             <tr>
                 <td class="content-cell" align="center">
                     {{-- Información de Copyright y App Name --}}
-                    © {{ date('Y') }} {{ config('app.name') }}. @lang('Todos los derechos reservados.')
+                    © {{ date('Y') }} {{ config('platform.brand_name') ?: config('app.name') }}. @lang('Todos los derechos reservados.')
                     
                     <br><br>                    
                 </td>

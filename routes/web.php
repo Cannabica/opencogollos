@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,20 +24,20 @@ Route::get('/login', function () {
     return redirect('/tenant/login');
 })->name('login');
 
+// El dashboard de Breeze se eliminó (2026-09-14): el panel del tenant es la UI real.
+// Se mantiene la ruta por compatibilidad de enlaces, pero redirige al panel.
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return redirect('/tenant');
+})->middleware('auth')->name('dashboard');
 
 // Protected storage files - auth + tenant ownership check
 Route::get('/storage/{path}', [StorageController::class, 'show'])
     ->where('path', '.*')
     ->name('storage.protected');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// El perfil de Breeze (/profile) se eliminó (2026-09-14): duplicaba el perfil del panel
+// Filament y además incluía el borrado de cuenta, que dejaba el tenant huérfano.
+// Ver las tarjetas T10.x del board para el reemplazo in-house.
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/test_403.php';

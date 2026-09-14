@@ -126,27 +126,50 @@ class PlatformConfigTest extends TestCase
         );
     }
 
-    public function test_los_logos_del_panel_usan_config_app_name(): void
+    public function test_los_logos_del_panel_usan_la_key_unica_de_nombre(): void
     {
-        config(['app.name' => 'MiMarca']);
+        // C4e (WS9/T9.5): el nombre visible es UNO solo. `platform.brand_name` manda y
+        // `app.name` queda como fallback para la instalación que no configura marca.
+        config(['platform.brand_name' => 'MiMarca', 'app.name' => 'OtroNombre']);
 
         foreach (['filament.admin.logo', 'filament.admin.logo-darkmode'] as $view) {
             $html = view($view)->render();
 
             $this->assertStringContainsString('MiMarca', $html);
+            $this->assertStringNotContainsString('OtroNombre', $html);
             $this->assertStringNotContainsStringIgnoringCase($this->otherInstallationBrand(), $html);
         }
     }
 
-    public function test_el_manifest_pwa_usa_el_nombre_de_la_instalacion(): void
+    public function test_los_logos_del_panel_caen_al_nombre_de_la_app_sin_marca(): void
     {
-        config(['app.name' => 'MiMarca']);
+        config(['platform.brand_name' => null, 'app.name' => 'NombreDelProducto']);
+
+        foreach (['filament.admin.logo', 'filament.admin.logo-darkmode'] as $view) {
+            $this->assertStringContainsString('NombreDelProducto', view($view)->render());
+        }
+    }
+
+    public function test_el_manifest_pwa_usa_la_key_unica_de_nombre(): void
+    {
+        // C4e (WS9/T9.5): la PWA sigue la misma key de nombre visible que los logos.
+        config(['platform.brand_name' => 'MiMarca', 'app.name' => 'OtroNombre']);
 
         $response = $this->get('/manifest.json')->assertOk();
 
         $this->assertSame('MiMarca', $response->json('name'));
         $this->assertSame('MiMarca', $response->json('short_name'));
         $this->assertNotEmpty($response->json('icons'));
+    }
+
+    public function test_el_manifest_pwa_cae_al_nombre_de_la_app_sin_marca(): void
+    {
+        config(['platform.brand_name' => null, 'app.name' => 'NombreDelProducto']);
+
+        $response = $this->get('/manifest.json')->assertOk();
+
+        $this->assertSame('NombreDelProducto', $response->json('name'));
+        $this->assertSame('NombreDelProducto', $response->json('short_name'));
     }
 
     public function test_el_manifest_pwa_no_expone_una_instalacion_concreta(): void

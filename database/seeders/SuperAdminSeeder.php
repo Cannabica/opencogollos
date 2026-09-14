@@ -12,12 +12,15 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         // El email del superadmin sale de config('platform.admin_email')
-        // (PLATFORM_ADMIN_EMAIL). Sin configurar NO se crea un admin con el email
-        // de una instalación ajena: se avisa y el seed sigue sin romper.
-        $adminEmail = config('platform.admin_email');
+        // (PLATFORM_ADMIN_EMAIL). Si no está, cae al bootstrap ADMIN_EMAIL
+        // (config('platform.admin_email_fallback')): redundancia barata en el único
+        // punto que, si falta, te deja SIN acceso a /superadmin en un recovery
+        // (decisión C3 de WS9/T9.5). Sin ninguno de los dos NO se crea un admin con
+        // el email de una instalación ajena: se avisa y el seed sigue sin romper.
+        $adminEmail = config('platform.admin_email') ?: config('platform.admin_email_fallback');
 
         if (blank($adminEmail)) {
-            Log::warning('SuperAdminSeeder: platform.admin_email no está configurado — no se crea el superadmin.');
+            Log::warning('SuperAdminSeeder: ni platform.admin_email (PLATFORM_ADMIN_EMAIL) ni ADMIN_EMAIL están configurados — no se crea el superadmin.');
 
             return;
         }

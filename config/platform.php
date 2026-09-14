@@ -50,4 +50,13 @@ return [
     // del email sale sin imagen (solo texto plano del nombre de la app).
     'mail_header_logo' => env('PLATFORM_MAIL_HEADER_LOGO'),
 
+    // --- NO es una de las 9 keys de marca: bootstrap del seeder -------------
+    // Fallback de `admin_email` para el SuperAdminSeeder: si PLATFORM_ADMIN_EMAIL no
+    // está, el seeder usa ADMIN_EMAIL en vez de quedarse sin superadmin (y por lo
+    // tanto sin acceso a /superadmin) en un `migrate:fresh --seed` de recovery.
+    // Se lee por config y NO con `env()` dentro del seeder: en prod el entrypoint del
+    // contenedor corre `config:cache`, y este valor tiene que quedar horneado en el
+    // cache (decisión C3 de WS9/T9.5).
+    'admin_email_fallback' => env('ADMIN_EMAIL'),
+
 ];

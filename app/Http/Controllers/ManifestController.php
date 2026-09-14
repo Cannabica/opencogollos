@@ -10,13 +10,14 @@ class ManifestController extends Controller
      * Manifest de la PWA (épica open-core, WS4 · T4.6).
      *
      * Antes era `public/manifest.json` con el nombre de una instalación concreta
-     * clavado en el archivo. Ahora el nombre sale de `config('app.name')`: el
-     * default del repo es el nombre del producto y cada instalación muestra el
-     * suyo (`APP_NAME` en el `.env`).
+     * clavado en el archivo. Ahora el nombre sale de `config('platform.brand_name')`
+     * con fallback a `config('app.name')` (decisión C4e de WS9/T9.5: UNA sola key de
+     * nombre visible): una instalación que configura su marca (`PLATFORM_BRAND_NAME`)
+     * la ve también en la PWA; una que no la configura muestra el nombre del producto.
      */
     public function __invoke(): JsonResponse
     {
-        $name = (string) config('app.name');
+        $name = (string) (config('platform.brand_name') ?: config('app.name'));
 
         return response()->json([
             'name' => $name,

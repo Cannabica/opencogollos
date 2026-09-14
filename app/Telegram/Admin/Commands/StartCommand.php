@@ -14,10 +14,18 @@ class StartCommand extends AdminCommand
             return;
         }
 
-        $this->reply(
-            "👋 ¡Buenas, admin!\n\n"
-            . "Soy el bot de administración de Cannabica / OpenIndoor.\n"
-            . "Escribí /help para ver los comandos disponibles."
-        );
+        // El nombre de marca es opcional: una instalación sin config('platform.brand_name')
+        // se presenta solo con el nombre del producto.
+        $brandName = config('platform.brand_name');
+
+        $lines = [];
+        $lines[] = '👋 ¡Buenas, admin!';
+        $lines[] = '';
+        $lines[] = filled($brandName)
+            ? "Soy el bot de administración de {$brandName} / OpenIndoor."
+            : 'Soy el bot de administración de OpenIndoor.';
+        $lines[] = 'Escribí /help para ver los comandos disponibles.';
+
+        $this->reply(implode("\n", $lines));
     }
 }

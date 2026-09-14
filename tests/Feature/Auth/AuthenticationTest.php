@@ -6,21 +6,15 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * El caso "no autentica con password inválida" se movió a
+ * `TenantLoginCredentialsTest`, porque acá se lo probaba contra `POST /login`
+ * (ruta del scaffold apagada): el test pasaba sin probar nada. Queda sólo el
+ * logout, que sí pega a una ruta viva.
+ */
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
-
-    public function test_users_can_not_authenticate_with_invalid_password(): void
-    {
-        $user = User::factory()->create();
-
-        $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
-
-        $this->assertGuest();
-    }
 
     public function test_users_can_logout(): void
     {

@@ -16,19 +16,26 @@ class RegisterTransplant extends BasePlantAction
                 'plant_id' => $plant->id
             ]);
 
-            // Obtener la acción directamente desde la relación actions
-            $action = $plant->actions()->latest()->first();
+            // El panel ejecuta el trigger con el data de SU acción (data.transplant.*).
+            // Antes se buscaba la "última acción de la planta", que puede ser otra
+            // (ej. un riego posterior) -> excepción y datos del transplante sin aplicar.
+            $transplantData = $this->getDataFromPayload($data);
 
-            if (!$action) {
-                throw new InvalidArgumentException("No se encontró la acción asociada a la planta {$plant->id}");
+            if ($transplantData === null) {
+                // Fallback (compatibilidad): sin data utilizable, usar la última acción.
+                $action = $plant->actions()->latest()->first();
+
+                if (!$action) {
+                    throw new InvalidArgumentException("No se encontró la acción asociada a la planta {$plant->id}");
+                }
+
+                \Log::debug('Acción encontrada (fallback)', [
+                    'action_id' => $action->id,
+                    'plant_id' => $plant->id
+                ]);
+
+                $transplantData = $this->getDataFromAction($action);
             }
-
-            \Log::debug('Acción encontrada', [
-                'action_id' => $action->id,
-                'plant_id' => $plant->id
-            ]);
-
-            $transplantData = $this->getDataFromAction($action);
 
             \Log::debug('Actualizando planta con nuevos datos', [
                 'plant_id' => $plant->id,
@@ -43,7 +50,6 @@ class RegisterTransplant extends BasePlantAction
 
             \Log::info('Transplante completado exitosamente', [
                 'plant_id' => $plant->id,
-                'action_id' => $action->id
             ]);
 
         } catch (\Exception $e) {
@@ -53,6 +59,26 @@ class RegisterTransplant extends BasePlantAction
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Normaliza el data del panel (['transplant' => ['new_flowerpot' => .., 'new_capacity' => ..]]).
+     * Devuelve null si no alcanza para aplicar el transplante.
+     */
+    protected function getDataFromPayload(?array $data): ?array
+    {
+        $transplant = $data['transplant'] ?? null;
+
+        if (!is_array($transplant)
+            || !isset($transplant['new_flowerpot'])
+            || !isset($transplant['new_capacity'])) {
+            return null;
+        }
+
+        return [
+            'flowerpot' => $transplant['new_flowerpot'],
+            'capacity' => $transplant['new_capacity'],
+        ];
     }
 
     protected function getDataFromAction($action)

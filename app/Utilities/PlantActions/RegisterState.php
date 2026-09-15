@@ -15,8 +15,16 @@ class RegisterState extends BasePlantAction
 
     public function trigger(Plant $plant, ?array $data = null)
     {
+        // El data que persiste el panel viene anidado (data.change_state.state);
+        // se acepta también la forma plana ['state' => ...] de getConstructorArguments.
+        $state = $data['change_state']['state'] ?? $data['state'] ?? null;
+
+        if (blank($state)) {
+            return;
+        }
+
         // Cambiar el estado de la planta al especificado en $newState
-        $plant->update(['state' => $data['state']]);
+        $plant->update(['state' => $state]);
     }
 
     public static function getConstructorArguments($action)

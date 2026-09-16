@@ -60,3 +60,7 @@ vps-deploy.md
 /.opencode/
 /.jekyll-cache/
 /management/
+
+# Basura de herramientas locales (WS5/T5.1)
+.config/psysh/psysh_history
+/tmp/

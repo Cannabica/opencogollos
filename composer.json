@@ -1,13 +1,13 @@
 {
-  "name": "laravel/laravel",
+  "name": "cannabica/opencogollos",
   "type": "project",
   "version": "0.19.4",
-  "description": "Welcome to hell",
+  "description": "Registro, trazabilidad y compliance de cultivos (indoor y exterior): plantas, acciones de cuidado, tareas y bot de Telegram.",
   "keywords": [
     "laravel",
     "framework"
   ],
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "require": {
     "php": "^8.3",
     "codeat3/blade-phosphor-icons": "^2.2",

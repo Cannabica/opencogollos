@@ -200,6 +200,9 @@ OpenCogollos es software libre bajo **AGPL-3.0-only**, mantenido por **Cannabica
 
 - **Issues y propuestas:** abrí un issue en este repositorio. Es el canal para reportar bugs,
   pedir funcionalidad y preguntar.
+- **Comunidad:** el Discord de **Cannabica**, el mantenedor — <https://discord.com/invite/jN9Tje3eJe>.
+  (Es la comunidad del proyecto, no un bloque de la app: si montás tu propia instancia y querés tu
+  propio Discord, se configura con `PLATFORM_DISCORD_URL`; vacío, la app no muestra el link.)
 - **Contribuciones:** rama desde `develop` → cambios con tests → pull request. El CI corre la
   suite y el análisis estático en cada PR; se mergea con CI verde.
 - **Antes de abrir el repo al público:** `scripts/verificacion-integral.sh` corre el checklist de

@@ -154,14 +154,21 @@ class WebhookSetupCommand extends Command
         $allowedUpdates = $botConfig['allowed_updates'] ?? ['message', 'callback_query'];
         $maxConnections = $botConfig['max_connections'] ?? 40;
 
-        // Para el bot admin se exige el secret token: Telegram lo devuelve en
-        // el header X-Telegram-Bot-Api-Secret-Token de cada update.
-        $secretToken = Config::get('telegram.admin_secret');
+        // Los DOS bots exigen secret token: Telegram lo devuelve en el header
+        // X-Telegram-Bot-Api-Secret-Token de cada update, y los middlewares de cada webhook lo
+        // verifican (el del tenant: VerifyTelegramTenant; el admin: AdminWebhookController).
+        // OJO: el secret del tenant es NUEVO (T10.7). Si el webhook ya estaba registrado sin él,
+        // hay que re-registrarlo para que Telegram empiece a mandar el header.
+        $secretToken = $botName === 'admin'
+            ? Config::get('telegram.admin_secret')
+            : Config::get('telegram.tenant_secret');
 
         $this->line("Allowed Updates: " . implode(', ', $allowedUpdates));
         $this->line("Max Connections: {$maxConnections}");
-        if ($botName === 'admin') {
-            $this->line('Secret Token: ' . ($secretToken ? '✓ Set' : '✗ Missing (el webhook admin rechazará todo con 503)'));
+        if ($secretToken) {
+            $this->line('Secret Token: ✓ Set');
+        } else {
+            $this->line('Secret Token: ✗ Missing (el webhook de este bot rechazará TODO con 503)');
         }
         $this->line('');
 
@@ -173,7 +180,7 @@ class WebhookSetupCommand extends Command
                     'max_connections' => $maxConnections,
                 ];
 
-                if ($botName === 'admin' && $secretToken) {
+                if ($secretToken) {
                     $params['secret_token'] = $secretToken;
                 }
 

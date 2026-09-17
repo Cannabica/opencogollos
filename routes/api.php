@@ -38,7 +38,7 @@ Route::post('/telegram/webhook', function (\Illuminate\Http\Request $request) {
         ]);
         return response('Error', 500);
     }
-});
+})->middleware('verify.telegram.tenant');
 
 // Webhook del bot de administración (superadmin). Seguridad: exige
 // TELEGRAM_ADMIN_SECRET_TOKEN configurado y el header de secret de Telegram.

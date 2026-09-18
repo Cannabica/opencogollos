@@ -241,11 +241,6 @@ parameters:
 			path: app/Filament/Tenant/Resources/SeedResource/Pages/ListSeeds.php
 
 		-
-			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
-			count: 1
-			path: app/Filament/Tenant/Widgets/ActionTypesLineWidget.php
-
-		-
 			message: "#^Parameter \\#1 \\$string of function md5 expects string, int given\\.$#"
 			count: 2
 			path: app/Filament/Tenant/Widgets/ActionTypesLineWidget.php
@@ -279,16 +274,6 @@ parameters:
 			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$total\\.$#"
 			count: 1
 			path: app/Filament/Tenant/Widgets/ActivityHeatmapWidget.php
-
-		-
-			message: "#^Call to an undefined method App\\\\Filament\\\\Tenant\\\\Widgets\\\\IndoorWidget\\:\\:getFilter\\(\\)\\.$#"
-			count: 1
-			path: app/Filament/Tenant/Widgets/IndoorWidget.php
-
-		-
-			message: "#^Call to static method make\\(\\) on an unknown class Filament\\\\Tables\\\\Columns\\\\Stack\\.$#"
-			count: 1
-			path: app/Filament/Tenant/Widgets/PlantList.php
 
 		-
 			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"

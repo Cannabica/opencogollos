@@ -1,0 +1,37 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+        - tests
+
+    # Laravel: los modelos/middleware resuelven tipos por reflection y los helpers devuelven `mixed`.
+    treatPhpDocTypesAsCertain: false
+
+    excludePaths:
+        analyse:
+            - bootstrap/cache/*
+            # -----------------------------------------------------------------------------------
+            # EXCLUSIONES A PROPOSITO — NO son ruido: son 4 BUGS REALES que PHPStan encontró y
+            # que NO se pueden ni arreglar dentro del alcance de WS2, ni baselinear, ni ignorar
+            # ("Error message ... cannot be ignored, use excludePaths instead").
+            # Es una DEUDA CON TICKET: cuando se arreglen, se sacan estas 3 lineas y el analisis
+            # vuelve a cubrir los archivos. Detalle y evidencia: board/epicas/
+            # 2026-09-14-ws2-kit-calidad.md §3.1 y §4.
+            #
+            # 1) LANMINE / FATAL: `class TelegramBotManager extends final class BotsManager` (el SDK
+            #    v3.16 lo declara final). `class_exists()` lo reproduce: "cannot extend final class".
+            #    Hoy no explota solo porque el container resuelve `telegram` al BotsManager del SDK y
+            #    los bindings de TelegramServiceProvider quedan SOMBREADOS (codigo muerto). Si cambia
+            #    el orden de providers, la app muere al bootear. Decision de producto: refactor por
+            #    composicion o borrar la clase + sus bindings muertos.
+            - app/Services/TelegramBotManager.php
+            # 2) Pagina del panel con el metodo de Filament v2 (`getTable(): Table` sin return):
+            #    dead code en v3 (el panel usa `table()`).
+            - app/Filament/Tenant/Resources/IndoorResource/Pages/ViewIndoor.php
+            # 3) Trait con 2 metodos `: array` SIN return: si alguna vez se llaman, tiran TypeError.
+            - app/Filament/Tenant/Resources/Actions/Traits/HandlesActionTypes.php
+            # -----------------------------------------------------------------------------------

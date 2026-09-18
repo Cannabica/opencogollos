@@ -14,7 +14,11 @@ use App\Notifications\ProductApplicationReminder;
 use Illuminate\Support\Facades\Log;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Notifications\Actions\Action as FilamentAction;
+// OJO: aca hacen falta LOS DOS imports. `Component` lo usa la clase interna `NotificationHandler`
+// (al final del archivo) y `Livewire` (la facade) la llamada `Livewire::dispatch(...)` del closure.
+// Con un solo import, PHPStan no puede analizar el archivo (class not found) y el analisis se corta.
 use Livewire\Component;
+use Livewire\Livewire;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class SendDelayedProductNotification implements ShouldQueue

@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\TenantBot;
+use App\Services\TenantTokenService;
 use Illuminate\Http\Request;
 
 class VerifyTelegramTenant
@@ -38,16 +38,22 @@ class VerifyTelegramTenant
             }
 
             if ($token) {
-                // Verify token and get tenant ID
-                $tenantId = app(TenantTokenService::class)->getTenantIdFromToken($token);
-                
-                if (!$tenantId) {
+                // Verify token and get tenant ID.
+                // OJO: getTenantIdFromToken() NO devuelve un id, devuelve un array
+                // ['tenant_id' => int, 'expires_at' => ...] (o null). Tratarlo como id hacia
+                // Tenant::find(array) => Collection => $tenant->active siempre vacio => 403
+                // en todos los casos. Mismo patron que AuthCommand (que si lo usa bien).
+                $tokenData = app(TenantTokenService::class)->getTenantIdFromToken($token);
+
+                if (!$tokenData) {
                     \Log::warning("Invalid API token", [
                         'token_prefix' => substr($token, 0, 8) . '...',
                         'ip' => $request->ip()
                     ]);
                     return response('Forbidden', 403);
                 }
+
+                $tenantId = $tokenData['tenant_id'];
 
                 // Bind tenant instance to container
                 $tenant = \App\Models\Tenant::find($tenantId);

@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Services\TelegramBotManager;
 use Telegram\Bot\BotsManager;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Log;
@@ -16,23 +15,13 @@ class TelegramServiceProvider extends ServiceProvider
             'telegram'
         );
 
-        $this->app->singleton(BotsManager::class, function ($app) {
-            return new TelegramBotManager(config('telegram'));
-        });
-
-        $this->app->alias(BotsManager::class, 'telegram');
-
-        $this->app->bind('telegram.bot', function ($app) {
-            return $app[BotsManager::class]->bot();
-        });
-    }
-    private function registerBindings(): void
-    {
-        $this->app->singleton(BotsManager::class, static fn($app): BotsManager => (new TelegramBotManager(config('telegram')))->setContainer($app));
-        $this->app->alias(BotsManager::class, 'telegram');
-
-        $this->app->bind(Api::class, static fn($app) => $app[BotsManager::class]->bot());
-        $this->app->alias(Api::class, 'telegram.bot');
+        // T2.6 (2026-09-19): aca vivian 3 bindings (singleton BotsManager -> App\Services\TelegramBotManager,
+        // alias 'telegram' y bind 'telegram.bot') que quedaban SOMBREADOS: el provider del SDK se registra
+        // despues y gana, asi que nunca resolvieron a lo de la app (verificado: `app('telegram')` =
+        // Telegram\Bot\BotsManager). Y la clase que instanciaban heredaba de BotsManager, que el SDK 3.16
+        // declara `final` => no cargaba, era un landmine. Se borro la clase + los bindings + la
+        // `registerBindings()` privada (nunca llamada) con la decision A de Frankie (2026-09-19).
+        // El binding de `telegram`/BotsManager lo sigue aportando el provider del SDK.
     }
 
     public function boot(): void

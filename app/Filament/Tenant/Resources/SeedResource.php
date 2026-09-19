@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Columns\IconColumn;
 use Illuminate\Database\Eloquent\Collection;
 use Filament\Notifications\Notification;
@@ -110,6 +111,11 @@ class SeedResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // T2.6 (2026-09-19): repuesto el layout de filtros que vivia en ListSeeds con la API de
+            // Filament v2 (`getTableFiltersLayout()` / `getTableFiltersFormColumns()`, los dos sin
+            // llamadores en v3). En v3 se declara en el Table del resource.
+            ->filtersFormColumns(3)
+            ->filtersLayout(FiltersLayout::AboveContent)
             ->headerActions([
                     Tables\Actions\Action::make('showGlobal')
                         ->label('Globales')

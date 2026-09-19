@@ -5,9 +5,6 @@ namespace App\Filament\Tenant\Resources\IndoorResource\Pages;
 use App\Filament\Tenant\Resources\IndoorResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Resources\Table;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\DeleteAction;
 
 class ViewIndoor extends ViewRecord
 {
@@ -23,10 +20,5 @@ class ViewIndoor extends ViewRecord
             Actions\DeleteAction::make()
                 ->icon('heroicon-o-trash'),
         ];
-    }
-
-    protected function getTable(): Table
-    {
-        // Implementation of getTable method
     }
 } 

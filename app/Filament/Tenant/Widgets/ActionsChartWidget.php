@@ -7,7 +7,6 @@ use App\Models\Action;
 use App\Models\ActionType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use function Filament\tenant;
 
 class ActionsChartWidget extends ChartWidget
 {

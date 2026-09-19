@@ -49,4 +49,3 @@ Route::middleware(['auth', 'signed'])->group(function () {
 });
 
 require __DIR__ . '/auth.php';
-require __DIR__ . '/test_403.php';

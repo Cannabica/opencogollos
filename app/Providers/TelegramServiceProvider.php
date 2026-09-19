@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use Telegram\Bot\BotsManager;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Log;
 
 class TelegramServiceProvider extends ServiceProvider
 {
@@ -33,34 +31,11 @@ class TelegramServiceProvider extends ServiceProvider
         // Register Telegram commands
         $this->registerCommands();
 
-        $this->app->booted(function () {
-            if (app()->runningInConsole()) {
-                Log::info('Skipping Telegram webhook registration on boot - running in console or already registered');
-                return;
-                try {
-                    Log::info('Registering Telegram webhook on boot');
-    
-                    cache()->put('telegram_webhook_registered', true, now()->addDay());
-                    $token = env('TELEGRAM_BOT_TOKEN');
-                    $appUrl = env('APP_URL');
-    
-                    if (empty($token) || empty($appUrl)) {
-                        \Log::warning('Telegram webhook registration skipped - Missing required environment variables');
-                        return;
-                    }
-    
-                    $webhookUrl = rtrim($appUrl, '/') . '/api/telegram/webhook';
-    
-                    $this->app[BotsManager::class]->bot()->setWebhook([
-                        'url' => $webhookUrl,
-                        'max_connections' => 40,
-                        'drop_pending_updates' => true
-                    ]);
-                } catch (\Exception $e) {
-                    \Log::error('Telegram webhook registration failed: ' . $e->getMessage());
-                }
-            }
-        });
+        // T2.6 (2026-09-19): aca vivia un `$this->app->booted(...)` con el auto-registro del webhook
+        // que NUNCA podia ejecutarse: el `return` temprano de `runningInConsole()` dejaba el try/catch
+        // inalcanzable, y en un request web la closure no hacia nada. Ademas ese bloque usaba `env()`
+        // fuera de config/ (rompe `config:cache`). El webhook se registra a proposito con
+        // `php artisan telegram:webhook:setup` (ver docs/TELEGRAM.md), no al bootear.
     }
 
     /**

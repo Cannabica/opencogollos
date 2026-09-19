@@ -236,11 +236,6 @@ parameters:
 			path: app/Filament/Tenant/Resources/SeedResource.php
 
 		-
-			message: "#^Access to constant AboveContent on an unknown class Filament\\\\Resources\\\\Components\\\\Tables\\\\Enums\\\\FiltersLayout\\.$#"
-			count: 1
-			path: app/Filament/Tenant/Resources/SeedResource/Pages/ListSeeds.php
-
-		-
 			message: "#^Parameter \\#1 \\$string of function md5 expects string, int given\\.$#"
 			count: 2
 			path: app/Filament/Tenant/Widgets/ActionTypesLineWidget.php
@@ -248,11 +243,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$string of function md5 expects string, int given\\.$#"
 			count: 2
-			path: app/Filament/Tenant/Widgets/ActionsChartWidget.php
-
-		-
-			message: "#^Used function Filament\\\\tenant not found\\.$#"
-			count: 1
 			path: app/Filament/Tenant/Widgets/ActionsChartWidget.php
 
 		-
@@ -749,11 +739,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function htmlspecialchars expects string, int\\<min, \\-1\\>\\|int\\<1, max\\> given\\.$#"
 			count: 1
 			path: app/Telegram/Commands/TenantInfoCommand.php
-
-		-
-			message: "#^Call to static method create\\(\\) on an unknown class App\\\\Utilities\\\\PlantActions\\\\Action\\.$#"
-			count: 1
-			path: app/Utilities/PlantActions/BasePlantAction.php
 
 		-
 			message: "#^Access to an undefined property App\\\\Models\\\\Plant\\:\\:\\$indoor\\.$#"

@@ -12,13 +12,9 @@ use App\Models\TelegramUserTenant;
 use App\Models\Action as ActionModel;
 use App\Notifications\ProductApplicationReminder;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Notifications\Actions\Action as FilamentAction;
-// OJO: aca hacen falta LOS DOS imports. `Component` lo usa la clase interna `NotificationHandler`
-// (al final del archivo) y `Livewire` (la facade) la llamada `Livewire::dispatch(...)` del closure.
-// Con un solo import, PHPStan no puede analizar el archivo (class not found) y el analisis se corta.
-use Livewire\Component;
-use Livewire\Livewire;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
 class SendDelayedProductNotification implements ShouldQueue
@@ -29,8 +25,7 @@ class SendDelayedProductNotification implements ShouldQueue
         public string $applicationType,
         public int $plantsCount,
         public int $tenantId,
-        public ?int $actionId = null,
-        public ?int $notificationId = null
+        public ?int $actionId = null
     ) {
     }
 
@@ -167,32 +162,22 @@ class SendDelayedProductNotification implements ShouldQueue
                         ->link()
                         ->size('sm')
                         ->color('warning')
-                        ->action(function () {
-                            if ($this->notificationId) {
-                                Livewire::dispatch('markNotificationAsRead', ['id' => $this->notificationId]);
-                            }
-                            if (
-                                empty($this->applicationType) || empty($this->plantsCount) ||
-                                empty($this->tenantId) || empty($this->actionId)
-                            ) {
-                                Log::error('Missing required notification parameters', [
-                                    'applicationType' => $this->applicationType,
-                                    'plantsCount' => $this->plantsCount,
-                                    'tenantId' => $this->tenantId,
-                                    'actionId' => $this->actionId
-                                ]);
-                                return '#';
-                            }
-
-                            return redirect()->route('actions.postpone-notification', [
-                                'type' => (string) $this->applicationType,
-                                'count' => (int) $this->plantsCount,
-                                'tenant' => (int) $this->tenantId,
-                                'action' => (int) $this->actionId
-                            ]);
-                        })
-                        ->close()
-                        ->extraAttributes([]),
+                        // T2.8 (2026-09-19): NO puede ser ->action(closure). Filament persiste la
+                        // notificacion de base de datos serializando la accion en la columna `data`
+                        // (Filament\Notifications\Actions\Action::toArray() guarda name/color/url/
+                        // event/shouldMarkAsRead/... pero NO la closure) y al rehidratarla con
+                        // Action::fromArray() el handler desaparece: el boton quedaba mudo y sin error.
+                        // `url` SI sobrevive, asi que va a una URL FIRMADA (por destinatario) que
+                        // reencola el recordatorio 24 h despues. `markAsRead()` es el mecanismo propio
+                        // de Filament para marcar leida la notificacion actual.
+                        ->url(URL::signedRoute('actions.postpone-notification', [
+                            'type' => (string) $this->applicationType,
+                            'count' => (int) $this->plantsCount,
+                            'action' => (int) $this->actionId,
+                            'user' => $user->getKey(),
+                        ]))
+                        ->markAsRead()
+                        ->close(),
                     FilamentAction::make('goToAction')
                         ->label('Revisar')
                         ->icon('heroicon-m-eye')
@@ -207,19 +192,5 @@ class SendDelayedProductNotification implements ShouldQueue
         }
 
         Log::info('SendDelayedProductNotification handle - Completed');
-    }
-}
-
-class NotificationHandler extends Component
-{
-    public function postponeNotification($applicationType, $plantsCount, $tenantId, $notificationId = null): void
-    {
-        dispatch(new SendDelayedProductNotification(
-            $applicationType,
-            $plantsCount,
-            $tenantId,
-            null,
-            $notificationId
-        ))->delay(now()->addSeconds(10));
     }
 }

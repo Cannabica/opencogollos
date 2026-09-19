@@ -336,23 +336,8 @@ parameters:
 			path: app/Http/Middleware/TenantTokenMiddleware.php
 
 		-
-			message: "#^Call to method getTenantIdFromToken\\(\\) on an unknown class App\\\\Http\\\\Middleware\\\\TenantTokenService\\.$#"
-			count: 1
-			path: app/Http/Middleware/VerifyTelegramTenant.php
-
-		-
-			message: "#^Class App\\\\Http\\\\Middleware\\\\TenantTokenService not found\\.$#"
-			count: 1
-			path: app/Http/Middleware/VerifyTelegramTenant.php
-
-		-
 			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$indoor\\.$#"
 			count: 2
-			path: app/Jobs/SendDelayedProductNotification.php
-
-		-
-			message: "#^Call to an undefined static method Livewire\\\\Livewire\\:\\:dispatch\\(\\)\\.$#"
-			count: 1
 			path: app/Jobs/SendDelayedProductNotification.php
 
 		-
@@ -384,16 +369,6 @@ parameters:
 			message: "#^Argument of an invalid type Illuminate\\\\Routing\\\\RouteCollectionInterface supplied for foreach, only iterables are supported\\.$#"
 			count: 1
 			path: app/Providers/RouteServiceProvider.php
-
-		-
-			message: "#^Class App\\\\Providers\\\\Api not found\\.$#"
-			count: 2
-			path: app/Providers/TelegramServiceProvider.php
-
-		-
-			message: "#^Method App\\\\Providers\\\\TelegramServiceProvider\\:\\:registerBindings\\(\\) is unused\\.$#"
-			count: 1
-			path: app/Providers/TelegramServiceProvider.php
 
 		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"

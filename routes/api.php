@@ -7,26 +7,6 @@ use App\Services\TelegramLogger;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use App\Http\Controllers\Telegram\AdminWebhookController;
 
-// Temporary test route for token service
-Route::get('/test-token', function (TenantTokenService $service) {
-    // Create temporary tenant for testing
-    $tenant = new \App\Models\Tenant();
-    $tenant->id = 12345;
-    
-    // Generate token with test chat ID in metadata
-    $chatId = 987654321; // Test Telegram chat ID
-    $token = $service->generateToken($tenant, null, ['*'], $chatId);
-    
-    // Retrieve token using same chat ID
-    $retrieved = $service->getCurrentToken($chatId);
-    
-    return response()->json([
-        'generated' => $token,
-        'retrieved' => $retrieved,
-        'chat_id' => $chatId
-    ]);
-});
-
 // Telegram webhook route
 Route::post('/telegram/webhook', function (\Illuminate\Http\Request $request) {
     try {
@@ -58,7 +38,7 @@ Route::post('/telegram/webhook', function (\Illuminate\Http\Request $request) {
         ]);
         return response('Error', 500);
     }
-});
+})->middleware('verify.telegram.tenant');
 
 // Webhook del bot de administración (superadmin). Seguridad: exige
 // TELEGRAM_ADMIN_SECRET_TOKEN configurado y el header de secret de Telegram.
@@ -66,13 +46,6 @@ Route::post('/telegram/admin/webhook', AdminWebhookController::class);
 
 // Tenant API Routes
 Route::middleware('tenant.token')->group(function () {
-    Route::get('/test', function (Request $request) {
-        return response()->json([
-            'message' => 'Token valid for tenant: '.$request->tenant->name,
-            'abilities' => $request->token()->abilities
-        ]);
-    });
-
     Route::post('/renew-token', function (Request $request) {
         $newToken = app(TenantTokenService::class)->renewToken(
             hash('sha256', $request->bearerToken())

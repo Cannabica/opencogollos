@@ -6,7 +6,7 @@
 
     /* Variables para los temas claro y oscuro */
     :root {
-        /* Paleta de marca Cannabica (W1): primary = azul #2369B5, dark = gris pizarra neutro (sin violeta) */
+        /* Paleta del tema (W1): primary = azul #2369B5, dark = gris pizarra neutro (sin violeta) */
         --primary: #2369B5;
         --primary-light: #EFF5FC;
         --primary-dark: #1A4F88;

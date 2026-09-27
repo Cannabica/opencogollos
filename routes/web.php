@@ -1,6 +1,8 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EmailChangeController;
+use App\Http\Controllers\ManifestController;
+use App\Http\Controllers\PostponeProductReminderController;
 use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,20 +27,38 @@ Route::get('/login', function () {
     return redirect('/tenant/login');
 })->name('login');
 
+// El dashboard de Breeze se eliminó (2026-09-14): el panel del tenant es la UI real.
+// Se mantiene la ruta por compatibilidad de enlaces, pero redirige al panel.
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return redirect('/tenant');
+})->middleware('auth')->name('dashboard');
+
+// Manifest de la PWA. El nombre sale de config('app.name') (el default del repo
+// es el nombre del producto; la instalación muestra el suyo vía APP_NAME).
+Route::get('/manifest.json', ManifestController::class)->name('manifest');
 
 // Protected storage files - auth + tenant ownership check
 Route::get('/storage/{path}', [StorageController::class, 'show'])
     ->where('path', '.*')
     ->name('storage.protected');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// El perfil de Breeze (/profile) se eliminó (2026-09-14): duplicaba el perfil del panel
+// Filament y además incluía el borrado de cuenta, que dejaba el tenant huérfano.
+// Ver las tarjetas T10.x del board para el reemplazo in-house.
+
+// T2.8 (2026-09-19): acción "Posponer" del recordatorio de aplicación de producto.
+// `signed` = la firma es la autorización (no se puede forjar el link); `auth` = tiene que
+// haber un usuario logueado y la firma incluye su id. Ver PostponeProductReminderController.
+Route::middleware(['auth', 'signed'])->group(function () {
+    Route::get('/recordatorios/posponer/{type}/{count}/{action}', PostponeProductReminderController::class)
+        ->name('actions.postpone-notification');
 });
 
+// Cambio de email con DOBLE OPT-IN (2026-09-27): el email es la credencial de login, así que el
+// cambio no se aplica cuando se pide — se manda un link a la dirección NUEVA y recién se aplica al
+// abrirlo. Público a propósito (se abre desde el mail, quizá sin sesión): la autorización es el token,
+// que va hasheado en la base.
+Route::get('/email/confirmar/{token}', [EmailChangeController::class, 'show'])
+    ->name('tenant.email.confirm');
+
 require __DIR__ . '/auth.php';
-require __DIR__ . '/test_403.php';

@@ -23,6 +23,15 @@ class Kernel extends ConsoleKernel
             ->daily()
             ->withoutOverlapping()
             ->onOneServer();
+
+        // Guardarraíl de la cola de trabajo: si supera los 50 jobs significa que nadie la está
+        // drenando (falta el worker o se murió). El comando avisa y sale con código != 0, así el
+        // fallo deja de ser silencioso: en producción eso significaba que las notificaciones
+        // encoladas (mail de bienvenida al registrarse, claves del equipo) nunca se entregaban.
+        $schedule->command('queue:monitor default --max=50')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**

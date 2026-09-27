@@ -18,8 +18,8 @@ class AdminWebhookTest extends TestCase
                 'message_id' => 1,
                 'date' => time(),
                 'text' => $text,
-                'from' => ['id' => self::ADMIN_USER_ID, 'is_bot' => false, 'first_name' => 'Frankie'],
-                'chat' => ['id' => self::ADMIN_USER_ID, 'type' => 'private', 'first_name' => 'Frankie'],
+                'from' => ['id' => self::ADMIN_USER_ID, 'is_bot' => false, 'first_name' => 'Tester'],
+                'chat' => ['id' => self::ADMIN_USER_ID, 'type' => 'private', 'first_name' => 'Tester'],
             ],
         ];
     }
@@ -79,7 +79,7 @@ class AdminWebhookTest extends TestCase
             'update_id' => 101,
             'callback_query' => [
                 'id' => 'cb-1',
-                'from' => ['id' => self::ADMIN_USER_ID, 'is_bot' => false, 'first_name' => 'Frankie'],
+                'from' => ['id' => self::ADMIN_USER_ID, 'is_bot' => false, 'first_name' => 'Tester'],
                 'data' => 'whatever',
             ],
         ], [

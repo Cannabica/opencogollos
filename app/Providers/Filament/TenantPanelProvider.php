@@ -70,10 +70,19 @@ class TenantPanelProvider extends PanelProvider
             ->font('Inter')
             ->login()
             ->registration(\App\Filament\Tenant\Pages\Registration::class)
-            ->passwordReset()
+            // ⚠️ La clase vive FUERA de `app/Filament/Tenant/Pages` a propósito: `discoverPages` la
+            // levantaba como página común y se quedaba con la ruta `password-reset/reset`, dejando la
+            // del vendor atendiendo el link del mail (por eso los cambios de esta clase no corrían:
+            // 2026-09-27). Así la registra sólo el panel, como página de autenticación.
+            ->passwordReset(\App\Filament\Tenant\Auth\ResetPassword::class)
             ->authGuard('web')
             ->default()
             ->favicon(asset(path: 'images/favicon.png'))
+            // C4e (WS9/T9.5): el nombre de marca del panel es el MISMO que el de los
+            // logos y la PWA (platform.brand_name con fallback a app.name). Sin esto,
+            // los titulos de pagina ("Acceso - X", "Dashboard - X") seguian mostrando
+            // app.name y la instalacion mostraba dos nombres.
+            ->brandName(fn() => config('platform.brand_name') ?: config('app.name'))
             ->brandLogo(fn() => view('filament.admin.logo'))
             ->darkModeBrandLogo(fn() => view('filament.admin.logo-darkmode'))
             ->discoverResources(in: app_path('Filament/Tenant/Resources'), for: 'App\\Filament\\Tenant\\Resources')

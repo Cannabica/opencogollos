@@ -9,7 +9,7 @@ use App\Models\Plant;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Columns\Stack;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use App\Models\Indoor;

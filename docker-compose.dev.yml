@@ -1,0 +1,27 @@
+# Override de DESARROLLO — monta el código del repo desde el host para tener hot-reload.
+#
+# Uso:
+#   docker compose -f docker-compose.local.yml -f docker-compose.dev.yml --env-file .env.local up -d
+#
+# ⚠️ Antes de usarlo, el HOST necesita las dependencias y los assets compilados:
+#     composer install && npm install && npm run build
+# Si no están, el bind mount de `.:/var/www/html` tapa lo que trae la imagen y `php artisan` falla
+# con 255 (es exactamente el problema que la ruta de instalación limpia NO tiene: ver el comentario
+# largo en `docker-compose.local.yml`).
+#
+# Para la instalación limpia (evaluar el producto, self-hosting) NO uses este archivo: con
+# `docker-compose.local.yml` solo alcanza.
+services:
+  caddy:
+    volumes:
+      # El `public/` del host gana sobre el volumen de la imagen (mismo target, este archivo va después).
+      - .:/var/www/html
+      - ./public:/var/www/html/public:ro
+
+  php:
+    volumes:
+      - .:/var/www/html
+      - ./vendor:/var/www/html/vendor
+      - ./node_modules:/var/www/html/node_modules
+      - ./public:/var/www/html/public
+      - ./storage:/var/www/html/storage

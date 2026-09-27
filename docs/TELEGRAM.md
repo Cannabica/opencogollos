@@ -170,16 +170,24 @@ php artisan telegram:webhook:setup --bot=admin
 
 ---
 
-## 7. Probar los bots sin tocar Telegram (emulador local)
+## 7. Probar los bots sin tocar Telegram (devkit local)
 
-Para desarrollar el bot no hace falta internet, ni un bot real, ni abrir el chat desde el celular:
-el repo trae un **emulador HTTP del Bot API** en `tools/telegram-emulator/` (PHP stdlib, sin
-dependencias) que emula el subconjunto que usa la app, entrega los updates al webhook y **registra
-los mensajes salientes** para poder verificarlos.
+Para desarrollar el bot no hace falta internet, ni un bot real, ni abrir el chat desde el celular. El
+**devkit local** vive en un repo aparte (`Cannabica/opencogollos-devkit`, hermano de
+`cannabica-deploy`) para no meter herramientas de desarrollo dentro de este repo. Trae:
+
+- un **emulador HTTP del Bot API** que emula el subconjunto que usa la app, entrega los updates al
+  webhook y **registra los mensajes salientes** para poder verificarlos;
+- un **front TLS con CA propia**, porque el SDK rechaza URLs de webhook que no sean https (así el
+  `telegram:webhook:setup` real se puede usar en local).
 
 ```bash
-docker compose -f docker-compose.telegram-emulator.yml -p tg-emulator up -d
-curl -s http://127.0.0.1:8082/_emulator/health
+git clone https://github.com/Cannabica/opencogollos-devkit.git
+cd opencogollos-devkit
+make up                                    # emulador (8082) + front TLS (8443)
+make ca                                    # CA interna, para el webhook https
+make app APP=/ruta/a/OpenIndoor            # levanta la app contra el devkit
+make smoke SMOKE_TLS=1 SMOKE_TEXT=/estado  # E2E: inyecta un update y muestra la respuesta
 ```
 
 Se enchufa apuntando `TELEGRAM_BASE_BOT_URL` al emulador (vacío = API real, producción no cambia):
@@ -188,8 +196,10 @@ Se enchufa apuntando `TELEGRAM_BASE_BOT_URL` al emulador (vacío = API real, pro
 TELEGRAM_BASE_BOT_URL=http://127.0.0.1:8082/bot
 ```
 
-Guía completa (levantar/bajar, plano de control, E2E paso a paso, HTTPS con CA propia y los
-pitfalls): **`tools/telegram-emulator/README.md`**.
+Guía completa (plano de control, HTTPS, pitfalls): `opencogollos-devkit/telegram-bot-emulator/README.md`.
+
+> Los tests de payload saliente sin red (`tests/Support/FakeTelegramHttpClient.php` + los tests de
+> Telegram) viven **acá**, en la suite de la app: no dependen del devkit ni de Docker.
 
 ---
 

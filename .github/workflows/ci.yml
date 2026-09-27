@@ -51,14 +51,22 @@ jobs:
         with:
           node-version: '20'
           cache: npm
+      - name: Preparar entorno (.env del ejemplo)
+        run: cp .env.example .env
+      # ⚠️ EL ORDEN IMPORTA — bug encontrado en la 1.ª corrida real del gate (2026-09-27):
+      #   - `composer install` CON scripts bootea la app (post-autoload-dump → package:discover) y el panel
+      #     registra su CSS con `Vite::asset(...)` → sin `public/build/manifest.json` FALLA.
+      #   - `npm run build` necesita `vendor/` (el `theme.css` de Filament vive ahí) → sin vendor FALLA.
+      # Es un círculo; se rompe instalando SIN scripts, buildeando los assets, y recién ahí corriendo los
+      # scripts de composer (que ya encuentran el manifest).
+      - name: "composer install sin scripts (todavía no hay manifest de Vite)"
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
       - name: Dependencias del frontend
         run: npm ci
       - name: Build de assets (Vite) — necesario para bootear el panel
         run: npm run build
-      - name: Preparar entorno (.env del ejemplo)
-        run: cp .env.example .env
-      - name: composer install
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: "Scripts de composer (package:discover, ya con el manifest)"
+        run: composer dump-autoload
       - name: APP_KEY
         run: php artisan key:generate
       # La suite corre con sqlite :memory: (phpunit.xml, T2.2): NO necesita servicio de base.
@@ -80,14 +88,17 @@ jobs:
         with:
           node-version: '20'
           cache: npm
+      - name: Preparar entorno (.env del ejemplo)
+        run: cp .env.example .env
+      # Mismo círculo que en `phpunit` (ver el comentario de ahí): sin scripts → build → scripts.
+      - name: "composer install sin scripts (todavía no hay manifest de Vite)"
+        run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
       - name: Dependencias del frontend
         run: npm ci
       - name: Build de assets (Vite) — larastan bootea la app para resolver el container
         run: npm run build
-      - name: Preparar entorno (.env del ejemplo)
-        run: cp .env.example .env
-      - name: composer install
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: "Scripts de composer (package:discover, ya con el manifest)"
+        run: composer dump-autoload
       # `composer phpstan` = nivel 5 con larastan + baseline (T2.1): lo que NO está en el baseline,
       # rompe el gate. Los 4 hallazgos estructurales que PHPStan no deja baselinear están documentados
       # en phpstan.neon (exclusiones con comentario y ticket).

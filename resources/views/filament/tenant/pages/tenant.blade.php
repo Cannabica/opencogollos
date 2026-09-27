@@ -249,19 +249,21 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 {{ $user->name }}
-                                {{-- Identificadores en línea, chicos y del mismo formato que "Activo" /
-                                     "Cambio requerido" (revisión de Frankie, 2026-09-27: el badge de
-                                     Filament caía a un renglón propio y el emoji era otra familia).
+                                {{-- Identificadores en línea, chicos y del mismo formato (revisión de
+                                     Frankie, 2026-09-27). Se usa el badge de Filament --que ya trae los
+                                     colores del tema y el modo oscuro-- con `!inline-flex`, porque el
+                                     badge por defecto es `flex` y caía a un renglón propio. Las clases
+                                     sueltas (`bg-*-100`) no se veían: no están en el CSS compilado.
                                      Quién administra sale de `tenants.owner_user_id`. --}}
                                 @if($user->isTenantOwner())
-                                    <span class="ml-2 px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded">
+                                    <x-filament::badge color="warning" size="xs" style="display: inline-flex" class="ml-2">
                                         ★ Administrador
-                                    </span>
+                                    </x-filament::badge>
                                 @endif
                                 @if($user->id === auth()->id())
-                                    <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                                    <x-filament::badge color="gray" size="xs" style="display: inline-flex" class="ml-2">
                                         Vos
-                                    </span>
+                                    </x-filament::badge>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>

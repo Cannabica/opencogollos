@@ -100,14 +100,48 @@ class TeamUserInvitationTest extends TestCase
             TeamUserInvitationNotification::class,
             function (TeamUserInvitationNotification $notification) use ($invitada) {
                 // El link apunta al formulario de contraseña (el mismo que ya tiene la validación
-                // visual en vivo) y lleva el token del broker para ESE usuario.
+                // visual en vivo), lleva el token del broker para ESE usuario y va FIRMADO: Filament
+                // exige firma en esa ruta y sin ella responde 403 (medido 2026-09-27).
                 return str_contains($notification->invitationUrl, 'password-reset')
-                    && str_contains($notification->invitationUrl, urlencode($invitada->email));
+                    && str_contains($notification->invitationUrl, urlencode($invitada->email))
+                    && str_contains($notification->invitationUrl, 'signature=');
             }
         );
 
         // El token del broker existe y es el que viajó en el link (vive 48 h, ver config/auth.php).
         $this->assertSame(2880, (int) config('auth.passwords.users.expire'));
+    }
+
+    public function test_el_link_de_invitacion_funciona_de_verdad(): void
+    {
+        // Este test es el que hubiera cazado el 403: sigue el link tal cual lo recibe la persona.
+        // Sin la firma, Filament responde 403 aunque el token sea válido.
+        Notification::fake();
+        ['owner' => $owner] = $this->entorno();
+        $this->actingAs($owner);
+
+        Livewire::test(TenantPage::class)
+            ->set('userName', 'Invitada')
+            ->set('userEmail', 'invitada@ejemplo.test')
+            ->set('inviteMode', 'self')
+            ->call('addUser');
+
+        $url = null;
+        Notification::assertSentTo(
+            User::where('email', 'invitada@ejemplo.test')->first(),
+            TeamUserInvitationNotification::class,
+            function (TeamUserInvitationNotification $notification) use (&$url) {
+                $url = $notification->invitationUrl;
+
+                return true;
+            }
+        );
+
+        // Quien abre el link del mail NO está logueado: si hubiera sesión, Filament redirige (302) en vez
+        // de mostrar el formulario. Este test sigue el link como lo hace la persona invitada.
+        \Illuminate\Support\Facades\Auth::logout();
+
+        $this->get($url)->assertOk();
     }
 
     public function test_el_alta_queda_en_la_trazabilidad_con_su_modalidad(): void

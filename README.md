@@ -31,7 +31,7 @@ panel de cultivador). Sin marca propia: es **marca blanca**, cada instalación l
 ## Quickstart (Docker, ~2 minutos)
 
 Necesitás **Docker** con Compose. No hace falta PHP, Composer ni Node en tu máquina: la imagen se
-construye con todo adentro.
+construye con todo adentro (`composer install` + `npm run build`).
 
 ```bash
 git clone https://github.com/Cannabica/opencogollos.git
@@ -39,17 +39,22 @@ cd opencogollos
 cp .env.local.example .env.local
 
 # 1) generar la APP_KEY (indispensable: sin esto la app no arranca).
-#    `key:generate` escribe .env, NO .env.local: aca se pide que la imprima y la pegas vos.
-docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
-    php artisan key:generate --show          # copia esa salida a APP_KEY= en .env.local
+#    `key:generate` escribe .env, NO .env.local: acá se pide el valor con --show y va a tu .env.local.
+#    El `--entrypoint php --no-deps` evita correr el entrypoint del contenedor (que migra y siembra)
+#    sólo para imprimir una key.
+docker compose -f docker-compose.local.yml --env-file .env.local run --rm --no-deps \
+    --entrypoint php php artisan key:generate --show      # copiá esa salida a APP_KEY= en .env.local
 
-# ...o hacele el pegado automatico:
-#   KEY=$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
-#         php artisan key:generate --show | tail -1)
+# ...o hacé el pegado automático:
+#   KEY=$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm --no-deps \
+#         --entrypoint php php artisan key:generate --show | tail -1)
 #   sed -i "s|^APP_KEY=.*|APP_KEY=$KEY|" .env.local
 
 # 2) levantar el stack
 docker compose -f docker-compose.local.yml --env-file .env.local up -d --build
+
+# 3) verificar que quedó arriba (tiene que dar 302 hacia /tenant/login)
+curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' http://localhost:8090/
 ```
 
 Listo. La app queda en:
@@ -62,6 +67,33 @@ Listo. La app queda en:
 
 El stack que levanta este compose es **liviano**: `caddy` (web), `php` (app), `db` (PostgreSQL) y
 `mailpit` (mails de prueba). No incluye el stack de observabilidad.
+
+### Si algo no anda
+
+| Síntoma | Causa más probable | Qué hacer |
+|---|---|---|
+| No responde o **502** | El contenedor `php` no terminó de arrancar | `docker compose -f docker-compose.local.yml --env-file .env.local logs php` — tiene que llegar a `ready to handle connections`. Si dice `Migración fallida`, la base no está lista: mirá `logs db` |
+| **500** `No application encryption key has been specified` | La `APP_KEY` de `.env.local` quedó vacía | repetí el paso 1 |
+| **Puertos ocupados** | Ya tenés algo en 8090/8080/8025 | en `.env.local`: `APP_HTTP_PORT` y `APP_HTTPS_PORT` (el HTTPS tiene que ser el HTTP + 10000); y los puertos de `adminer`/`mailpit` en el compose |
+| La app se ve **sin estilos** | Se montó el `public/` de tu host (un clone no tiene `npm run build`) | no uses el override de desarrollo (abajo) para una instalación normal |
+
+> **¿Por qué anda sin PHP ni Node en tu máquina?** El compose local **no** monta tu código ni tus
+> `vendor/`/`node_modules`: usa los que trae la imagen. Montar `.:/var/www/html` sobre un clone limpio
+> tapa esas dependencias con carpetas vacías del host, `php artisan` falla con 255 y el proxy devuelve
+> 502. Fue un bug real, corregido el 2026-09-27.
+
+### Desarrollo (hot-reload)
+
+Si vas a **modificar el código**, montá el repo desde tu host con el override:
+
+```bash
+composer install && npm install && npm run build     # tu host necesita las deps y los assets
+docker compose -f docker-compose.local.yml -f docker-compose.dev.yml --env-file .env.local up -d
+```
+
+El override agrega los bind mounts de `.:/var/www/html`, `vendor/`, `node_modules/`, `public/` y
+`storage/`. Si te olvidás del `composer install`/`npm run build`, vas a ver el mismo 502 de arriba:
+ese camino **sí** exige las dependencias en el host.
 
 Después creá tu usuario de administración (si no, no podés entrar a `/superadmin`). Poné tu email
 y una clave en `.env.local` (`ADMIN_EMAIL` y `ADMIN_PASSWORD`), volvé a levantar el stack para que

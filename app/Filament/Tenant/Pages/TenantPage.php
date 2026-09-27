@@ -268,6 +268,47 @@ class TenantPage extends Page
         $this->users = $this->tenant->users()->get();
     }
 
+    /**
+     * Designa a un miembro como administrador del grupo (`tenants.owner_user_id`).
+     *
+     * Cierra el último tramo del ownership con señal propia: hasta acá no había forma de transferirlo
+     * desde la app, así que un grupo cuyo email no coincidía con ningún usuario quedaba sin
+     * administrador y sin salida (caso real: "Green Lab Cultivo", resuelto por el backfill de la
+     * migración).
+     */
+    public function makeOwner($userId): void
+    {
+        if (! $this->isOwner) {
+            return;
+        }
+
+        $user = \App\Models\User::find($userId);
+
+        if (! $user || (int) $user->tenant_id !== (int) $this->tenant->id) {
+            return;
+        }
+
+        $anterior = $this->tenant->owner_user_id;
+
+        $this->tenant->update(['owner_user_id' => $user->id]);
+
+        \App\Models\SecurityEvent::record(
+            Auth::user(),
+            \App\Models\SecurityEvent::OWNER_CHANGED,
+            $anterior ? 'transferred' : 'assigned'
+        );
+
+        // Si se lo transferí a otra persona, dejo de administrar: la UI se recalcula sola.
+        $this->isOwner = Auth::user()->fresh()->isTenantOwner();
+        $this->users = $this->tenant->users()->get();
+
+        Notification::make()
+            ->title('Administrador actualizado')
+            ->body($user->name . ' ahora administra el grupo.')
+            ->success()
+            ->send();
+    }
+
     public function editUser($userId)
     {
         if (!$this->isOwner) {

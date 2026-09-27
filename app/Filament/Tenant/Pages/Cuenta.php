@@ -83,9 +83,19 @@ class Cuenta extends Page
                             // email no llegaría a los datos del form y el doble opt-in de los miembros
                             // nunca se dispararía (roto, detectado por los tests 2026-09-27).
                             ->dehydrated(fn () => ! Auth::user()->isTenantOwner())
-                            ->helperText(fn () => Auth::user()->isTenantOwner()
-                                ? 'Tu email es el del grupo: es lo que te identifica como owner.'
-                                : null)
+                            ->helperText(function () {
+                                if (! Auth::user()->isTenantOwner()) {
+                                    return null;
+                                }
+
+                                // Guía para la persona, sin jerga: el email del owner no se cambia solo
+                                // (cambiarlo le saca el acceso a su grupo), así que se le dice qué hacer.
+                                $contacto = config('platform.admin_email');
+
+                                return filled($contacto)
+                                    ? "¿Necesitás cambiarlo? Escribinos a {$contacto} y lo hacemos con vos."
+                                    : '¿Necesitás cambiarlo? Escribinos y lo hacemos con vos.';
+                            })
                             ->rules([
                                 // El email es la credencial de login: tiene que quedar único.
                                 // Se ignora el propio usuario (si no, guardar sin tocarlo fallaría).
@@ -132,11 +142,15 @@ class Cuenta extends Page
         $emailNuevo = $data['email'] ?? $emailActual;
 
         // Red de seguridad del bloqueo del owner (el campo ya viene deshabilitado, pero el guard va acá
-        // también): para el owner el email es el del grupo y cambiarlo le sacaría el panel.
+        // también). El mensaje guía a la persona, sin explicar la mecánica interna.
         if ($user->isTenantOwner() && $emailNuevo !== $emailActual) {
+            $contacto = config('platform.admin_email');
+
             $this->addError(
                 'email',
-                'Tu email es el del grupo y es lo que te identifica como owner: no se cambia desde acá. Escribinos si necesitás cambiarlo.'
+                filled($contacto)
+                    ? "Para cambiar el email con el que entrás, escribinos a {$contacto} y lo hacemos con vos: así no perdés el acceso a tu grupo."
+                    : 'Para cambiar el email con el que entrás, escribinos y lo hacemos con vos: así no perdés el acceso a tu grupo.'
             );
 
             return;

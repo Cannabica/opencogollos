@@ -146,13 +146,17 @@ class TenantPage extends Page
             'tenantName' => 'required|string|max:255',
         ]);
 
-        // El email del grupo NO se edita desde acá a propósito: `isTenantOwner()` se resuelve comparando
-        // `users.email` con `tenants.email`, así que cambiarlo le sacaría el panel al owner (no hay otra
-        // señal de ownership desde que se eliminó `owner_id`). Se avisa en vez de fallar en silencio.
+        // El email del grupo NO se edita desde acá: cambiarlo le sacaría el acceso al grupo a quien lo
+        // administra (no hay otra señal de ownership desde que se eliminó `owner_id`). El mensaje guía,
+        // sin explicar la mecánica interna.
         if ($this->tenantEmail !== $this->tenant->email) {
+            $contacto = config('platform.admin_email');
+
             $this->addError(
                 'tenantEmail',
-                'El email del grupo no se puede cambiar desde acá: es lo que te identifica como owner. Si necesitás cambiarlo, escribinos.'
+                filled($contacto)
+                    ? "Para cambiar este email escribinos a {$contacto} y lo hacemos con vos."
+                    : 'Para cambiar este email escribinos y lo hacemos con vos.'
             );
 
             return;

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PostponeProductReminderController;
 use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,5 +40,12 @@ Route::get('/storage/{path}', [StorageController::class, 'show'])
 // Filament y además incluía el borrado de cuenta, que dejaba el tenant huérfano.
 // Ver las tarjetas T10.x del board para el reemplazo in-house.
 
+// T2.8 (2026-09-19): acción "Posponer" del recordatorio de aplicación de producto.
+// `signed` = la firma es la autorización (no se puede forjar el link); `auth` = tiene que
+// haber un usuario logueado y la firma incluye su id. Ver PostponeProductReminderController.
+Route::middleware(['auth', 'signed'])->group(function () {
+    Route::get('/recordatorios/posponer/{type}/{count}/{action}', PostponeProductReminderController::class)
+        ->name('actions.postpone-notification');
+});
+
 require __DIR__ . '/auth.php';
-require __DIR__ . '/test_403.php';

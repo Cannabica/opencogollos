@@ -79,7 +79,9 @@ head1 "1. grep de fugas sobre HEAD = 0"
 # ---------------------------------------------------------------------------
 GREP_CMD="grep -rniE \"$LEAK_RE\""
 echo "  (comando del criterio: $GREP_CMD .  — acá con git grep = sólo archivos trackeados)"
-LEAKS="$(git grep -niE "$LEAK_RE" -- . || true)"
+# El propio script contiene el patrón por definición (es la regla que verifica), así que se excluye:
+# si no, el criterio nunca podría dar PASS.
+LEAKS="$(git grep -niE "$LEAK_RE" -- . ':(exclude)scripts/verificacion-integral.sh' || true)"
 LEAK_COUNT="$(printf '%s' "$LEAKS" | grep -c . || true)"
 if [ -n "$LEAK_ALLOWLIST_FILE" ] && [ -f "$LEAK_ALLOWLIST_FILE" ]; then
     LEAKS="$(printf '%s\n' "$LEAKS" | grep -vFf "$LEAK_ALLOWLIST_FILE" || true)"

@@ -133,6 +133,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubje
      */
     public function isTenantOwner(): bool
     {
+        // OJO (2026-09-27): el ownership está definido por EMAIL. La columna `tenants.owner_id` se
+        // eliminó en la migración 2025_04_26 y nunca se reemplazó por otra señal, así que esto es lo
+        // único que hay. Consecuencia directa: **cambiar el email del grupo le saca el panel al owner**,
+        // y por eso la edición inline del grupo no permite tocar el email (sólo el nombre).
+        // Ver TenantGroupDataTest y la tarjeta de deuda en el board.
         return $this->tenant && $this->email === $this->tenant->email;
     }
 

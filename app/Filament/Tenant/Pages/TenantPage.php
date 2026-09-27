@@ -302,7 +302,7 @@ class TenantPage extends Page
         $this->isOwner = Auth::user()->fresh()->isTenantOwner();
         $this->users = $this->tenant->users()->get();
 
-        Notification::make()
+        \Filament\Notifications\Notification::make()
             ->title('Administrador actualizado')
             ->body($user->name . ' ahora administra el grupo.')
             ->success()

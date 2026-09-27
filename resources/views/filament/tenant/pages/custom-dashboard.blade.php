@@ -12,11 +12,13 @@
                         <h3 class="text-xl font-bold text-orange-600 mb-1">¡Plataforma en Desarrollo!</h3>
                         <p class="text-lg text-orange-900">
                             Esta es una versión <span class="font-bold">ALFA</span> y puede presentar inestabilidades. 
-                            Si encuentras algún error, por favor
-                            <a href="https://forms.gle/ExezFvDNXfAJLbW4A" target="_blank"
-                                class="underline font-medium text-orange-600 hover:text-orange-800">
-                                mandalo acá
-                            </a>.
+                            @if (filled(config('platform.community.feedback_url')))
+                                Si encuentras algún error, por favor
+                                <a href="{{ config('platform.community.feedback_url') }}" target="_blank"
+                                    class="underline font-medium text-orange-600 hover:text-orange-800">
+                                    mandalo acá
+                                </a>.
+                            @endif
                         </p>
                     </div>
                     <img src="/images/bughunter.png" class="w-24 h-24 object-cover rounded">
@@ -33,7 +35,24 @@
             <div class="flex justify-between items-start mb-4">
             <div class="text-center">
                 <h2 class="text-2xl font-bold">¡Bienvenido! Podés comenzar por acá</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Este es un proyecto comunitario, te invito a sumarte al server de discord, seguirnos en instagram, twitter, podes ver revisar todo en <a href="http://cannabica.ar" class="underline">Cannabica.ar</a></p>
+                {{-- Invitación a la comunidad/marca: solo si la instalación la configuró --}}
+                @php
+                    $siteUrl = config('platform.site_url');
+                    $discordUrl = config('platform.community.discord_url');
+                    $brandName = config('platform.brand_name') ?: (filled($siteUrl) ? parse_url($siteUrl, PHP_URL_HOST) : null);
+
+                    $communityInvite = 'Este es un proyecto comunitario';
+                    if (filled($discordUrl)) {
+                        $communityInvite .= ', te invito a sumarte al server de discord';
+                    }
+                    if (filled($siteUrl)) {
+                        $communityInvite .= ', seguirnos en instagram, twitter, podes ver revisar todo en <a href="'
+                            . e($siteUrl) . '" class="underline">' . e($brandName) . '</a>';
+                    }
+                @endphp
+                @if (filled($siteUrl) || filled($discordUrl))
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{!! $communityInvite !!}</p>
+                @endif
             </div>    
                 <button @click="show = false" class="text-gray-500 hover:text-gray-700">
                     <x-icon name="heroicon-o-x-mark" class="w-6 h-6"/>

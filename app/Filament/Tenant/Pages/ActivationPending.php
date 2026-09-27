@@ -60,7 +60,7 @@ class ActivationPending extends Page
                                                 
                         Placeholder::make('message')
                             ->label('')
-                            ->content('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista, sumate al servidor de discord si querés interactuar o realizar alguna consulta.')
+                            ->content($this->activationMessage())
                             ->extraAttributes(['class' => 'text-gray-600 text-center']),
                     ])
                     ->columns(1),
@@ -75,5 +75,20 @@ class ActivationPending extends Page
                         }),
                 ])->alignCenter(),
             ]);
+    }
+
+    /**
+     * Mensaje de activación pendiente: la invitación a Discord solo aparece si
+     * la instalación configuró su comunidad (platform.community.discord_url).
+     */
+    protected function activationMessage(): string
+    {
+        $message = 'Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista';
+
+        if (filled(config('platform.community.discord_url'))) {
+            $message .= ', sumate al servidor de discord si querés interactuar o realizar alguna consulta';
+        }
+
+        return $message . '.';
     }
 }

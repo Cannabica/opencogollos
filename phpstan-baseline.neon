@@ -719,23 +719,3 @@ parameters:
 			message: "#^Relation 'action_type' is not found in App\\\\Models\\\\Action model\\.$#"
 			count: 1
 			path: app/Utilities/PlantActions/RegisterPruning.php
-
-		-
-			message: "#^Parameter \\#1 \\$telegram of method Telegram\\\\Bot\\\\Commands\\\\Command\\:\\:make\\(\\) expects Telegram\\\\Bot\\\\Api, Mockery\\\\MockInterface given\\.$#"
-			count: 1
-			path: tests/Feature/Telegram/AdminActionCommandsTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$telegram of method Telegram\\\\Bot\\\\Commands\\\\Command\\:\\:make\\(\\) expects Telegram\\\\Bot\\\\Api, Mockery\\\\MockInterface given\\.$#"
-			count: 1
-			path: tests/Feature/Telegram/AdminQueryCommandsTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$status of class App\\\\Services\\\\Admin\\\\AdminDigestService constructor expects App\\\\Services\\\\Admin\\\\PlatformStatusService, Mockery\\\\MockInterface given\\.$#"
-			count: 1
-			path: tests/Unit/Admin/AdminDigestServiceTest.php
-
-		-
-			message: "#^Method Tests\\\\Unit\\\\Telegram\\\\AdminCommandsTest\\:\\:apiMock\\(\\) should return Telegram\\\\Bot\\\\Api but returns Mockery\\\\MockInterface\\.$#"
-			count: 1
-			path: tests/Unit/Telegram/AdminCommandsTest.php

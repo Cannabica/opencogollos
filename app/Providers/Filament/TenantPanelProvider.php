@@ -52,6 +52,11 @@ class TenantPanelProvider extends PanelProvider
             ->authGuard('web')
             ->default()
             ->favicon(asset(path: 'images/favicon.png'))
+            // C4e (WS9/T9.5): el nombre de marca del panel es el MISMO que el de los
+            // logos y la PWA (platform.brand_name con fallback a app.name). Sin esto,
+            // los titulos de pagina ("Acceso - X", "Dashboard - X") seguian mostrando
+            // app.name y la instalacion mostraba dos nombres.
+            ->brandName(fn() => config('platform.brand_name') ?: config('app.name'))
             ->brandLogo(fn() => view('filament.admin.logo'))
             ->darkModeBrandLogo(fn() => view('filament.admin.logo-darkmode'))
             ->discoverResources(in: app_path('Filament/Tenant/Resources'), for: 'App\\Filament\\Tenant\\Resources')

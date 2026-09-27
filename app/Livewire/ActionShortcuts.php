@@ -29,7 +29,7 @@ class ActionShortcuts extends Component implements HasForms, HasActions
                 SVG)
             )
             ->tooltip("Reportar un issue, colabora con el desarrollo del proyecto")
-            ->url('https://forms.gle/ExezFvDNXfAJLbW4A', true);
+            ->url(config('platform.community.feedback_url'), true);
     }
 
     public function discordbutton(): Action
@@ -44,16 +44,28 @@ class ActionShortcuts extends Component implements HasForms, HasActions
             SVG)
             )
             ->tooltip("Sumate a la comunidad en Discord")
-            ->url('https://discord.gg/jN9Tje3eJe', true);
+            ->url(config('platform.community.discord_url'), true);
     }
 
 
     public function render(): string
     {
-        return <<<'HTML'
-            <div class="space-y-2"> 
-            {{ $this->reportBug }}
-            {{ $this->discordbutton }}
+        $showReportBug = filled(config('platform.community.feedback_url'));
+        $showDiscord = filled(config('platform.community.discord_url'));
+
+        // Instalación sin comunidad configurada: el bloque sale vacío (Livewire
+        // exige un root tag, así que se devuelve el wrapper sin acciones).
+        $actions = '';
+        if ($showReportBug) {
+            $actions .= '{{ $this->reportBug }}';
+        }
+        if ($showDiscord) {
+            $actions .= '{{ $this->discordbutton }}';
+        }
+
+        return <<<HTML
+            <div class="space-y-2">
+            {$actions}
             </div>
         HTML;
     }

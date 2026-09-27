@@ -40,7 +40,7 @@ class TutorialViewer extends Page
             $this->tutorialTitle = Str::title(str_replace('-', ' ', $slug));
         }
 
-        $this->content = Str::markdown($markdown);
+        $this->content = Str::markdown($this->interpolatePlatform($markdown));
 
         // Check for specific tutorial image, prioritizing cover version
         $coverPath = "images/tutorials/{$slug}-cover.png";
@@ -56,6 +56,53 @@ class TutorialViewer extends Page
     }
 
     public $image;
+
+    /**
+     * Parametrización de los tutoriales (épica open-core, WS4 · T4.6).
+     *
+     * Cada `.md` de `resources/markdown/tutorials` puede referirse a la
+     * plataforma con dos placeholders, que se reemplazan por el fragmento de
+     * markdown que encaja en la oración:
+     *
+     *   {{ plataforma }} → enlace a config('platform.platform_url')
+     *                      (sin config: "la plataforma")
+     *   {{ bot }}        → cláusula con el bot de config('platform.telegram_bot_username')
+     *                      (sin config: "busca el bot de tu instalación en Telegram")
+     *
+     * Así una instalación sin `PLATFORM_*` no muestra el dominio ni el bot de
+     * otra, y la instalación que los configura ve su propio link. La sustitución
+     * corre antes del parseo de markdown para que el link renderice como link.
+     */
+    private function interpolatePlatform(string $markdown): string
+    {
+        return str_replace(
+            ['{{ plataforma }}', '{{ bot }}'],
+            [$this->platformLink(), $this->telegramBotClause()],
+            $markdown,
+        );
+    }
+
+    private function platformLink(): string
+    {
+        $url = trim((string) config('platform.platform_url'));
+
+        if ($url === '') {
+            return 'la plataforma';
+        }
+
+        return '[' . (parse_url($url, PHP_URL_HOST) ?: $url) . '](' . $url . ')';
+    }
+
+    private function telegramBotClause(): string
+    {
+        $username = trim(ltrim((string) config('platform.telegram_bot_username'), '@'));
+
+        if ($username === '') {
+            return 'busca el bot de tu instalación en Telegram';
+        }
+
+        return 'busca nuestro bot oficial en Telegram: **[@' . $username . '](https://t.me/' . $username . ')**';
+    }
 
     public function getTitle(): string
     {

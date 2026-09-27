@@ -32,6 +32,12 @@ class SecurityEvent extends Model
      */
     public const EMAIL_CHANGED = 'email_changed';
 
+    /**
+     * Evento: cambió el email de contacto del GRUPO (no es credencial de login, pero es el canal de
+     * contacto del grupo: lo cambia sólo el owner y queda registrado).
+     */
+    public const TENANT_EMAIL_CHANGED = 'tenant_email_changed';
+
     /** El usuario eligió cambiarla desde "Cambiar contraseña". */
     public const CONTEXT_VOLUNTARY = 'voluntary';
 

@@ -55,7 +55,10 @@ class EmailChangeController extends Controller
         // quedaría apuntando a una dirección que ya no existe (reportado por Frankie, 2026-09-27: "quedó
         // desvinculado, no hay usuario que tenga el correo del admin del tenant"). El contacto acompaña:
         // sigue siendo la misma persona.
-        $tenant = $user->tenant;
+        //
+        // Se busca el grupo por id en vez de usar `$user->tenant`: la relación del modelo no está tipada
+        // (PHPStan no la resuelve) y tiparla es una tarea aparte del modelo.
+        $tenant = \App\Models\Tenant::find($user->tenant_id);
 
         if ($tenant && (int) $tenant->owner_user_id === (int) $user->id && $tenant->email === $emailViejo) {
             $tenant->update(['email' => $emailNuevo]);

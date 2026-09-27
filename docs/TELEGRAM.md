@@ -30,6 +30,9 @@ En tu `.env` (o `.env.local`, según cómo hayas instalado — ver `docs/INSTALL
 
 ```dotenv
 TELEGRAM_BOT_TOKEN=<el token de BotFather>
+# Obligatorio: Telegram manda este valor en el header X-Telegram-Bot-Api-Secret-Token.
+# Sin esto el webhook del bot rechaza TODO (503, fail closed).
+TELEGRAM_SECRET_TOKEN=<un string aleatorio tuyo>
 ```
 
 Y la URL del webhook. Si la dejás vacía, la app usa `APP_URL` + `/api/telegram/webhook/`:
@@ -91,9 +94,9 @@ Lista real de comandos registrados (salida de `php artisan telegram:commands:lis
 | `/auth <token>` | Vincula tu chat de Telegram con tu cuenta (ver §5) |
 | `/tenantinfo` | Datos de tu organización/tenant |
 | `/indoordetails` | Detalle de tus espacios de cultivo |
-| `/plants` | Listado de plantas (paginado) |
+| `/plantslist` | Listado de plantas (paginado) |
 | `/plantdetails` | Detalle de una planta |
-| `/actionslist` | Listado de acciones registradas |
+| `/acciones` | Listado de acciones registradas |
 | `/actiondetails` | Detalle de una acción |
 | `/seedslist` | Listado de semillas/genéticas |
 | `/repetirriego` | Repite el último riego cargado |
@@ -159,13 +162,38 @@ fail closed). Para registrar el webhook de ese bot:
 php artisan telegram:webhook:setup --bot=admin
 ```
 
-> **Nota de seguridad.** El webhook del bot de tenants (`/api/telegram/webhook/`) no valida el
-> header de secret token; el de admin sí. Tratá la URL del webhook como un dato sensible y, si tu
-> despliegue lo permite, restringí el acceso a esa ruta en el reverse proxy.
+> **Nota de seguridad.** Los DOS webhooks exigen el header `X-Telegram-Bot-Api-Secret-Token` y
+> fallan cerrado: sin `TELEGRAM_SECRET_TOKEN` (bot de tenants) o `TELEGRAM_ADMIN_SECRET_TOKEN`
+> (admin) configurado, responden **503**; con el header ausente o distinto, **401**. Las variables
+> tienen que estar puestas en el `.env` **y** registradas con `telegram:webhook:setup`, que es quien
+> le pasa el `secret_token` a Telegram y hace que Telegram agregue el header.
 
 ---
 
-## 7. Troubleshooting
+## 7. Probar los bots sin tocar Telegram (emulador local)
+
+Para desarrollar el bot no hace falta internet, ni un bot real, ni abrir el chat desde el celular:
+el repo trae un **emulador HTTP del Bot API** en `tools/telegram-emulator/` (PHP stdlib, sin
+dependencias) que emula el subconjunto que usa la app, entrega los updates al webhook y **registra
+los mensajes salientes** para poder verificarlos.
+
+```bash
+docker compose -f docker-compose.telegram-emulator.yml -p tg-emulator up -d
+curl -s http://127.0.0.1:8082/_emulator/health
+```
+
+Se enchufa apuntando `TELEGRAM_BASE_BOT_URL` al emulador (vacío = API real, producción no cambia):
+
+```dotenv
+TELEGRAM_BASE_BOT_URL=http://127.0.0.1:8082/bot
+```
+
+Guía completa (levantar/bajar, plano de control, E2E paso a paso, HTTPS con CA propia y los
+pitfalls): **`tools/telegram-emulator/README.md`**.
+
+---
+
+## 8. Troubleshooting
 
 | Síntoma | Causa habitual |
 |---|---|

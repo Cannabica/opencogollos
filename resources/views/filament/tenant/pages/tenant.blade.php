@@ -17,7 +17,7 @@
             {{-- Datos del GRUPO: edición inline y sólo para el owner (misma regla que la gestión de
                  usuarios de abajo; la validación real está en TenantPage::updateTenant). --}}
             @if($isOwner && ! $editingTenant)
-                <div>
+                <div class="flex flex-wrap gap-3">
                     <x-filament::button
                         wire:click="editTenant"
                         color="gray"
@@ -25,6 +25,17 @@
                         icon="heroicon-o-pencil-square"
                     >
                         Editar datos del grupo
+                    </x-filament::button>
+
+                    {{-- Alta de personas al grupo desde acá (revisión de Frankie, 2026-09-27): abre el
+                         formulario de la lista de abajo, donde se elige la modalidad. --}}
+                    <x-filament::button
+                        wire:click="$set('showUserForm', true)"
+                        color="primary"
+                        size="sm"
+                        icon="heroicon-o-user-plus"
+                    >
+                        Agregar persona al grupo
                     </x-filament::button>
                 </div>
             @endif
@@ -171,7 +182,33 @@
                             required
                         />
                     </div>
-                    
+
+                    @if(! $editingUser)
+                        {{-- Modalidad del alta (revisión de Frankie, 2026-09-27). Al editar un usuario ya
+                             existente no aplica: la clave ya la tiene. --}}
+                        <div class="mb-4 space-y-2">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="radio" wire:model="inviteMode" value="password" class="mt-1" />
+                                <span>
+                                    <span class="font-medium">Le mandamos una contraseña segura</span>
+                                    <span class="block text-sm text-gray-500 dark:text-gray-400">
+                                        La recibe por mail; en el primer ingreso se la pide cambiar.
+                                    </span>
+                                </span>
+                            </label>
+
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="radio" wire:model="inviteMode" value="self" class="mt-1" />
+                                <span>
+                                    <span class="font-medium">La define en su primer ingreso</span>
+                                    <span class="block text-sm text-gray-500 dark:text-gray-400">
+                                        Sin clave: recibe un link por mail (vence en 48 h) para elegir la suya.
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    @endif
+
                     <div class="flex gap-2">
                         <x-filament::button
                             wire:click="{{ $editingUser ? 'updateUser' : 'addUser' }}"

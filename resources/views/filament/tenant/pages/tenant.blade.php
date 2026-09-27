@@ -14,6 +14,45 @@
                 
             </div>
 
+            {{-- Datos del GRUPO: edición inline y sólo para el owner (misma regla que la gestión de
+                 usuarios de abajo; la validación real está en TenantPage::updateTenant). --}}
+            @if($isOwner && ! $editingTenant)
+                <div>
+                    <x-filament::button
+                        wire:click="editTenant"
+                        color="gray"
+                        size="sm"
+                        icon="heroicon-o-pencil-square"
+                    >
+                        Editar datos del grupo
+                    </x-filament::button>
+                </div>
+            @endif
+
+            @if($editingTenant)
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <x-filament::input wire:model="tenantName" placeholder="Nombre del grupo" required />
+
+                    {{-- El email del grupo es de sólo lectura: `isTenantOwner()` compara el email del
+                         usuario con este, así que cambiarlo dejaría al owner sin panel. --}}
+                    <div>
+                        <x-filament::input wire:model="tenantEmail" type="email" disabled />
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            El email del grupo te identifica como owner: para cambiarlo, escribinos.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <x-filament::button wire:click="updateTenant" color="primary" size="sm">
+                        Guardar
+                    </x-filament::button>
+                    <x-filament::button wire:click="cancelTenantEdit" color="gray" size="sm">
+                        Cancelar
+                    </x-filament::button>
+                </div>
+            @endif
+
             {{-- Accesos de cuenta: la experiencia vive integrada en "Mi Grupo" (revisión de Frankie,
                  2026-09-27). Son las páginas `tenant/cuenta` y `tenant/cambiar-password`, que ya no
                  aparecen en el menú lateral. --}}

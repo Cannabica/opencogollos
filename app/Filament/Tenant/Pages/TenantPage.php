@@ -102,6 +102,74 @@ class TenantPage extends Page
     }
 
     // User management methods
+    /*
+    |--------------------------------------------------------------------------
+    | Datos del GRUPO (edición inline, sólo el owner)
+    |--------------------------------------------------------------------------
+    |
+    | El nombre y el email del grupo son la identidad del grupo de trabajo, no un dato personal: los
+    | edita **sólo el owner** (misma regla que la gestión de usuarios de esta página). El email del
+    | grupo NO es credencial de login, así que no pide contraseña ni doble opt-in — pero sí queda en
+    | la trazabilidad de seguridad, porque cambia el canal de contacto del grupo.
+    */
+    public $editingTenant = false;
+
+    public $tenantName = '';
+
+    public $tenantEmail = '';
+
+    public function editTenant(): void
+    {
+        if (! $this->isOwner) {
+            return;
+        }
+
+        $this->editingTenant = true;
+        $this->tenantName = $this->tenant->name;
+        $this->tenantEmail = $this->tenant->email;
+    }
+
+    public function cancelTenantEdit(): void
+    {
+        $this->editingTenant = false;
+        $this->tenantName = '';
+        $this->tenantEmail = '';
+    }
+
+    public function updateTenant(): void
+    {
+        if (! $this->isOwner) {
+            return;
+        }
+
+        $this->validate([
+            'tenantName' => 'required|string|max:255',
+        ]);
+
+        // El email del grupo NO se edita desde acá a propósito: `isTenantOwner()` se resuelve comparando
+        // `users.email` con `tenants.email`, así que cambiarlo le sacaría el panel al owner (no hay otra
+        // señal de ownership desde que se eliminó `owner_id`). Se avisa en vez de fallar en silencio.
+        if ($this->tenantEmail !== $this->tenant->email) {
+            $this->addError(
+                'tenantEmail',
+                'El email del grupo no se puede cambiar desde acá: es lo que te identifica como owner. Si necesitás cambiarlo, escribinos.'
+            );
+
+            return;
+        }
+
+        $this->tenant->update([
+            'name' => $this->tenantName,
+        ]);
+
+        $this->editingTenant = false;
+
+        \Filament\Notifications\Notification::make()
+            ->title('Datos del grupo actualizados')
+            ->success()
+            ->send();
+    }
+
     public function addUser()
     {
         if (!$this->isOwner) {

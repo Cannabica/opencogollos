@@ -70,7 +70,7 @@ class TenantPanelProvider extends PanelProvider
             ->font('Inter')
             ->login()
             ->registration(\App\Filament\Tenant\Pages\Registration::class)
-            ->passwordReset()
+            ->passwordReset(\App\Filament\Tenant\Pages\ResetPassword::class)
             ->authGuard('web')
             ->default()
             ->favicon(asset(path: 'images/favicon.png'))

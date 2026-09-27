@@ -18,7 +18,6 @@
 /storage/framework/views/*
 
 Dockerfile
-docker-compose.yml
 docker-compose.local.yml
 .dockerignore
 

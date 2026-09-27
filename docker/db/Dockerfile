@@ -1,8 +1,8 @@
 FROM postgres:15
 
-ENV POSTGRES_DB=${DB_DATABASE:-cannabica}
-ENV POSTGRES_USER=${DB_USERNAME:-cannabica}
-ENV POSTGRES_PASSWORD=${DB_PASSWORD:-cannabica_dev}
+ENV POSTGRES_DB=${DB_DATABASE:-opencogollos}
+ENV POSTGRES_USER=${DB_USERNAME:-opencogollos}
+ENV POSTGRES_PASSWORD=${DB_PASSWORD:-opencogollos_dev}
 
 # Copiar scripts de inicialización personalizados
 COPY ./docker/db/init-scripts/ /docker-entrypoint-initdb.d/

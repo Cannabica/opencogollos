@@ -247,28 +247,29 @@
                     <tbody class="divide-y divide-gray-200">
                         @foreach($users as $user)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {{ $user->name }}
-                                {{-- Identificadores en línea, chicos y del mismo formato (revisión de
-                                     Frankie, 2026-09-27). Se usa el badge de Filament --que ya trae los
-                                     colores del tema y el modo oscuro-- con `!inline-flex`, porque el
-                                     badge por defecto es `flex` y caía a un renglón propio. Las clases
-                                     sueltas (`bg-*-100`) no se veían: no están en el CSS compilado.
-                                     Quién administra sale de `tenants.owner_user_id`. --}}
-                                @if($user->isTenantOwner())
-                                    <x-filament::badge color="warning" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px; vertical-align: middle;" class="ml-2">
-                                        ★ Administrador
-                                    </x-filament::badge>
-                                @endif
-                                @if($user->id === auth()->id())
-                                    {{-- `info` en vez de `gray`: en modo oscuro el gris quedaba con
-                                         contraste bajo (el panel se usa en dark). --}}
-                                    <x-filament::badge color="info" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px; vertical-align: middle;" class="ml-3">
-                                        Vos
-                                    </x-filament::badge>
-                                @endif
+                            {{-- `flex-wrap`: con zoom o pantallas angostas, los identificadores bajan a la
+                                 línea siguiente en vez de desbordar sobre la columna de email (reportado
+                                 por Frankie, 2026-09-27). El `whitespace-nowrap` que había antes lo
+                                 impedía. --}}
+                            <td class="px-6 py-4 align-middle">
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
+                                    <span>{{ $user->name }}</span>
+                                    @if($user->isTenantOwner())
+                                        <x-filament::badge color="warning" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px;">
+                                            ★ Administrador
+                                        </x-filament::badge>
+                                    @endif
+                                    @if($user->id === auth()->id())
+                                        {{-- `info` en vez de `gray`: en modo oscuro el gris quedaba con
+                                             contraste bajo (el panel se usa en dark). --}}
+                                        <x-filament::badge color="info" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px;">
+                                            Vos
+                                        </x-filament::badge>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
+                            {{-- El email también puede envolver: si no, con zoom empuja la tabla. --}}
+                            <td class="px-6 py-4" style="word-break: break-word;">{{ $user->email }}</td>
                             @if($isOwner)
                             
                                 <td class="px-6 py-4 whitespace-nowrap">

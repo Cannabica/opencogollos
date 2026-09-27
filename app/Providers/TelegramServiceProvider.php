@@ -18,7 +18,7 @@ class TelegramServiceProvider extends ServiceProvider
         // despues y gana, asi que nunca resolvieron a lo de la app (verificado: `app('telegram')` =
         // Telegram\Bot\BotsManager). Y la clase que instanciaban heredaba de BotsManager, que el SDK 3.16
         // declara `final` => no cargaba, era un landmine. Se borro la clase + los bindings + la
-        // `registerBindings()` privada (nunca llamada) con la decision A de Frankie (2026-09-19).
+        // `registerBindings()` privada (nunca llamada) con la decision A del dueño del repo (2026-09-19).
         // El binding de `telegram`/BotsManager lo sigue aportando el provider del SDK.
     }
 

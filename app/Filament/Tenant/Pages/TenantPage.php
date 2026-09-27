@@ -128,6 +128,9 @@ class TenantPage extends Page
         }
 
         $this->editingTenant = true;
+        // El casillero de "crear la persona" arranca apagado en cada edición (y en `updateTenant` se
+        // vuelve a apagar), así no queda marcado de una edición anterior.
+        $this->createUserForEmail = false;
         $this->tenantName = $this->tenant->name;
         $this->tenantEmail = $this->tenant->email;
     }
@@ -137,6 +140,22 @@ class TenantPage extends Page
         $this->editingTenant = false;
         $this->tenantName = '';
         $this->tenantEmail = '';
+    }
+
+    /**
+     * ¿Tiene sentido ofrecer crear una persona para la dirección que se está escribiendo?
+     *
+     * Sólo si el email del grupo CAMBIÓ (si es el mismo, no hay nada que crear) y esa dirección no tiene
+     * usuario. Revisión de Frankie, 2026-09-27: "debe verse solo si se modificó el correo del tenant
+     * admin, sino es innecesario".
+     */
+    public function puedeCrearPersonaParaElEmail(): bool
+    {
+        $email = trim((string) $this->tenantEmail);
+
+        return filled($email)
+            && $email !== $this->tenant->email
+            && ! \App\Models\User::where('email', $email)->exists();
     }
 
     public function updateTenant(): void

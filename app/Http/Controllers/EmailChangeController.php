@@ -51,6 +51,18 @@ class EmailChangeController extends Controller
         $user->email = $emailNuevo;
         $user->save();
 
+        // Si esta persona administra un grupo cuyo email de contacto ES la dirección vieja, el grupo
+        // quedaría apuntando a una dirección que ya no existe (reportado por Frankie, 2026-09-27: "quedó
+        // desvinculado, no hay usuario que tenga el correo del admin del tenant"). El contacto acompaña:
+        // sigue siendo la misma persona.
+        $tenant = $user->tenant;
+
+        if ($tenant && (int) $tenant->owner_user_id === (int) $user->id && $tenant->email === $emailViejo) {
+            $tenant->update(['email' => $emailNuevo]);
+
+            SecurityEvent::record($user, SecurityEvent::TENANT_EMAIL_CHANGED, 'acompanado');
+        }
+
         $solicitud->update(['confirmed_at' => now()]);
 
         // Trazabilidad de seguridad (tabla propia, separada de la telemetría de uso).

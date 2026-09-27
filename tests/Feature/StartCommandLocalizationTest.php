@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Telegram\Admin\Commands\StartCommand as AdminStartCommand;
 use App\Telegram\Commands\StartCommand as TenantStartCommand;
 use Mockery;
+use Mockery\MockInterface;
 use Telegram\Bot\Api;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Update;
@@ -23,6 +24,7 @@ class StartCommandLocalizationTest extends TestCase
 
     private const BRAND = 'MiMarca';
 
+    /** @var list<array<string, mixed>> */
     private array $replies = [];
 
     protected function tearDown(): void
@@ -31,6 +33,7 @@ class StartCommandLocalizationTest extends TestCase
         parent::tearDown();
     }
 
+    /** @return Api&MockInterface */
     private function apiMock(): Api
     {
         $api = Mockery::mock(Api::class);
@@ -65,7 +68,12 @@ class StartCommandLocalizationTest extends TestCase
         $command = new $commandClass();
         $command->make($this->apiMock(), $update, ['offset' => 0, 'length' => strlen($text), 'type' => 'bot_command']);
 
-        return $this->replies[0]['text'] ?? '';
+        // El array lo llena el mock de `sendMessage` (PHPStan no sigue el callback), asi que el tipo
+        // se declara en la variable local: es la forma de que `[0]['text']` no sea un offset sobre `array{}`.
+        /** @var array<int, array<string, mixed>> $replies */
+        $replies = $this->replies;
+
+        return $replies[0]['text'] ?? '';
     }
 
     private function configurePlatform(): void

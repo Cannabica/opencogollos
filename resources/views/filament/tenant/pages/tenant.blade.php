@@ -268,8 +268,11 @@
                                     @endif
                                 </div>
                             </td>
-                            {{-- El email también puede envolver: si no, con zoom empuja la tabla. --}}
-                            <td class="px-6 py-4" style="word-break: break-word;">{{ $user->email }}</td>
+                            {{-- El email va en UNA línea (Frankie, 2026-09-27: "el email no quiero que lo
+                                 warpee"). Ahora el que cede es la columna del nombre --que envuelve--, y
+                                 para un email muy largo el contenedor de la tabla tiene scroll
+                                 horizontal. --}}
+                            <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
                             @if($isOwner)
                             
                                 <td class="px-6 py-4 whitespace-nowrap">

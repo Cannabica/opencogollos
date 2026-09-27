@@ -104,15 +104,30 @@ else
     COMPOSE="docker compose -f docker-compose.local.yml --env-file .env.local"
     cp .env.local.example .env.local
     # Puertos propios para no chocar con un dev local ya levantado.
+    # OJO: el HTTPS NO puede armarse como "1" + puerto — con APP_PORT=18090 eso daba 118090 (fuera del
+    # rango válido) y `docker compose up` moría con "invalid hostPort", así que el criterio 2 fallaba
+    # SIEMPRE que el puerto HTTP tuviera más de 4 dígitos. Se calcula +10000 y se valida el rango.
+    HTTPS_PORT="${APP_HTTPS_PORT:-$((APP_PORT + 10000))}"
+    if [ "$HTTPS_PORT" -gt 65535 ]; then
+        fail "APP_HTTPS_PORT fuera de rango: $HTTPS_PORT (elegí otro APP_PORT)"
+    fi
     {
         echo "APP_HTTP_PORT=$APP_PORT"
-        echo "APP_HTTPS_PORT=1$APP_PORT"
+        echo "APP_HTTPS_PORT=$HTTPS_PORT"
         echo "APP_URL=http://localhost:$APP_PORT"
     } >> .env.local
-    # APP_KEY: el README usa key:generate dentro del contenedor (--env=local escribe .env.local).
-    docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
-        php artisan --env=local key:generate || fail "key:generate falló"
-    grep -qE '^APP_KEY=base64:.+' .env.local && pass "APP_KEY generada" || fail "APP_KEY vacía"
+    # APP_KEY: el README (T6.1) ya documenta el pitfall — `key:generate` escribe `.env`, NO `.env.local`
+    # —, y por eso pide el valor con `--show` para pegarlo en el `.env.local` del HOST. El script no lo
+    # respetaba: el contenedor `run --rm` es efímero y el compose NO bind-montea el código, así que lo
+    # que escribía adentro se perdía y la app arrancaba con MissingAppKeyException (500) → criterio 2
+    # en FAIL siempre. Acá se hace exactamente lo que el README manda.
+    APP_KEY_VALUE="$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
+        php artisan key:generate --show 2>/dev/null | tail -1 || true)"
+    if printf '%s' "$APP_KEY_VALUE" | grep -qE '^base64:.+'; then
+        sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY_VALUE|" .env.local
+    fi
+    grep -qE '^APP_KEY=base64:.+' .env.local && pass "APP_KEY generada (via --show, como el README)" \
+        || fail "APP_KEY vacía en .env.local"
 
     $COMPOSE up -d --build || fail "docker compose up falló"
     # El entrypoint migra solo: esperamos a que la app responda.

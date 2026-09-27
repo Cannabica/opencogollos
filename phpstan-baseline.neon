@@ -1,0 +1,741 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\WebhookInfo\\:\\:getAllowedUpdates\\(\\)\\.$#"
+			count: 1
+			path: app/Console/Commands/Telegram/WebhookSetupCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\WebhookInfo\\:\\:getHasCustomCertificate\\(\\)\\.$#"
+			count: 1
+			path: app/Console/Commands/Telegram/WebhookSetupCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\WebhookInfo\\:\\:getLastErrorDate\\(\\)\\.$#"
+			count: 2
+			path: app/Console/Commands/Telegram/WebhookSetupCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\WebhookInfo\\:\\:getLastErrorMessage\\(\\)\\.$#"
+			count: 1
+			path: app/Console/Commands/Telegram/WebhookSetupCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\WebhookInfo\\:\\:getMaxConnections\\(\\)\\.$#"
+			count: 1
+			path: app/Console/Commands/Telegram/WebhookSetupCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\WebhookInfo\\:\\:getPendingUpdateCount\\(\\)\\.$#"
+			count: 2
+			path: app/Console/Commands/Telegram/WebhookSetupCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\WebhookInfo\\:\\:getUrl\\(\\)\\.$#"
+			count: 3
+			path: app/Console/Commands/Telegram/WebhookSetupCommand.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 1
+			path: app/Filament/Pages/Dashboard.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Filament/Resources/CropPlanResource.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: app/Filament/Resources/CropPlanResource.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$tenant_id\\.$#"
+			count: 3
+			path: app/Filament/Resources/CropPlanResource.php
+
+		-
+			message: "#^Parameter \\#1 \\$condition of method Filament\\\\Forms\\\\Components\\\\TextInput\\:\\:numeric\\(\\) expects bool\\|Closure, 1 given\\.$#"
+			count: 1
+			path: app/Filament/Resources/CropPlanResource.php
+
+		-
+			message: "#^Called 'pluck' on Laravel collection, but could have been retrieved as a query\\.$#"
+			count: 1
+			path: app/Filament/Resources/PlantStatesResource.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$active\\.$#"
+			count: 1
+			path: app/Filament/Resources/TenantResource/Pages/EditTenant.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$email\\.$#"
+			count: 7
+			path: app/Filament/Resources/TenantResource/Pages/EditTenant.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 13
+			path: app/Filament/Resources/TenantResource/Pages/EditTenant.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 5
+			path: app/Filament/Resources/TenantResource/Pages/EditTenant.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:users\\(\\)\\.$#"
+			count: 4
+			path: app/Filament/Resources/TenantResource/Pages/EditTenant.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$tenant\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Pages/ActivationPending.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Filament\\\\Tenant\\\\Pages\\\\PasswordChange\\:\\:\\$form\\.$#"
+			count: 2
+			path: app/Filament/Tenant/Pages/PasswordChange.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$email\\.$#"
+			count: 2
+			path: app/Filament/Tenant/Pages/Registration.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 3
+			path: app/Filament/Tenant/Pages/Registration.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Pages/Registration.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$tenant_id\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Pages/Registration.php
+
+		-
+			message: "#^Call to an undefined method Filament\\\\Forms\\\\Components\\\\Component\\:\\:required\\(\\)\\.$#"
+			count: 4
+			path: app/Filament/Tenant/Pages/Registration.php
+
+		-
+			message: "#^Class App\\\\Notifications\\\\TeamUserActivationNotification constructor invoked with 2 parameters, 1 required\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Pages/Registration.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$tenant\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Pages/TenantPage.php
+
+		-
+			message: "#^Parameter \\#1 \\$rules of method Filament\\\\Pages\\\\BasePage\\:\\:validate\\(\\) expects array\\<string, array\\>\\|null, array\\<string, string\\> given\\.$#"
+			count: 3
+			path: app/Filament/Tenant/Pages/TenantPage.php
+
+		-
+			message: "#^Called 'pluck' on Laravel collection, but could have been retrieved as a query\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/Actions/Services/ActionRecordService.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$action_type_id\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/ActionsResource/Pages/CreateActions.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$plants_count\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/ActionsResource/Pages/CreateActions.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/ActionsResource/Pages/EditActions.php
+
+		-
+			message: "#^Cannot call method plants\\(\\) on Illuminate\\\\Database\\\\Eloquent\\\\Model\\|int\\|string\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/ActionsResource/Pages/EditActions.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/CropPlanResource.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/CropPlanResource.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isGlobal\\(\\)\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/CropPlanResource.php
+
+		-
+			message: "#^Dead catch \\- PDOException is never thrown in the try block\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/CropPlanResource.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/CropPlanResource.php
+
+		-
+			message: "#^Parameter \\#1 \\$condition of method Filament\\\\Forms\\\\Components\\\\TextInput\\:\\:numeric\\(\\) expects bool\\|Closure, 1 given\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/CropPlanResource.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/PlantsResource.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/PlantsResource/Pages/ListPlants.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/PlantsResource/RelationManagers/ActionsRelationManager.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$id\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/SeedResource.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$name\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/SeedResource.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:isGlobal\\(\\)\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/SeedResource.php
+
+		-
+			message: "#^Dead catch \\- PDOException is never thrown in the try block\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/SeedResource.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Resources/SeedResource.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function md5 expects string, int given\\.$#"
+			count: 2
+			path: app/Filament/Tenant/Widgets/ActionTypesLineWidget.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function md5 expects string, int given\\.$#"
+			count: 2
+			path: app/Filament/Tenant/Widgets/ActionsChartWidget.php
+
+		-
+			message: "#^Relation 'action_type' is not found in App\\\\Models\\\\Action model\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/ActionsTimelineWidget.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$day_of_week\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/ActivityHeatmapWidget.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$hour\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/ActivityHeatmapWidget.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$total\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/ActivityHeatmapWidget.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/PlantList.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Indoor\\:\\:\\$plants\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/PlantStatesByIndoorWidget.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/PlantStatesByIndoorWidget.php
+
+		-
+			message: "#^Relation 'plants' is not found in App\\\\Models\\\\Indoor model\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/PlantStatesByIndoorWidget.php
+
+		-
+			message: "#^Attribute class App\\\\Filament\\\\Tenant\\\\Widgets\\\\Livewire\\\\Attributes\\\\On does not exist\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/ProductNotificationsWidget.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$indoor\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/UpcomingNotificationsWidget.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Action model\\.$#"
+			count: 1
+			path: app/Filament/Tenant/Widgets/UpcomingNotificationsWidget.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Plant\\|Illuminate\\\\Database\\\\Eloquent\\\\Collection\\<int, App\\\\Models\\\\Plant\\>\\:\\:\\$indoor\\.$#"
+			count: 1
+			path: app/Http/Controllers/PlantController.php
+
+		-
+			message: "#^Relation 'actions' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 1
+			path: app/Http/Controllers/PlantController.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 3
+			path: app/Http/Controllers/PlantController.php
+
+		-
+			message: "#^Relation 'seedType' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 2
+			path: app/Http/Controllers/PlantController.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Contracts\\\\Auth\\\\Authenticatable\\:\\:\\$tenant_id\\.$#"
+			count: 1
+			path: app/Http/Controllers/StorageController.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$tenant\\.$#"
+			count: 1
+			path: app/Http/Middleware/CheckTenantActivation.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\ApiToken\\:\\:\\$tenant\\.$#"
+			count: 1
+			path: app/Http/Middleware/TenantTokenMiddleware.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$indoor\\.$#"
+			count: 2
+			path: app/Jobs/SendDelayedProductNotification.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Action model\\.$#"
+			count: 1
+			path: app/Jobs/SendDelayedProductNotification.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$tenant\\.$#"
+			count: 1
+			path: app/Models/Scopes/TenantScope.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$plants_per_cycle\\.$#"
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$tenant\\.$#"
+			count: 4
+			path: app/Models/User.php
+
+		-
+			message: "#^PHPDoc type array of property App\\\\Models\\\\User\\:\\:\\$appends is not covariant with PHPDoc type array\\<int, string\\> of overridden property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$appends\\.$#"
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: "#^Argument of an invalid type Illuminate\\\\Routing\\\\RouteCollectionInterface supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: app/Providers/RouteServiceProvider.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Tenant\\:\\:\\$owner\\.$#"
+			count: 1
+			path: app/Services/Admin/TenantAdminService.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Tenant\\:\\:\\$users_count\\.$#"
+			count: 1
+			path: app/Services/Admin/TenantAdminService.php
+
+		-
+			message: "#^Relation 'owner' is not found in App\\\\Models\\\\Tenant model\\.$#"
+			count: 1
+			path: app/Services/Admin/TenantAdminService.php
+
+		-
+			message: "#^Access to an undefined property Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:\\$callback_query\\.$#"
+			count: 3
+			path: app/Services/TelegramLogger.php
+
+		-
+			message: "#^Access to an undefined property Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:\\$update_id\\.$#"
+			count: 1
+			path: app/Services/TelegramLogger.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\UsageEvent\\:\\:\\$day_of_week\\.$#"
+			count: 1
+			path: app/Support/UsageStats.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\UsageEvent\\:\\:\\$hour\\.$#"
+			count: 1
+			path: app/Support/UsageStats.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\UsageEvent\\:\\:\\$pageviews\\.$#"
+			count: 1
+			path: app/Support/UsageStats.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\UsageEvent\\:\\:\\$tenants\\.$#"
+			count: 1
+			path: app/Support/UsageStats.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\UsageEvent\\:\\:\\$total\\.$#"
+			count: 1
+			path: app/Support/UsageStats.php
+
+		-
+			message: "#^Relation 'actions' is not found in App\\\\Models\\\\Tenant model\\.$#"
+			count: 3
+			path: app/Support/UsageStats.php
+
+		-
+			message: "#^Relation 'indoors' is not found in App\\\\Models\\\\Tenant model\\.$#"
+			count: 8
+			path: app/Support/UsageStats.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$action_type\\.$#"
+			count: 1
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$indoor\\.$#"
+			count: 1
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$user\\.$#"
+			count: 1
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Plant\\:\\:\\$seedType\\.$#"
+			count: 1
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:getCallbackQuery\\(\\)\\.$#"
+			count: 4
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Relation 'action_type' is not found in App\\\\Models\\\\Action model\\.$#"
+			count: 1
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Action model\\.$#"
+			count: 1
+			path: app/Telegram/Commands/ActionDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$plants\\.$#"
+			count: 2
+			path: app/Telegram/Commands/ActionsListCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 2
+			path: app/Telegram/Commands/ActionsListCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:getUpdateId\\(\\)\\.$#"
+			count: 2
+			path: app/Telegram/Commands/ActionsListCommand.php
+
+		-
+			message: "#^Using nullsafe method call on non\\-nullable type Telegram\\\\Bot\\\\Objects\\\\Update\\. Use \\-\\> instead\\.$#"
+			count: 2
+			path: app/Telegram/Commands/ActionsListCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 6
+			path: app/Telegram/Commands/AuthCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:getUpdateId\\(\\)\\.$#"
+			count: 2
+			path: app/Telegram/Commands/AuthCommand.php
+
+		-
+			message: "#^Using nullsafe method call on non\\-nullable type Illuminate\\\\Support\\\\Collection\\. Use \\-\\> instead\\.$#"
+			count: 2
+			path: app/Telegram/Commands/AuthCommand.php
+
+		-
+			message: "#^Using nullsafe method call on non\\-nullable type Telegram\\\\Bot\\\\Objects\\\\Update\\. Use \\-\\> instead\\.$#"
+			count: 4
+			path: app/Telegram/Commands/AuthCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Indoor\\:\\:\\$plants\\.$#"
+			count: 1
+			path: app/Telegram/Commands/CallbackHandlerCommand.php
+
+		-
+			message: "#^Access to an undefined property Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:\\$callback_query\\.$#"
+			count: 1
+			path: app/Telegram/Commands/CallbackHandlerCommand.php
+
+		-
+			message: "#^Comparison operation \"\\<\" between 0 and int\\<1, max\\> is always true\\.$#"
+			count: 1
+			path: app/Telegram/Commands/CallbackHandlerCommand.php
+
+		-
+			message: "#^Comparison operation \"\\>\" between 0 and 0 is always false\\.$#"
+			count: 1
+			path: app/Telegram/Commands/CallbackHandlerCommand.php
+
+		-
+			message: "#^Relation 'plants' is not found in App\\\\Models\\\\Indoor model\\.$#"
+			count: 1
+			path: app/Telegram/Commands/CallbackHandlerCommand.php
+
+		-
+			message: "#^Variable \\$navButtons in empty\\(\\) always exists and is not falsy\\.$#"
+			count: 1
+			path: app/Telegram/Commands/CallbackHandlerCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Indoor\\:\\:\\$actions\\.$#"
+			count: 2
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Indoor\\:\\:\\$hygrometer\\.$#"
+			count: 1
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Indoor\\:\\:\\$plants\\.$#"
+			count: 2
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:getUpdateId\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function htmlspecialchars expects string, float given\\.$#"
+			count: 3
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Relation 'actions' is not found in App\\\\Models\\\\Indoor model\\.$#"
+			count: 1
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Relation 'plants' is not found in App\\\\Models\\\\Indoor model\\.$#"
+			count: 1
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Using nullsafe method call on non\\-nullable type Telegram\\\\Bot\\\\Objects\\\\Update\\. Use \\-\\> instead\\.$#"
+			count: 1
+			path: app/Telegram/Commands/IndoorDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Support\\\\Collection\\:\\:\\$chat\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PhotoHandlerCommand.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Support\\\\Collection\\:\\:\\$message_id\\.$#"
+			count: 6
+			path: app/Telegram/Commands/PhotoHandlerCommand.php
+
+		-
+			message: "#^Access to an undefined property Illuminate\\\\Support\\\\Collection\\:\\:\\$photo\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PhotoHandlerCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PhotoHandlerCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:getUpdateId\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PhotoHandlerCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$action_type\\.$#"
+			count: 2
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Action\\:\\:\\$count\\.$#"
+			count: 2
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Plant\\:\\:\\$indoor\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Plant\\:\\:\\$seedType\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Call to an undefined method Telegram\\\\Bot\\\\Objects\\\\Update\\:\\:getCallbackQuery\\(\\)\\.$#"
+			count: 4
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function htmlspecialchars expects string, int given\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function htmlspecialchars expects string, int\\<min, \\-1\\>\\|int\\<1, max\\> given\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Relation 'action_type' is not found in App\\\\Models\\\\Action model\\.$#"
+			count: 2
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Relation 'seedType' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantDetailsCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantsListCommand.php
+
+		-
+			message: "#^Comparison operation \"\\<\" between 0 and int\\<1, max\\> is always true\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantsListCommand.php
+
+		-
+			message: "#^Comparison operation \"\\>\" between 0 and 0 is always false\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantsListCommand.php
+
+		-
+			message: "#^Variable \\$navButtons in empty\\(\\) always exists and is not falsy\\.$#"
+			count: 1
+			path: app/Telegram/Commands/PlantsListCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/RepeatLastIrrigationCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/SeedsListCommand.php
+
+		-
+			message: "#^Call to an undefined method Illuminate\\\\Support\\\\Collection\\:\\:getFrom\\(\\)\\.$#"
+			count: 1
+			path: app/Telegram/Commands/TenantInfoCommand.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: app/Telegram/Commands/TenantInfoCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function htmlspecialchars expects string, int\\<min, \\-1\\>\\|int\\<1, max\\> given\\.$#"
+			count: 1
+			path: app/Telegram/Commands/TenantInfoCommand.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Models\\\\Plant\\:\\:\\$indoor\\.$#"
+			count: 1
+			path: app/Utilities/PlantActions/RegisterPruning.php
+
+		-
+			message: "#^Relation 'action_type' is not found in App\\\\Models\\\\Action model\\.$#"
+			count: 1
+			path: app/Utilities/PlantActions/RegisterPruning.php
+
+		-
+			message: "#^Parameter \\#1 \\$telegram of method Telegram\\\\Bot\\\\Commands\\\\Command\\:\\:make\\(\\) expects Telegram\\\\Bot\\\\Api, Mockery\\\\MockInterface given\\.$#"
+			count: 1
+			path: tests/Feature/Telegram/AdminActionCommandsTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$telegram of method Telegram\\\\Bot\\\\Commands\\\\Command\\:\\:make\\(\\) expects Telegram\\\\Bot\\\\Api, Mockery\\\\MockInterface given\\.$#"
+			count: 1
+			path: tests/Feature/Telegram/AdminQueryCommandsTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$status of class App\\\\Services\\\\Admin\\\\AdminDigestService constructor expects App\\\\Services\\\\Admin\\\\PlatformStatusService, Mockery\\\\MockInterface given\\.$#"
+			count: 1
+			path: tests/Unit/Admin/AdminDigestServiceTest.php
+
+		-
+			message: "#^Method Tests\\\\Unit\\\\Telegram\\\\AdminCommandsTest\\:\\:apiMock\\(\\) should return Telegram\\\\Bot\\\\Api but returns Mockery\\\\MockInterface\\.$#"
+			count: 1
+			path: tests/Unit/Telegram/AdminCommandsTest.php

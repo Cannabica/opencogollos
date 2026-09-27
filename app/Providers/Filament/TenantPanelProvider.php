@@ -33,11 +33,33 @@ class TenantPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        FilamentAsset::register([
-            // CSS del dashboard/panel que vivía en public/css/custom.css (legacy),
-            // migrado a entrada Vite: resources/css/filament/tenant/dashboard.css
-            Css::make('custom-css', \Illuminate\Support\Facades\Vite::asset('resources/css/filament/tenant/dashboard.css')),
-        ]);
+        // CSS del dashboard/panel que vivía en public/css/custom.css (legacy), migrado a
+        // entrada Vite: resources/css/filament/tenant/dashboard.css.
+        // ⚠️ Registro TOLERANTE a un manifest incompleto: si el manifest de Vite no tiene la
+        // entrada (build de la imagen desactualizado, cache del CI), NO debe romper — un
+        // Vite::asset() sin la key lanza excepción al boot del provider y tumba TODOS los
+        // comandos artisan (incluido migrate del entrypoint → contenedor unhealthy). Si el
+        // asset falta, se registra sin el CSS custom (la UI queda con el default, no caída).
+        $dashboardCssUrl = null;
+        $manifestPath = public_path('build/manifest.json');
+        if (is_file($manifestPath)) {
+            $manifest = json_decode((string) file_get_contents($manifestPath), true);
+            $entry = is_array($manifest) ? ($manifest['resources/css/filament/tenant/dashboard.css'] ?? null) : null;
+            if (is_array($entry) && isset($entry['file'])) {
+                // URL ABSOLUTA (asset()): Filament respeta las URLs con host como asset
+                // externo (link directo al build). Un path relativo ("/build/...") lo trata
+                // como asset propio y lo reescribe a su endpoint /css/{panel}/{id}.css → 404
+                // y el CSS no carga (bug detectado en prod con la UI del dashboard rota).
+                $dashboardCssUrl = asset('build/' . $entry['file']);
+            }
+        }
+
+        $assets = [];
+        if ($dashboardCssUrl !== null) {
+            $assets[] = Css::make('custom-css', $dashboardCssUrl);
+        }
+
+        FilamentAsset::register($assets);
 
         return $panel
             ->id('tenant')

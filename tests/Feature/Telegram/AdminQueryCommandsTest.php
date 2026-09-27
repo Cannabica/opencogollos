@@ -41,8 +41,8 @@ class AdminQueryCommandsTest extends TestCase
                 'message_id' => 1,
                 'date' => time(),
                 'text' => $text,
-                'from' => ['id' => $fromId, 'is_bot' => false, 'first_name' => 'Frankie'],
-                'chat' => ['id' => $fromId, 'type' => 'private', 'first_name' => 'Frankie'],
+                'from' => ['id' => $fromId, 'is_bot' => false, 'first_name' => 'Tester'],
+                'chat' => ['id' => $fromId, 'type' => 'private', 'first_name' => 'Tester'],
             ],
         ]);
 

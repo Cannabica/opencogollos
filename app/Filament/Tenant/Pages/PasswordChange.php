@@ -3,6 +3,8 @@
 namespace App\Filament\Tenant\Pages;
 
 use App\Models\SecurityEvent;
+use App\Notifications\PasswordChangedNotification;
+use App\Services\PasswordChangeNotifier;
 use Filament\Pages\Page;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
@@ -111,15 +113,24 @@ class PasswordChange extends Page
         // que el cambio voluntario, con el contexto que distingue que acá lo impuso el sistema.
         SecurityEvent::record($user, SecurityEvent::PASSWORD_CHANGED, SecurityEvent::CONTEXT_FORCED);
 
-        // Show success notification
+        // Aviso a la cuenta: mail siempre, y Telegram si el grupo tiene un chat asociado.
+        app(PasswordChangeNotifier::class)->notify($user, PasswordChangedNotification::CONTEXT_FORCED);
+
+        // Se cierra la sesión: la credencial vieja ya no vale, así que hay que volver a entrar con la nueva.
+        Auth::logout();
+
+        if (request()->hasSession()) {
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
+
         Notification::make()
-            ->title('Contraseña Cambiada Exitosamente')
-            ->body('Tu contraseña ha sido actualizada correctamente. Ahora puedes acceder al sistema.')
+            ->title('Contraseña cambiada')
+            ->body('Entrá de nuevo con tu contraseña nueva.')
             ->success()
             ->send();
 
-        // Redirect to dashboard
-        redirect()->route('filament.tenant.pages.dashboard');
+        redirect()->route('filament.tenant.auth.login');
     }
 
     public function logout(): void

@@ -34,6 +34,65 @@ class CuentaPageTest extends TestCase
         ], $extra));
     }
 
+    public function test_el_owner_no_puede_cambiarse_el_email_desde_mis_datos(): void
+    {
+        // Para el owner, su email ES el del grupo y es lo que lo identifica como owner: si lo cambiara
+        // desde acá, perdería el panel (medido 2026-09-27). El campo viene deshabilitado y el guardado
+        // también lo rechaza.
+        \Illuminate\Support\Facades\Notification::fake();
+
+        $tenant = Tenant::factory()->create(['active' => true, 'email' => 'owner@ejemplo.test']);
+        $owner = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'owner@ejemplo.test',
+            'password' => \Illuminate\Support\Facades\Hash::make('Password1!'),
+        ]);
+        $this->actingAs($owner);
+
+        Livewire::test(Cuenta::class)
+            ->fillForm([
+                'name' => $owner->name,
+                'email' => 'otro@ejemplo.test',
+            ])
+            ->call('guardar');
+
+        // El campo viene deshabilitado, así que el intento ni llega: la garantía es que el email NO
+        // cambia y el owner NO pierde el panel (no hace falta que haya un mensaje de error).
+        $this->assertSame('owner@ejemplo.test', $owner->fresh()->email);
+        $this->assertTrue($owner->fresh()->isTenantOwner(), 'No puede quedar sin panel.');
+        \Illuminate\Support\Facades\Notification::assertNothingSent();
+    }
+
+    public function test_el_miembro_si_puede_pedir_el_cambio_de_su_email(): void
+    {
+        // El bloqueo es sólo para el owner: un miembro tiene su propio email y puede cambiarlo (con
+        // doble opt-in, ver EmailChangeRequestTest).
+        \Illuminate\Support\Facades\Notification::fake();
+
+        $tenant = Tenant::factory()->create(['active' => true, 'email' => 'grupo@ejemplo.test']);
+        $miembro = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'miembro@ejemplo.test',
+            'password' => \Illuminate\Support\Facades\Hash::make('Password1!'),
+        ]);
+        $this->actingAs($miembro);
+
+        Livewire::test(Cuenta::class)
+            ->fillForm([
+                'name' => $miembro->name,
+                'email' => 'nuevo@ejemplo.test',
+                'current_password' => 'Password1!',
+            ])
+            ->call('guardar')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(
+            1,
+            \App\Models\EmailChangeRequest::where('user_id', $miembro->id)->count(),
+            'El miembro tiene que poder pedir el cambio (queda pendiente de confirmación).'
+        );
+    }
+
     public function test_el_usuario_puede_cambiar_su_nombre(): void
     {
         \Illuminate\Support\Facades\Notification::fake();

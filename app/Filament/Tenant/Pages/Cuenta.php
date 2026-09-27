@@ -75,6 +75,17 @@ class Cuenta extends Page
                             ->email()
                             ->required()
                             ->maxLength(255)
+                            // Para el OWNER el email es el mismo que el del grupo y es lo que lo identifica
+                            // como owner: si lo cambia acá, pierde el panel (medido 2026-09-27). Se muestra
+                            // de sólo lectura y el guardado también lo rechaza (ver `guardar()`).
+                            ->disabled(fn () => Auth::user()->isTenantOwner())
+                            // ⚠️ `dehydrated` sólo se apaga para el OWNER: si se apagara para todos, el
+                            // email no llegaría a los datos del form y el doble opt-in de los miembros
+                            // nunca se dispararía (roto, detectado por los tests 2026-09-27).
+                            ->dehydrated(fn () => ! Auth::user()->isTenantOwner())
+                            ->helperText(fn () => Auth::user()->isTenantOwner()
+                                ? 'Tu email es el del grupo: es lo que te identifica como owner.'
+                                : null)
                             ->rules([
                                 // El email es la credencial de login: tiene que quedar único.
                                 // Se ignora el propio usuario (si no, guardar sin tocarlo fallaría).
@@ -118,7 +129,18 @@ class Cuenta extends Page
         $user = Auth::user();
 
         $emailActual = $user->email;
-        $emailNuevo = $data['email'];
+        $emailNuevo = $data['email'] ?? $emailActual;
+
+        // Red de seguridad del bloqueo del owner (el campo ya viene deshabilitado, pero el guard va acá
+        // también): para el owner el email es el del grupo y cambiarlo le sacaría el panel.
+        if ($user->isTenantOwner() && $emailNuevo !== $emailActual) {
+            $this->addError(
+                'email',
+                'Tu email es el del grupo y es lo que te identifica como owner: no se cambia desde acá. Escribinos si necesitás cambiarlo.'
+            );
+
+            return;
+        }
 
         $user->name = $data['name'];
         $user->save();

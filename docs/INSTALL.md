@@ -36,16 +36,19 @@ specified`). Ojo: `php artisan key:generate` escribe en `.env`, y en el camino D
 del contenedor sale de `.env.local` — así que pedile la clave con `--show` y pegala:
 
 ```bash
-docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
-    php artisan key:generate --show
+docker compose -f docker-compose.local.yml --env-file .env.local run --rm --no-deps \
+    --entrypoint php php artisan key:generate --show
 # copiá la salida (base64:...) a APP_KEY= en .env.local
 ```
+
+El `--entrypoint php --no-deps` evita correr el entrypoint del contenedor (que migra y siembra) sólo
+para imprimir una clave.
 
 O en un solo paso:
 
 ```bash
-KEY=$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
-      php artisan key:generate --show | tail -1)
+KEY=$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm --no-deps \
+      --entrypoint php php artisan key:generate --show | tail -1)
 sed -i "s|^APP_KEY=.*|APP_KEY=$KEY|" .env.local
 grep -q '^APP_KEY=base64:' .env.local && echo "APP_KEY OK"
 ```

@@ -50,6 +50,9 @@ class SecurityEvent extends Model
     /** El sistema la obligó (primer acceso / reset administrativo). */
     public const CONTEXT_FORCED = 'forced';
 
+    /** La persona la definió al entrar por una invitación (primer acceso auto-gestionado). */
+    public const CONTEXT_INITIAL = 'initial';
+
     protected $fillable = [
         'tenant_id',
         'user_id',

@@ -93,6 +93,50 @@ class PasswordChangeLoopTest extends TestCase
             ->assertRedirect(route('filament.tenant.pages.password-change'));
     }
 
+    public function test_definir_la_contrasena_por_la_invitacion_no_vuelve_a_pedir_el_cambio(): void
+    {
+        // Flujo real reportado por Frankie (2026-09-27): la persona recibe el link "elegí tu contraseña",
+        // la define... y el sistema le pedía OTRA VEZ el cambio obligatorio al entrar, porque el alta
+        // dejó `force_password_change = true` y el flujo de reset no lo limpiaba.
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'tenant_id' => Tenant::factory()->create(['active' => true])->id,
+            'email' => 'invitada@ejemplo.test',
+            'password' => Hash::make('aleatoria-que-nadie-conoce'),
+            'force_password_change' => true,   // así la deja el alta
+        ]);
+
+        $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
+
+        Livewire::test(\App\Filament\Tenant\Pages\ResetPassword::class, [
+            'email' => 'invitada@ejemplo.test',
+            'token' => $token,
+        ])
+            ->fillForm([
+                'password' => 'NuevaClave2@',
+                'passwordConfirmation' => 'NuevaClave2@',
+            ])
+            ->call('resetPassword');
+
+        $this->assertFalse(
+            (bool) $user->fresh()->force_password_change,
+            'Al definirla por la invitación, el cambio obligatorio ya está cumplido: si queda en true, el middleware lo pide de nuevo (loop).'
+        );
+        $this->assertTrue(Hash::check('NuevaClave2@', $user->fresh()->password));
+
+        // Y la prueba final: al entrar, el panel la deja pasar (si el flag siguiera en true, sería 302).
+        $this->actingAs($user->fresh())
+            ->get('/tenant/tenant-page')
+            ->assertOk();
+
+        $this->assertSame(
+            SecurityEvent::CONTEXT_INITIAL,
+            SecurityEvent::where('user_id', $user->id)->value('context'),
+            'El establecimiento inicial tiene su propio contexto en la trazabilidad.'
+        );
+    }
+
     public function test_el_cambio_deja_su_evento_de_seguridad(): void
     {
         Notification::fake();

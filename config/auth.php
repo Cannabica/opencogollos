@@ -102,7 +102,11 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_reset_tokens',
-            'expire' => 60,
+            // 48 h (2026-09-27): el mismo token sirve para la invitación a un usuario nuevo del grupo
+            // ("la define en su primer ingreso"), que no se abre en una hora como un reset normal.
+            // Trade-off aceptado: el link de "olvidé mi contraseña" también vive 48 h. Si se quiere
+            // separar, hace falta una tabla de invitaciones propia con su propio vencimiento.
+            'expire' => 2880,
             'throttle' => 60,
         ],
         'tenants' => [

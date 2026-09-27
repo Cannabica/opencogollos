@@ -121,8 +121,10 @@ else
     # respetaba: el contenedor `run --rm` es efímero y el compose NO bind-montea el código, así que lo
     # que escribía adentro se perdía y la app arrancaba con MissingAppKeyException (500) → criterio 2
     # en FAIL siempre. Acá se hace exactamente lo que el README manda.
-    APP_KEY_VALUE="$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
-        php artisan key:generate --show 2>/dev/null | tail -1 || true)"
+    # `--entrypoint php --no-deps`: el comando del README. Sin eso, el `run` dispara el entrypoint del
+    # contenedor (que espera la DB y migra 30 veces) antes de imprimir la key.
+    APP_KEY_VALUE="$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm --no-deps \
+        --entrypoint php php artisan key:generate --show 2>/dev/null | grep -E '^base64:' | tail -1 || true)"
     if printf '%s' "$APP_KEY_VALUE" | grep -qE '^base64:.+'; then
         sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY_VALUE|" .env.local
     fi

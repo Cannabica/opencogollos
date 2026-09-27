@@ -40,6 +40,7 @@ COPY . .
 RUN if [ -n "$COMPOSER_AUTH" ]; then export COMPOSER_AUTH="$COMPOSER_AUTH"; fi; \
     composer install --no-dev --optimize-autoloader --no-scripts && \
     npm run build && \
+    node -e "const m=require('./public/build/manifest.json'); for (const k of ['resources/css/filament/tenant/theme.css','resources/css/filament/tenant/dashboard.css','resources/js/app.js']) { if (!m[k]) { console.error('FALTA en el manifest de Vite: '+k); process.exit(1); } } console.log('manifest OK: entradas Vite verificadas')" && \
     rm -rf node_modules
 
 FROM php:8.3-fpm-alpine

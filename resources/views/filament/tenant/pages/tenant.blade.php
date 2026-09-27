@@ -67,17 +67,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                     <x-filament::input wire:model="tenantName" placeholder="Nombre del grupo" required />
 
-                    {{-- El email del grupo es de sólo lectura: cambiarlo dejaría sin acceso a quien
-                         administra el grupo. El texto guía a la persona, sin jerga interna. --}}
+                    {{-- El email del grupo es su canal de contacto: se puede editar (ya no arrastra
+                         permisos: el ownership se resuelve por `tenants.owner_user_id`). --}}
                     <div>
-                        <x-filament::input wire:model="tenantEmail" type="email" disabled />
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            @if(filled(config('platform.admin_email')))
-                                ¿Necesitás cambiarlo? Escribinos a {{ config('platform.admin_email') }} y lo hacemos con vos.
-                            @else
-                                ¿Necesitás cambiarlo? Escribinos y lo hacemos con vos.
-                            @endif
-                        </p>
+                        <x-filament::input wire:model="tenantEmail" type="email" placeholder="Email de contacto" required />
                     </div>
                 </div>
 

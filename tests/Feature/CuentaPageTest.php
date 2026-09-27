@@ -34,11 +34,45 @@ class CuentaPageTest extends TestCase
         ], $extra));
     }
 
-    public function test_el_owner_no_puede_cambiarse_el_email_desde_mis_datos(): void
+    public function test_el_owner_sigue_siendo_owner_despues_de_cambiar_su_email(): void
     {
-        // Para el owner, su email ES el del grupo y es lo que lo identifica como owner: si lo cambiara
-        // desde acá, perdería el panel (medido 2026-09-27). El campo viene deshabilitado y el guardado
-        // también lo rechaza.
+        // ESTE es el bug que motivó el ownership con señal propia: antes el permiso se resolvía
+        // comparando emails, así que cambiar el email (acá se simula ya confirmado) dejaba al owner
+        // sin panel. Ahora manda `tenants.owner_user_id`.
+        $tenant = Tenant::factory()->create(['active' => true, 'email' => 'owner@ejemplo.test']);
+        $owner = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'owner@ejemplo.test',
+            'password' => \Illuminate\Support\Facades\Hash::make('Password1!'),
+        ]);
+        $tenant->update(['owner_user_id' => $owner->id]);
+
+        $owner->update(['email' => 'nuevo@ejemplo.test']);
+
+        $this->assertTrue(
+            $owner->fresh()->isTenantOwner(),
+            'El permiso de administrador no puede depender del email.'
+        );
+    }
+
+    public function test_un_grupo_sin_administrador_designado_cae_al_email_como_antes(): void
+    {
+        // Retrocompatibilidad del fallback: un tenant sin `owner_user_id` (por ejemplo, creado antes de
+        // la migración y sin backfill posible) sigue resolviendo el owner por email.
+        $tenant = Tenant::factory()->create(['active' => true, 'email' => 'grupo@ejemplo.test']);
+        $owner = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'grupo@ejemplo.test',
+        ]);
+
+        $this->assertNull($tenant->fresh()->owner_user_id);
+        $this->assertTrue($owner->fresh()->isTenantOwner());
+    }
+
+    public function test_el_owner_puede_pedir_el_cambio_de_su_email(): void
+    {
+        // Ya no está bloqueado (antes se le pedía escribir a soporte): el cambio va por doble opt-in y
+        // no mueve permisos.
         \Illuminate\Support\Facades\Notification::fake();
 
         $tenant = Tenant::factory()->create(['active' => true, 'email' => 'owner@ejemplo.test']);
@@ -47,20 +81,24 @@ class CuentaPageTest extends TestCase
             'email' => 'owner@ejemplo.test',
             'password' => \Illuminate\Support\Facades\Hash::make('Password1!'),
         ]);
+        $tenant->update(['owner_user_id' => $owner->id]);
         $this->actingAs($owner);
 
         Livewire::test(Cuenta::class)
             ->fillForm([
                 'name' => $owner->name,
-                'email' => 'otro@ejemplo.test',
+                'email' => 'nuevo@ejemplo.test',
+                'current_password' => 'Password1!',
             ])
-            ->call('guardar');
+            ->call('guardar')
+            ->assertHasNoFormErrors();
 
-        // El campo viene deshabilitado, así que el intento ni llega: la garantía es que el email NO
-        // cambia y el owner NO pierde el panel (no hace falta que haya un mensaje de error).
-        $this->assertSame('owner@ejemplo.test', $owner->fresh()->email);
-        $this->assertTrue($owner->fresh()->isTenantOwner(), 'No puede quedar sin panel.');
-        \Illuminate\Support\Facades\Notification::assertNothingSent();
+        $this->assertSame(
+            1,
+            \App\Models\EmailChangeRequest::where('user_id', $owner->id)->count(),
+            'El owner tiene que poder pedir el cambio (queda pendiente de confirmación).'
+        );
+        $this->assertTrue($owner->fresh()->isTenantOwner(), 'No puede perder el panel por pedirlo.');
     }
 
     public function test_el_miembro_si_puede_pedir_el_cambio_de_su_email(): void

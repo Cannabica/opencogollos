@@ -23,7 +23,7 @@ class Tenant extends Model
         'plants_per_cycle',
         'harvest_products',
         'activated_at',
-        'owner_id'
+        'owner_user_id'
     ];
 
     public function users()
@@ -31,9 +31,13 @@ class Tenant extends Model
         return $this->hasMany(User::class);
     }
 
+    /**
+     * Quién administra el grupo. La relación se apunta a `owner_user_id` (la columna `owner_id` que
+     * figuraba acá se había eliminado en la migración 2025_04_26 y quedó como referencia muerta).
+     */
     public function owner()
     {
-        return $this->belongsTo(User::class, 'owner_id');
+        return $this->belongsTo(User::class, 'owner_user_id');
     }
 
     public function indoors()

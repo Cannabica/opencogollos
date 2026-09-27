@@ -144,26 +144,15 @@ class TenantPage extends Page
 
         $this->validate([
             'tenantName' => 'required|string|max:255',
+            'tenantEmail' => 'required|email|unique:tenants,email,' . $this->tenant->id,
         ]);
 
-        // El email del grupo NO se edita desde acá: cambiarlo le sacaría el acceso al grupo a quien lo
-        // administra (no hay otra señal de ownership desde que se eliminó `owner_id`). El mensaje guía,
-        // sin explicar la mecánica interna.
-        if ($this->tenantEmail !== $this->tenant->email) {
-            $contacto = config('platform.admin_email');
-
-            $this->addError(
-                'tenantEmail',
-                filled($contacto)
-                    ? "Para cambiar este email escribinos a {$contacto} y lo hacemos con vos."
-                    : 'Para cambiar este email escribinos y lo hacemos con vos.'
-            );
-
-            return;
-        }
-
+        // El email del grupo es su canal de contacto (no una credencial): se puede cambiar. Con el
+        // ownership por id (`tenants.owner_user_id`) ya no arrastra permisos, así que dejó de estar
+        // bloqueado (2026-09-27).
         $this->tenant->update([
             'name' => $this->tenantName,
+            'email' => $this->tenantEmail,
         ]);
 
         $this->editingTenant = false;

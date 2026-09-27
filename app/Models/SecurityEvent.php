@@ -23,6 +23,15 @@ class SecurityEvent extends Model
     /** Evento: el usuario cambio su contrasena (ver `context` para el motivo). */
     public const PASSWORD_CHANGED = 'password_changed';
 
+    /**
+     * Evento: cambió el email de la cuenta.
+     *
+     * El email es la credencial de login, así que este cambio es de ALTO RIESGO: se exige la
+     * contraseña actual y se avisa a la dirección vieja Y a la nueva (el aviso a la vieja es lo que
+     * hace visible un cambio no autorizado: el atacante no controla esa casilla).
+     */
+    public const EMAIL_CHANGED = 'email_changed';
+
     /** El usuario eligió cambiarla desde "Cambiar contraseña". */
     public const CONTEXT_VOLUNTARY = 'voluntary';
 

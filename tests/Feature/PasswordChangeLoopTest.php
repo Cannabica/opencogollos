@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Tenant\Auth\ResetPassword;
 use App\Filament\Tenant\Pages\PasswordChange;
 use App\Models\SecurityEvent;
 use App\Models\Tenant;
@@ -109,7 +110,7 @@ class PasswordChangeLoopTest extends TestCase
 
         $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
 
-        Livewire::test(\App\Filament\Tenant\Pages\ResetPassword::class, [
+        Livewire::test(ResetPassword::class, [
             'email' => 'invitada@ejemplo.test',
             'token' => $token,
         ])

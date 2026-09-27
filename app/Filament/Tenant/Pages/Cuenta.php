@@ -79,13 +79,23 @@ class Cuenta extends Page
                                 // El email es la credencial de login: tiene que quedar único.
                                 // Se ignora el propio usuario (si no, guardar sin tocarlo fallaría).
                                 Rule::unique('users', 'email')->ignore(Auth::id()),
-                            ]),
+                            ])
+                            // `live()` porque la sección de confirmación de abajo aparece sólo cuando el
+                            // email efectivamente cambió.
+                            ->live(),
+                    ])
+                    ->columns(1),
 
-                        // Solo se exige si se está cambiando el email (es la credencial de login).
+                // La contraseña se pide AL FINAL y sólo si hay un cambio que guardar (revisión de
+                // Frankie, 2026-09-27): quien viene a corregir su nombre no ve un campo de contraseña.
+                Section::make('Confirmá el cambio de email')
+                    ->description('El email es tu credencial de acceso, así que este cambio se confirma desde la dirección nueva.')
+                    ->visible(fn ($get) => $get('email') !== Auth::user()->email)
+                    ->schema([
                         TextInput::make('current_password')
                             ->label('Contraseña actual')
                             ->password()
-                            ->required(fn ($get) => $get('email') !== Auth::user()->email)
+                            ->required()
                             ->rule(function () {
                                 return function ($attribute, $value, $fail) {
                                     if (filled($value) && ! Hash::check($value, Auth::user()->password)) {
@@ -93,7 +103,7 @@ class Cuenta extends Page
                                     }
                                 };
                             })
-                            ->helperText('Solo si cambiás el email: el cambio se confirma desde la dirección nueva, no se aplica en el momento.'),
+                            ->helperText('Te vamos a mandar un link a la dirección nueva: hasta que lo confirmes, seguís entrando con la actual.'),
                     ])
                     ->columns(1),
             ])

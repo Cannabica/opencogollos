@@ -47,6 +47,29 @@ class TenantEmailChangeTest extends TestCase
         return compact('tenant', 'owner');
     }
 
+    public function test_el_casillero_solo_se_ofrece_si_el_email_cambio_y_no_tiene_usuario(): void
+    {
+        // Revisión de Frankie, 2026-09-27: "debe verse solo si se modificó el correo del tenant admin,
+        // sino es innecesario".
+        Notification::fake();
+        ['tenant' => $tenant, 'owner' => $owner] = $this->entorno();
+        $this->actingAs($owner);
+
+        $componente = Livewire::test(TenantPage::class)->call('editTenant');
+
+        // Mismo email que el grupo: nada que crear.
+        $this->assertFalse($componente->instance()->puedeCrearPersonaParaElEmail());
+
+        // Cambió y no tiene usuario: se ofrece.
+        $componente->set('tenantEmail', 'nueva@ejemplo.test');
+        $this->assertTrue($componente->instance()->puedeCrearPersonaParaElEmail());
+
+        // Cambió a una dirección que YA es de alguien del grupo: no se ofrece (no se duplica).
+        User::factory()->create(['tenant_id' => $tenant->id, 'email' => 'ocupada@ejemplo.test']);
+        $componente->set('tenantEmail', 'ocupada@ejemplo.test');
+        $this->assertFalse($componente->instance()->puedeCrearPersonaParaElEmail());
+    }
+
     public function test_cambiar_el_email_no_crea_usuarios_solo(): void
     {
         Notification::fake();

@@ -249,15 +249,19 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 {{ $user->name }}
-                                {{-- Etiqueta de administrador del grupo (revisión de Frankie, 2026-09-27):
-                                     quién administra se define por `tenants.owner_user_id`. --}}
+                                {{-- Identificadores en línea, chicos y del mismo formato que "Activo" /
+                                     "Cambio requerido" (revisión de Frankie, 2026-09-27: el badge de
+                                     Filament caía a un renglón propio y el emoji era otra familia).
+                                     Quién administra sale de `tenants.owner_user_id`. --}}
                                 @if($user->isTenantOwner())
-                                    <x-filament::badge color="primary" size="xs" icon="heroicon-m-star" class="ml-1 align-middle">
-                                        Administrador
-                                    </x-filament::badge>
+                                    <span class="ml-2 px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded">
+                                        ★ Administrador
+                                    </span>
                                 @endif
                                 @if($user->id === auth()->id())
-                                    <span class="pildora">🫵🏼</span>
+                                    <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                                        Vos
+                                    </span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>

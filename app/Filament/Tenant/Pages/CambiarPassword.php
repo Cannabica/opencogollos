@@ -3,6 +3,8 @@
 namespace App\Filament\Tenant\Pages;
 
 use App\Models\SecurityEvent;
+use App\Notifications\PasswordChangedNotification;
+use App\Services\PasswordChangeNotifier;
 use Filament\Actions as PageActions;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -38,6 +40,9 @@ class CambiarPassword extends Page
     protected static ?string $navigationGroup = 'Grupo de trabajo';
 
     protected static ?int $navigationSort = 999;
+
+    // Se llega desde "Mi Grupo", no desde el menú lateral (misma decisión que "Mi cuenta").
+    protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
 
@@ -104,13 +109,27 @@ class CambiarPassword extends Page
         // Trazabilidad de seguridad (tabla propia, separada de la telemetría de uso).
         SecurityEvent::record($user, SecurityEvent::PASSWORD_CHANGED, SecurityEvent::CONTEXT_VOLUNTARY);
 
+        // Aviso a la cuenta: mail siempre, y Telegram si el grupo tiene un chat asociado.
+        app(PasswordChangeNotifier::class)->notify($user, PasswordChangedNotification::CONTEXT_VOLUNTARY);
+
+        // Cambiar la contraseña cierra la sesión: la que estaba abierta se abrió con la credencial
+        // vieja. Hay que volver a entrar con la nueva (y así el usuario la prueba de verdad).
+        Auth::logout();
+
+        // En el ciclo web normal la request tiene sesión; en un test de Livewire no está seteada, así
+        // que se guarda (el comportamiento donde importa es el mismo).
+        if (request()->hasSession()) {
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
+
         Notification::make()
             ->title('Contraseña actualizada')
-            ->body('Tu contraseña quedó guardada.')
+            ->body('Por seguridad cerramos tu sesión. Entrá de nuevo con tu contraseña nueva.')
             ->success()
             ->send();
 
-        $this->form->fill();
+        redirect()->route('filament.tenant.auth.login');
     }
 
     /**

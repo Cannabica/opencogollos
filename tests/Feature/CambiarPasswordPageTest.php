@@ -7,22 +7,23 @@ use App\Filament\Tenant\Pages\PasswordChange;
 use App\Models\SecurityEvent;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\PasswordChangedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * T10.4 — "Cambiar contraseña" (página propia) + su trazabilidad de seguridad.
+ * "Cambiar contraseña" (página propia) + su trazabilidad y sus avisos.
  *
- * Dos reglas del producto (corrección de diseño de Frankie, 2026-09-27):
- *  1. El cambio de contraseña vive en su propia página, no dentro de "Mi cuenta".
- *  2. Cada cambio queda registrado en `security_events` — una tabla PROPIA, separada de
- *     `usage_events` (que es telemetría de uso y mide pageviews, no acciones de cuenta).
- *
- * El `context` es lo que hace útil el registro para auditar: no es lo mismo que el usuario haya
- * elegido cambiarla (`voluntary`, esta página) a que el sistema lo haya obligado (`forced`, la
- * página del primer acceso `PasswordChange`).
+ * Tres reglas del producto (revisión de Frankie, 2026-09-27):
+ *  1. El cambio vive en su propia página (se llega desde "Mi Grupo", no del menú).
+ *  2. Cada cambio queda en `security_events` — tabla propia, separada de la telemetría de uso.
+ *  3. Después de cambiar la contraseña **se cierra la sesión** (la abierta usaba la credencial vieja)
+ *     y **se avisa a la cuenta por mail** (el aviso es lo único que hace visible un cambio no
+ *     autorizado). El aviso por Telegram, si el grupo tiene chat, se cubre en
+ *     `PasswordChangeNotificationTest`.
  */
 class CambiarPasswordPageTest extends TestCase
 {
@@ -40,6 +41,7 @@ class CambiarPasswordPageTest extends TestCase
 
     public function test_el_usuario_puede_cambiar_su_contrasena(): void
     {
+        Notification::fake();
         $user = $this->usuario();
         $this->actingAs($user);
 
@@ -55,8 +57,48 @@ class CambiarPasswordPageTest extends TestCase
         $this->assertTrue(Hash::check('NuevaClave2@', $user->fresh()->password));
     }
 
+    public function test_despues_de_cambiar_la_contrasena_se_cierra_la_sesion(): void
+    {
+        Notification::fake();
+        $user = $this->usuario();
+        $this->actingAs($user);
+
+        $this->assertAuthenticated();
+
+        Livewire::test(CambiarPassword::class)
+            ->fillForm([
+                'current_password' => 'Password1!',
+                'new_password' => 'NuevaClave2@',
+                'new_password_confirmation' => 'NuevaClave2@',
+            ])
+            ->call('guardar')
+            ->assertRedirect(route('filament.tenant.auth.login'));
+
+        // La sesión se abrió con la credencial vieja: tiene que volver a entrar con la nueva.
+        $this->assertGuest();
+    }
+
+    public function test_se_avisa_por_mail_cuando_el_cambio_sale_bien(): void
+    {
+        Notification::fake();
+        $user = $this->usuario();
+        $this->actingAs($user);
+
+        Livewire::test(CambiarPassword::class)
+            ->fillForm([
+                'current_password' => 'Password1!',
+                'new_password' => 'NuevaClave2@',
+                'new_password_confirmation' => 'NuevaClave2@',
+            ])
+            ->call('guardar')
+            ->assertHasNoFormErrors();
+
+        Notification::assertSentTo($user, PasswordChangedNotification::class);
+    }
+
     public function test_el_cambio_voluntario_queda_registrado_en_seguridad(): void
     {
+        Notification::fake();
         $user = $this->usuario();
         $this->actingAs($user);
 
@@ -77,8 +119,9 @@ class CambiarPasswordPageTest extends TestCase
         $this->assertSame($user->tenant_id, $evento->tenant_id);
     }
 
-    public function test_no_cambia_ni_registra_si_la_actual_es_incorrecta(): void
+    public function test_no_cambia_no_registra_ni_avisa_si_la_actual_es_incorrecta(): void
     {
+        Notification::fake();
         $user = $this->usuario();
         $this->actingAs($user);
 
@@ -97,10 +140,13 @@ class CambiarPasswordPageTest extends TestCase
             SecurityEvent::where('user_id', $user->id)->count(),
             'Un intento fallido no es un cambio: no debe dejar evento de seguridad.'
         );
+        Notification::assertNothingSent();
+        $this->assertAuthenticated();
     }
 
     public function test_la_nueva_contrasena_tiene_que_cumplir_la_regla(): void
     {
+        Notification::fake();
         $user = $this->usuario();
         $this->actingAs($user);
 
@@ -118,6 +164,7 @@ class CambiarPasswordPageTest extends TestCase
 
     public function test_el_cambio_obligatorio_del_primer_acceso_se_registra_como_forzado(): void
     {
+        Notification::fake();
         $user = $this->usuario(['force_password_change' => true]);
         $this->actingAs($user);
 
@@ -127,7 +174,8 @@ class CambiarPasswordPageTest extends TestCase
                 'new_password' => 'NuevaClave2@',
                 'new_password_confirmation' => 'NuevaClave2@',
             ])
-            ->call('changePassword');
+            ->call('changePassword')
+            ->assertRedirect(route('filament.tenant.auth.login'));
 
         $evento = SecurityEvent::where('user_id', $user->id)->first();
 
@@ -135,10 +183,15 @@ class CambiarPasswordPageTest extends TestCase
         $this->assertSame(SecurityEvent::PASSWORD_CHANGED, $evento->event);
         $this->assertSame(SecurityEvent::CONTEXT_FORCED, $evento->context);
         $this->assertFalse((bool) $user->fresh()->force_password_change);
+
+        // El flujo obligatorio también avisa y también cierra la sesión.
+        Notification::assertSentTo($user, PasswordChangedNotification::class);
+        $this->assertGuest();
     }
 
     public function test_los_eventos_de_seguridad_no_viven_en_la_tabla_de_telemetria_de_uso(): void
     {
+        Notification::fake();
         $user = $this->usuario();
         $this->actingAs($user);
 

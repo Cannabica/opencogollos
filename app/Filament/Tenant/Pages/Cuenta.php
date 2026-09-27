@@ -2,6 +2,9 @@
 
 namespace App\Filament\Tenant\Pages;
 
+use App\Models\EmailChangeRequest;
+use App\Notifications\EmailChangeConfirmationNotification;
+use App\Notifications\EmailChangeRequestedNotification;
 use Filament\Actions as PageActions;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -9,6 +12,9 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Validation\Rule;
 
 /**
@@ -35,6 +41,10 @@ class Cuenta extends Page
     protected static ?string $navigationGroup = 'Grupo de trabajo';
 
     protected static ?int $navigationSort = 998;
+
+    // Se llega desde "Mi Grupo" (bloque de datos del grupo), no desde el menú lateral: la experiencia
+    // de cuenta vive integrada ahí (decisión de Frankie, revisión del 2026-09-27).
+    protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
 
@@ -70,6 +80,20 @@ class Cuenta extends Page
                                 // Se ignora el propio usuario (si no, guardar sin tocarlo fallaría).
                                 Rule::unique('users', 'email')->ignore(Auth::id()),
                             ]),
+
+                        // Solo se exige si se está cambiando el email (es la credencial de login).
+                        TextInput::make('current_password')
+                            ->label('Contraseña actual')
+                            ->password()
+                            ->required(fn ($get) => $get('email') !== Auth::user()->email)
+                            ->rule(function () {
+                                return function ($attribute, $value, $fail) {
+                                    if (filled($value) && ! Hash::check($value, Auth::user()->password)) {
+                                        $fail('Para cambiar el email necesitás tu contraseña actual.');
+                                    }
+                                };
+                            })
+                            ->helperText('Solo si cambiás el email: el cambio se confirma desde la dirección nueva, no se aplica en el momento.'),
                     ])
                     ->columns(1),
             ])
@@ -83,15 +107,62 @@ class Cuenta extends Page
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        $emailActual = $user->email;
+        $emailNuevo = $data['email'];
+
         $user->name = $data['name'];
-        $user->email = $data['email'];
         $user->save();
 
-        Notification::make()
-            ->title('Datos actualizados')
-            ->body('Tu nombre y tu email quedaron guardados.')
-            ->success()
-            ->send();
+        // El nombre se guarda siempre; el email NO: es la credencial de login, así que va por doble
+        // opt-in (se confirma desde la dirección nueva, ver EmailChangeController).
+        if ($emailNuevo === $emailActual) {
+            Notification::make()
+                ->title('Datos actualizados')
+                ->body('Tu nombre quedó guardado.')
+                ->success()
+                ->send();
+
+            return;
+        }
+
+        ['token' => $token] = EmailChangeRequest::createFor($user, $emailNuevo);
+
+        $linkEnviado = false;
+
+        try {
+            // Link a la dirección NUEVA (la mitad que falta del opt-in) y aviso a la VIEJA, para que
+            // se entere en la casilla que sí controla. El nombre va explícito: con `route('mail')`
+            // el destinatario es un AnonymousNotifiable y NO tiene `->name` (bug medido 2026-09-27:
+            // la excepción la tapaba el catch y el usuario veía "te mandamos un link" sin mail).
+            NotificationFacade::route('mail', $emailNuevo)
+                ->notify(new EmailChangeConfirmationNotification($emailNuevo, $token, $user->name));
+
+            NotificationFacade::route('mail', $emailActual)
+                ->notify(new EmailChangeRequestedNotification($emailActual, $emailNuevo, $user->name));
+
+            $linkEnviado = true;
+        } catch (\Throwable $e) {
+            Log::error('No se pudo enviar la confirmación del cambio de email', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Si el mail no salió, no se puede decir "revisá tu dirección": el cambio queda pendiente y
+        // el usuario tiene que saber que el link no está en camino.
+        if ($linkEnviado) {
+            Notification::make()
+                ->title('Revisá tu nueva dirección')
+                ->body('Te mandamos un link a ' . $emailNuevo . ' para confirmar el cambio. Hasta que lo confirmes seguís entrando con ' . $emailActual . '.')
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('No pudimos enviar el mail de confirmación')
+                ->body('El cambio no se aplicó y seguís entrando con ' . $emailActual . '. Reintentá en unos minutos.')
+                ->danger()
+                ->send();
+        }
     }
 
     /**

@@ -13,6 +13,31 @@
                 </div>
                 
             </div>
+
+            {{-- Accesos de cuenta: la experiencia vive integrada en "Mi Grupo" (revisión de Frankie,
+                 2026-09-27). Son las páginas `tenant/cuenta` y `tenant/cambiar-password`, que ya no
+                 aparecen en el menú lateral. --}}
+            <div class="flex flex-wrap gap-3 pt-4 mt-2 border-t border-gray-100 dark:border-white/10">
+                <x-filament::button
+                    tag="a"
+                    :href="\App\Filament\Tenant\Pages\Cuenta::getUrl()"
+                    color="gray"
+                    size="sm"
+                    icon="heroicon-o-user-circle"
+                >
+                    Mis datos personales
+                </x-filament::button>
+
+                <x-filament::button
+                    tag="a"
+                    :href="\App\Filament\Tenant\Pages\CambiarPassword::getUrl()"
+                    color="gray"
+                    size="sm"
+                    icon="heroicon-o-key"
+                >
+                    Cambiar mi contraseña
+                </x-filament::button>
+            </div>
         </div>
     </x-filament::card>
 

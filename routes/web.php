@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EmailChangeController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\PostponeProductReminderController;
 use App\Http\Controllers\StorageController;
@@ -52,5 +53,12 @@ Route::middleware(['auth', 'signed'])->group(function () {
     Route::get('/recordatorios/posponer/{type}/{count}/{action}', PostponeProductReminderController::class)
         ->name('actions.postpone-notification');
 });
+
+// Cambio de email con DOBLE OPT-IN (2026-09-27): el email es la credencial de login, así que el
+// cambio no se aplica cuando se pide — se manda un link a la dirección NUEVA y recién se aplica al
+// abrirlo. Público a propósito (se abre desde el mail, quizá sin sesión): la autorización es el token,
+// que va hasheado en la base.
+Route::get('/email/confirmar/{token}', [EmailChangeController::class, 'show'])
+    ->name('tenant.email.confirm');
 
 require __DIR__ . '/auth.php';

@@ -34,23 +34,26 @@ class CuentaPageTest extends TestCase
         ], $extra));
     }
 
-    public function test_el_usuario_puede_cambiar_su_nombre_y_email(): void
+    public function test_el_usuario_puede_cambiar_su_nombre(): void
     {
+        \Illuminate\Support\Facades\Notification::fake();
         $user = $this->usuario();
         $this->actingAs($user);
 
         Livewire::test(Cuenta::class)
             ->fillForm([
                 'name' => 'Nombre Nuevo',
-                'email' => 'nuevo@ejemplo.test',
+                'email' => $user->email,
             ])
             ->call('guardar')
             ->assertHasNoFormErrors();
 
-        $user->refresh();
-
-        $this->assertSame('Nombre Nuevo', $user->name);
-        $this->assertSame('nuevo@ejemplo.test', $user->email);
+        $this->assertSame('Nombre Nuevo', $user->fresh()->name);
+        $this->assertSame(
+            $user->email,
+            $user->fresh()->email,
+            'El email no se cambia desde acá: es la credencial de login y va por doble opt-in (EmailChangeRequestTest).'
+        );
     }
 
     public function test_el_email_no_puede_repetir_el_de_otro_usuario(): void

@@ -42,11 +42,12 @@ class ActivityHeatmapWidget extends ChartWidget
             DB::raw('COUNT(*) as total')
         )
         ->whereHas('plants', function($query) {
+            // SOLO EL TENANT DEL USUARIO (corregido 2026-09-18): este bloque tenia un
+            // `->orWhereNull('tenant_id')` que, en una query con whereHas, hacia que el heatmap
+            // incluyera las acciones de CUALQUIER indoor con tenant_id nulo (fuga parcial: datos
+            // huerfanos/globales visibles para todos los tenants).
             $query->whereHas('indoor', function($q) {
-                $q->where(function($query) {
-                    $query->where('tenant_id', auth()->user()->tenant_id)
-                          ->orWhereNull('tenant_id');
-                });
+                $q->where('tenant_id', auth()->user()->tenant_id);
             });
         })
         ->whereBetween('action_date', [

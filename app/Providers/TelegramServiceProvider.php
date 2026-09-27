@@ -2,10 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\TelegramBotManager;
-use Telegram\Bot\BotsManager;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Log;
 
 class TelegramServiceProvider extends ServiceProvider
 {
@@ -16,23 +13,13 @@ class TelegramServiceProvider extends ServiceProvider
             'telegram'
         );
 
-        $this->app->singleton(BotsManager::class, function ($app) {
-            return new TelegramBotManager(config('telegram'));
-        });
-
-        $this->app->alias(BotsManager::class, 'telegram');
-
-        $this->app->bind('telegram.bot', function ($app) {
-            return $app[BotsManager::class]->bot();
-        });
-    }
-    private function registerBindings(): void
-    {
-        $this->app->singleton(BotsManager::class, static fn($app): BotsManager => (new TelegramBotManager(config('telegram')))->setContainer($app));
-        $this->app->alias(BotsManager::class, 'telegram');
-
-        $this->app->bind(Api::class, static fn($app) => $app[BotsManager::class]->bot());
-        $this->app->alias(Api::class, 'telegram.bot');
+        // T2.6 (2026-09-19): aca vivian 3 bindings (singleton BotsManager -> App\Services\TelegramBotManager,
+        // alias 'telegram' y bind 'telegram.bot') que quedaban SOMBREADOS: el provider del SDK se registra
+        // despues y gana, asi que nunca resolvieron a lo de la app (verificado: `app('telegram')` =
+        // Telegram\Bot\BotsManager). Y la clase que instanciaban heredaba de BotsManager, que el SDK 3.16
+        // declara `final` => no cargaba, era un landmine. Se borro la clase + los bindings + la
+        // `registerBindings()` privada (nunca llamada) con la decision A de Frankie (2026-09-19).
+        // El binding de `telegram`/BotsManager lo sigue aportando el provider del SDK.
     }
 
     public function boot(): void
@@ -44,34 +31,11 @@ class TelegramServiceProvider extends ServiceProvider
         // Register Telegram commands
         $this->registerCommands();
 
-        $this->app->booted(function () {
-            if (app()->runningInConsole()) {
-                Log::info('Skipping Telegram webhook registration on boot - running in console or already registered');
-                return;
-                try {
-                    Log::info('Registering Telegram webhook on boot');
-    
-                    cache()->put('telegram_webhook_registered', true, now()->addDay());
-                    $token = env('TELEGRAM_BOT_TOKEN');
-                    $appUrl = env('APP_URL');
-    
-                    if (empty($token) || empty($appUrl)) {
-                        \Log::warning('Telegram webhook registration skipped - Missing required environment variables');
-                        return;
-                    }
-    
-                    $webhookUrl = rtrim($appUrl, '/') . '/api/telegram/webhook';
-    
-                    $this->app[BotsManager::class]->bot()->setWebhook([
-                        'url' => $webhookUrl,
-                        'max_connections' => 40,
-                        'drop_pending_updates' => true
-                    ]);
-                } catch (\Exception $e) {
-                    \Log::error('Telegram webhook registration failed: ' . $e->getMessage());
-                }
-            }
-        });
+        // T2.6 (2026-09-19): aca vivia un `$this->app->booted(...)` con el auto-registro del webhook
+        // que NUNCA podia ejecutarse: el `return` temprano de `runningInConsole()` dejaba el try/catch
+        // inalcanzable, y en un request web la closure no hacia nada. Ademas ese bloque usaba `env()`
+        // fuera de config/ (rompe `config:cache`). El webhook se registra a proposito con
+        // `php artisan telegram:webhook:setup` (ver docs/TELEGRAM.md), no al bootear.
     }
 
     /**

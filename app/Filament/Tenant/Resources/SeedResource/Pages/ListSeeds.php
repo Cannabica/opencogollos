@@ -5,7 +5,6 @@ namespace App\Filament\Tenant\Resources\SeedResource\Pages;
 use App\Filament\Tenant\Resources\SeedResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Resources\Components\Tables\Enums\FiltersLayout;
 
 class ListSeeds extends ListRecords
 {
@@ -24,18 +23,11 @@ class ListSeeds extends ListRecords
         return __('subheading_list_seeds');
     }
 
-    protected function getTableFiltersFormColumns(): int
-    {
-        return 3;
-    }
-
+    // OJO (T2.6): si alguna vez se quiere volver a "filtros arriba en 3 columnas",
+    // en v3 esos ajustes van en el Table del resource: ->filtersFormColumns(3)
+    // y ->filtersLayout(FiltersLayout::AboveContent) en SeedResource::table().
     protected function shouldPersistTableFiltersInSession(): bool
     {
         return true;
-    }
-
-    protected function getTableFiltersLayout(): ?string 
-    {
-        return FiltersLayout::AboveContent;
     }
 }

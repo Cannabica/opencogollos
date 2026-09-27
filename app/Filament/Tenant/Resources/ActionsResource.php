@@ -49,15 +49,11 @@ use Filament\Forms\Components\Grid as FormsGrid;
 use Filament\Forms\Components\Hidden;
 use Illuminate\Support\Facades\DB;
 use App\Filament\Tenant\Resources\Actions\Components\PlantSelector;
-use App\Filament\Tenant\Resources\Actions\Rules\ActionValidationRules;
 use App\Filament\Tenant\Resources\Actions\Services\ActionRecordService;
-use App\Filament\Tenant\Resources\Actions\Traits\HandlesActionTypes;
 
 
 class ActionsResource extends Resource
 {
-    use HandlesActionTypes;
-
     protected static ?string $model = Action::class;
     protected ActionRecordService $actionService;
 

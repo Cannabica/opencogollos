@@ -1,0 +1,22 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+        - tests
+
+    # Laravel: los modelos/middleware resuelven tipos por reflection y los helpers devuelven `mixed`.
+    treatPhpDocTypesAsCertain: false
+
+    excludePaths:
+        analyse:
+            - bootstrap/cache/*
+            # T2.6 (2026-09-19): aca vivian 3 exclusiones a proposito (ViewIndoor.php,
+            # HandlesActionTypes.php y TelegramBotManager.php) porque eran errores reales que PHPStan
+            # no deja baselinelizar ni ignorar. Las 3 quedaron SIN OBJETO: los 2 primeros archivos
+            # tenian codigo de Filament v2 sin llamadores (borrado) y el tercero era una clase que no
+            # podia cargar (borrada con la decision D1=A de Frankie). Evidencia:
+            # board/epicas/2026-09-18-t26-limpieza-estructural.md.

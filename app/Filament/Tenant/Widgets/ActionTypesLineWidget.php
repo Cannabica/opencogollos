@@ -5,7 +5,6 @@ namespace App\Filament\Tenant\Widgets;
 use App\Models\Action;
 use App\Models\ActionType;
 use Carbon\Carbon;
-use Filament\Facades\Filament;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 
@@ -43,7 +42,13 @@ class ActionTypesLineWidget extends ChartWidget
         ))->map(fn($date) => $date->format('Y-m-d'));
 
         $actions = Action::query()
-            ->when(Filament::getTenant(), fn($query) => $query->where('tenant_id', Filament::getTenant()->id))
+            // FILTRO POR TENANT (corregido 2026-09-18): antes era
+            //   ->when(Filament::getTenant(), fn($q) => $q->where('tenant_id', Filament::getTenant()->id))
+            // y el panel NO usa la tenancy de Filament -> Filament::getTenant() es NULL -> el when()
+            // NUNCA aplicaba -> el grafico mostraba los tipos de accion y conteos de TODOS los tenants
+            // (fuga entre clientes, medida con 2 tenants). El patron correcto es el que usan
+            // ActionsChartWidget y PlantStatesByIndoorWidget.
+            ->where('tenant_id', auth()->user()->tenant_id)
             ->whereBetween('action_date', [$startDate, $endDate])
             ->select(
                 'action_type_id',

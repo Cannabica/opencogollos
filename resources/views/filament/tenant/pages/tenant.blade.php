@@ -68,23 +68,26 @@
                     <x-filament::input wire:model="tenantName" placeholder="Nombre del grupo" required />
 
                     {{-- El email del grupo es su canal de contacto: se puede editar (ya no arrastra
-                         permisos: el ownership se resuelve por `tenants.owner_user_id`). --}}
+                         permisos: el ownership se resuelve por `tenants.owner_user_id`). Va con
+                         `wire:model.live` para que el casillero de abajo reaccione al escribir. --}}
                     <div>
-                        <x-filament::input wire:model="tenantEmail" type="email" placeholder="Email de contacto" required />
+                        <x-filament::input wire:model.live="tenantEmail" type="email" placeholder="Email de contacto" required />
                     </div>
                 </div>
 
-                {{-- Un cambio de contacto NO debe dar de alta una cuenta por su cuenta (revisión de
-                     Frankie, 2026-09-27): si la dirección no tiene usuario, se ofrece crearlo explícito. --}}
-                <label class="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" wire:model="createUserForEmail" class="mt-1" />
-                    <span>
-                        <span class="font-medium">Crear una persona con esta dirección</span>
-                        <span class="block text-sm text-gray-500 dark:text-gray-400">
-                            Le mandamos un link para que elija su contraseña. Si la dirección ya tiene usuario en el grupo, no se duplica.
+                {{-- Sólo aparece si el email CAMBIÓ y esa dirección no tiene usuario: si es la misma de
+                     siempre, o ya hay alguien con esa dirección, no hay nada que crear. --}}
+                @if($this->puedeCrearPersonaParaElEmail())
+                    <label class="flex items-start gap-3 cursor-pointer" wire:key="casillero-crear-persona">
+                        <x-filament::input.checkbox wire:model="createUserForEmail" />
+                        <span>
+                            <span class="font-medium">Crear una persona con esta dirección</span>
+                            <span class="block text-sm text-gray-500 dark:text-gray-400">
+                                Le mandamos un link para que elija su contraseña.
+                            </span>
                         </span>
-                    </span>
-                </label>
+                    </label>
+                @endif
 
                 <div class="flex gap-2">
                     <x-filament::button wire:click="updateTenant" color="primary" size="sm">

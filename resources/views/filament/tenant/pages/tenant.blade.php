@@ -261,7 +261,9 @@
                                     </x-filament::badge>
                                 @endif
                                 @if($user->id === auth()->id())
-                                    <x-filament::badge color="gray" size="xs" style="display: inline-flex" class="ml-2">
+                                    {{-- `info` en vez de `gray`: en modo oscuro el gris quedaba con
+                                         contraste bajo (el panel se usa en dark). --}}
+                                    <x-filament::badge color="info" size="xs" style="display: inline-flex" class="ml-2">
                                         Vos
                                     </x-filament::badge>
                                 @endif

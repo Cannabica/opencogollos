@@ -118,6 +118,9 @@ class TenantPage extends Page
 
     public $tenantEmail = '';
 
+    /** Si al cambiar el email del grupo se debe crear la persona para esa dirección (opcional). */
+    public $createUserForEmail = false;
+
     public function editTenant(): void
     {
         if (! $this->isOwner) {
@@ -147,14 +150,34 @@ class TenantPage extends Page
             'tenantEmail' => 'required|email|unique:tenants,email,' . $this->tenant->id,
         ]);
 
+        $emailNuevo = $this->tenantEmail;
+        $usuarioConEsaDireccion = \App\Models\User::where('email', $emailNuevo)->first();
+
+        // La dirección no puede pertenecer a OTRO grupo (ni a una cuenta sin grupo, tipo superadmin):
+        // no da permisos (el ownership es por `owner_user_id`), pero deja un dato cruzado entre grupos.
+        if ($usuarioConEsaDireccion && (int) $usuarioConEsaDireccion->tenant_id !== (int) $this->tenant->id) {
+            $this->addError(
+                'tenantEmail',
+                'Esa dirección ya está en uso en otro grupo. Probá con otra o pedí el cambio desde ese grupo.'
+            );
+
+            return;
+        }
+
         // El email del grupo es su canal de contacto (no una credencial): se puede cambiar. Con el
-        // ownership por id (`tenants.owner_user_id`) ya no arrastra permisos, así que dejó de estar
-        // bloqueado (2026-09-27).
+        // ownership por id (`tenants.owner_user_id`) ya no arrastra permisos.
         $this->tenant->update([
             'name' => $this->tenantName,
-            'email' => $this->tenantEmail,
+            'email' => $emailNuevo,
         ]);
 
+        // Opcional y explícito: crear la persona para esa dirección y mandarle el link para definir su
+        // contraseña. Nunca se crea sola — un cambio de contacto no debería dar de alta una cuenta.
+        if ($this->createUserForEmail && ! $usuarioConEsaDireccion) {
+            $this->crearPersonaEnElGrupo($this->tenantName, $emailNuevo);
+        }
+
+        $this->createUserForEmail = false;
         $this->editingTenant = false;
 
         \Filament\Notifications\Notification::make()
@@ -170,6 +193,40 @@ class TenantPage extends Page
      */
     public $inviteMode = 'password';
 
+    /**
+     * Crea una persona en el grupo y le manda el link para que defina su contraseña (el alta "la define
+     * en su primer ingreso"). Se usa desde el alta explícita y desde el cambio de email del grupo
+     * cuando se pide crear el usuario de esa dirección.
+     *
+     * El link va FIRMADO: Filament exige firma en la ruta de reset (`Panel/Concerns/HasAuth.php` usa
+     * `URL::signedRoute`) y sin firma responde 403 (medido 2026-09-27).
+     */
+    private function crearPersonaEnElGrupo(string $nombre, string $email): \App\Models\User
+    {
+        $user = \App\Models\User::create([
+            'name' => $nombre,
+            'email' => $email,
+            'password' => Hash::make(Str::random(40)),   // nunca se comunica: no tiene acceso hasta el link
+            'tenant_id' => $this->tenant->id,
+            'force_password_change' => true,
+        ]);
+
+        $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
+
+        Notification::send($user, new \App\Notifications\TeamUserInvitationNotification(
+            $this->tenant->name,
+            $user->name,
+            \Illuminate\Support\Facades\URL::signedRoute(
+                'filament.tenant.auth.password-reset.reset',
+                ['token' => $token, 'email' => $user->email],
+            ),
+        ));
+
+        \App\Models\SecurityEvent::record(Auth::user(), \App\Models\SecurityEvent::TEAM_USER_INVITED, 'self');
+
+        return $user;
+    }
+
     public function addUser()
     {
         if (!$this->isOwner) {
@@ -184,49 +241,27 @@ class TenantPage extends Page
 
         $esInvitacion = $this->inviteMode === 'self';
 
-        // En la modalidad "la define en su primer ingreso" se guarda una clave aleatoria que NUNCA se
-        // comunica: la cuenta no tiene acceso hasta que use el link del mail.
-        $passwordInicial = $esInvitacion
-            ? Str::random(40)
-            : \App\Support\PasswordRequirements::generate();
-
-        $user = \App\Models\User::create([
-            'name' => $this->userName,
-            'email' => $this->userEmail,
-            'password' => Hash::make($passwordInicial),
-            'tenant_id' => $this->tenant->id,
-            'force_password_change' => true
-        ]);
-
         if ($esInvitacion) {
-            // Token del broker `users` (vive 48 h, ver config/auth.php) apuntando al formulario de
-            // contraseña, que ya trae la validación visual en vivo.
-            $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
-
-            // ⚠️ La URL va FIRMADA: Filament exige firma en la ruta de reset
-            // (`Panel/Concerns/HasAuth.php` usa `URL::signedRoute`) y con `route()` la ruta responde
-            // 403 por el middleware `signed` -- medido con curl: firmada 200, sin firma 403.
-            Notification::send($user, new \App\Notifications\TeamUserInvitationNotification(
-                $this->tenant->name,
-                $user->name,
-                \Illuminate\Support\Facades\URL::signedRoute(
-                    'filament.tenant.auth.password-reset.reset',
-                    ['token' => $token, 'email' => $user->email],
-                ),
-            ));
+            $this->crearPersonaEnElGrupo($this->userName, $this->userEmail);
         } else {
             // Clave generada con la política (la misma clase que dibuja la validación visual). Antes era
             // `Str::random(12)`, que no la garantizaba: se le mandaba al usuario una clave que el sistema
             // le rechazaba al cambiarla.
-            Notification::send($user, new TeamUserActivationNotification($passwordInicial));
-        }
+            $passwordInicial = \App\Support\PasswordRequirements::generate();
 
-        // Trazabilidad: quién sumó a quién y con qué modalidad.
-        \App\Models\SecurityEvent::record(
-            Auth::user(),
-            \App\Models\SecurityEvent::TEAM_USER_INVITED,
-            $esInvitacion ? 'self' : 'password'
-        );
+            $user = \App\Models\User::create([
+                'name' => $this->userName,
+                'email' => $this->userEmail,
+                'password' => Hash::make($passwordInicial),
+                'tenant_id' => $this->tenant->id,
+                'force_password_change' => true
+            ]);
+
+            Notification::send($user, new TeamUserActivationNotification($passwordInicial));
+
+            // Trazabilidad: quién sumó a quién y con qué modalidad.
+            \App\Models\SecurityEvent::record(Auth::user(), \App\Models\SecurityEvent::TEAM_USER_INVITED, 'password');
+        }
 
         $this->resetUserForm();
         $this->inviteMode = 'password';

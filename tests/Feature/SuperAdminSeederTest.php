@@ -41,12 +41,12 @@ class SuperAdminSeederTest extends TestCase
     public function test_sin_ningun_email_configurado_no_crea_superadmin_y_avisa(): void
     {
         config(['platform.admin_email' => null, 'platform.admin_email_fallback' => null]);
-        Log::spy();
+        $log = Log::spy();
 
         (new SuperAdminSeeder())->run();
 
         $this->assertSame(0, User::withoutGlobalScopes()->whereNull('tenant_id')->count());
-        Log::shouldHaveReceived('warning')->once();
+        $log->shouldHaveReceived('warning')->once();
     }
 
     public function test_sin_platform_admin_email_cae_al_bootstrap_admin_email(): void

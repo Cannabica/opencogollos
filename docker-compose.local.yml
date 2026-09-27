@@ -8,7 +8,10 @@ services:
       - .env.local
     volumes:
       - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
-      - .:/var/www/html
+      # Los assets que sirve el `file_server` vienen del volumen compartido con php (que se inicializa
+      # desde la IMAGEN, con `public/build` ya compilado). Con un bind mount del código del host, un
+      # clone limpio no tiene `public/build` y la app se ve SIN CSS/JS.
+      - app_public:/var/www/html/public:ro
       - caddy_data_local:/data
       - caddy_config_local:/config
     depends_on:
@@ -21,7 +24,8 @@ services:
       dockerfile: docker/php/Dockerfile
       # network: host
     user: "1000:1000"
-    env_file: .env.local
+    env_file:
+      - .env.local
     environment:
       - APP_USER_ID=1000
       - APP_GROUP_ID=1000
@@ -31,10 +35,18 @@ services:
       - "9000"
       - "8000"
     volumes:
-      - .:/var/www/html
-      - ./vendor:/var/www/html/vendor
-      - ./node_modules:/var/www/html/node_modules
-      - ./storage:/var/www/html/storage
+      # ⚠️ INSTALACIÓN LIMPIA (el quickstart del README): NO se monta el código del repo ni `vendor/`,
+      # `node_modules/` o `public/` del host. Se usan los de la IMAGEN, que se construyó con
+      # `composer install` + `npm run build`.
+      #
+      # Por qué: con `- .:/var/www/html` (y encima `./vendor`, `./node_modules`) un clone fresco deja
+      # esos directorios VACÍOS en el contenedor —Docker crea las carpetas del host y las monta encima—
+      # → `php artisan` devuelve 255 → el entrypoint muere en `migrate --force` (30 reintentos) →
+      # php-fpm no arranca → 502 del proxy. Medido: 2026-09-27, `board/epicas/2026-09-27-prueba-tercero-hallazgos.md`.
+      #
+      # Para DESARROLLO con hot-reload está `docker-compose.dev.yml` (ver README §Desarrollo).
+      - app_public:/var/www/html/public
+      - laravel_storage:/var/www/html/storage
     working_dir: /var/www/html
     depends_on:
       - db
@@ -43,7 +55,8 @@ services:
     build:
       context: .
       dockerfile: docker/db/Dockerfile
-    env_file: .env.local
+    env_file:
+      - .env.local
     ports:
       - "5434:5432"
     volumes:
@@ -69,6 +82,8 @@ services:
 volumes:
   postgres_data_dev:
   laravel_storage:
-  laravel_logs:
+  # Compartido entre php y caddy: se inicializa con el `public/` de la imagen (incluye `build/`).
+  # `php` lo monta primero (caddy tiene `depends_on: php`), así que el contenido es el de la imagen.
+  app_public:
   caddy_data_local:
   caddy_config_local:

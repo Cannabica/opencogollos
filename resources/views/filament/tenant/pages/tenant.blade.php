@@ -249,6 +249,13 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 {{ $user->name }}
+                                {{-- Etiqueta de administrador del grupo (revisión de Frankie, 2026-09-27):
+                                     quién administra se define por `tenants.owner_user_id`. --}}
+                                @if($user->isTenantOwner())
+                                    <x-filament::badge color="primary" size="xs" icon="heroicon-m-star" class="ml-1 align-middle">
+                                        Administrador
+                                    </x-filament::badge>
+                                @endif
                                 @if($user->id === auth()->id())
                                     <span class="pildora">🫵🏼</span>
                                 @endif

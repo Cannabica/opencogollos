@@ -77,10 +77,12 @@ El stack que levanta este compose es **liviano**: `caddy` (web), `php` (app), `d
 | **Puertos ocupados** | Ya tenés algo en 8090/8080/8025 | en `.env.local`: `APP_HTTP_PORT` y `APP_HTTPS_PORT` (el HTTPS tiene que ser el HTTP + 10000); y los puertos de `adminer`/`mailpit` en el compose |
 | La app se ve **sin estilos** | Se montó el `public/` de tu host (un clone no tiene `npm run build`) | no uses el override de desarrollo (abajo) para una instalación normal |
 
-> **¿Por qué anda sin PHP ni Node en tu máquina?** El compose local **no** monta tu código ni tus
-> `vendor/`/`node_modules`: usa los que trae la imagen. Montar `.:/var/www/html` sobre un clone limpio
-> tapa esas dependencias con carpetas vacías del host, `php artisan` falla con 255 y el proxy devuelve
-> 502. Fue un bug real, corregido el 2026-09-27.
+> **¿Por qué anda sin PHP ni Node en tu máquina?** El compose local monta **sólo el código** del repo:
+> las dependencias (`vendor/`, `node_modules/`) y los assets compilados (`public/build/`) los toma de
+> la **imagen**, por volúmenes que Docker inicializa con su contenido. Montarlos desde tu host
+> (`- ./vendor:/...`) sobre un clone limpio deja carpetas vacías encima de las deps de la imagen:
+> `php artisan` devuelve 255, el contenedor muere en las migraciones y el proxy devuelve 502. Fue un
+> bug real, corregido el 2026-09-27.
 
 ### Desarrollo (hot-reload)
 

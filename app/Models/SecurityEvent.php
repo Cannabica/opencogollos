@@ -38,6 +38,12 @@ class SecurityEvent extends Model
      */
     public const TENANT_EMAIL_CHANGED = 'tenant_email_changed';
 
+    /**
+     * Evento: se sumó una persona al grupo. El `context` guarda la modalidad del alta
+     * (`password` = se le mandó una clave segura; `self` = define la suya en el primer ingreso).
+     */
+    public const TEAM_USER_INVITED = 'team_user_invited';
+
     /** El usuario eligió cambiarla desde "Cambiar contraseña". */
     public const CONTEXT_VOLUNTARY = 'voluntary';
 

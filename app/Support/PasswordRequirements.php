@@ -83,4 +83,34 @@ class PasswordRequirements
 
         return true;
     }
+
+    /**
+     * Genera una contraseña que CUMPLE la política, para las claves que emite el sistema (altas de
+     * usuarios del grupo).
+     *
+     * Antes se usaba `Str::random(12)`, que no garantiza mayúscula ni símbolo: se le mandaba por mail
+     * al usuario una contraseña que el propio sistema le iba a rechazar al cambiarla. Acá se arma con
+     * al menos uno de cada tipo y se mezcla. Se evitan caracteres ambiguos (l/I/1, O/0) porque esta
+     * clave se copia a mano desde un mail.
+     */
+    public static function generate(int $length = 14): string
+    {
+        $lower = 'abcdefghijkmnopqrstuvwxyz';
+        $upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $digits = '23456789';
+        $symbols = '!@#$%&*?';
+
+        $password = $lower[random_int(0, strlen($lower) - 1)]
+            . $upper[random_int(0, strlen($upper) - 1)]
+            . $digits[random_int(0, strlen($digits) - 1)]
+            . $symbols[random_int(0, strlen($symbols) - 1)];
+
+        $todos = $lower . $upper . $digits . $symbols;
+
+        for ($i = strlen($password); $i < $length; $i++) {
+            $password .= $todos[random_int(0, strlen($todos) - 1)];
+        }
+
+        return str_shuffle($password);
+    }
 }

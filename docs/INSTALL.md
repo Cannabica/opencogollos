@@ -59,9 +59,11 @@ Después:
 docker compose -f docker-compose.local.yml --env-file .env.local up -d --build
 ```
 
-La primera vez compila la imagen (instala Composer + compila los assets), puede tardar unos
-minutos. El `entrypoint` del contenedor espera a que PostgreSQL responda y corre las migraciones
-solo. Cuando termina:
+La imagen **ya se compiló en el paso de la `APP_KEY`** (ese `docker compose run` es el que instala
+Composer y compila los assets), por eso este `up` es rápido. El `entrypoint` del contenedor espera a
+que PostgreSQL responda y corre las migraciones solo — **migra, no siembra**: la base queda con las
+tablas y **cero usuarios**, así que para entrar tenés que crear tu admin (`ADMIN_EMAIL`/`ADMIN_PASSWORD`
++ `db:seed --class=SuperAdminSeeder`) o cargar la demo con `migrate:fresh --seed`. Cuando termina:
 
 | Servicio | URL |
 |---|---|

@@ -170,6 +170,13 @@ class TenantPage extends Page
             ->send();
     }
 
+    /**
+     * Modalidad del alta (revisión de Frankie, 2026-09-27):
+     *   - 'password': se le manda una contraseña segura por mail (y el primer ingreso le pide cambiarla).
+     *   - 'self':     sin clave: recibe un link para definirla en su primer ingreso.
+     */
+    public $inviteMode = 'password';
+
     public function addUser()
     {
         if (!$this->isOwner) {
@@ -178,24 +185,52 @@ class TenantPage extends Page
 
         $this->validate([
             'userName' => 'required|string|max:255',
-            'userEmail' => 'required|email|unique:users,email'
+            'userEmail' => 'required|email|unique:users,email',
+            'inviteMode' => 'required|in:password,self',
         ]);
 
-        // Generate temporary password
-        $tempPassword = Str::random(12);
+        $esInvitacion = $this->inviteMode === 'self';
+
+        // En la modalidad "la define en su primer ingreso" se guarda una clave aleatoria que NUNCA se
+        // comunica: la cuenta no tiene acceso hasta que use el link del mail.
+        $passwordInicial = $esInvitacion
+            ? Str::random(40)
+            : \App\Support\PasswordRequirements::generate();
 
         $user = \App\Models\User::create([
             'name' => $this->userName,
             'email' => $this->userEmail,
-            'password' => Hash::make($tempPassword),
+            'password' => Hash::make($passwordInicial),
             'tenant_id' => $this->tenant->id,
             'force_password_change' => true
         ]);
 
-        // Send activation notification
-        Notification::send($user, new TeamUserActivationNotification($tempPassword));
+        if ($esInvitacion) {
+            // Token del broker `users` (vive 48 h, ver config/auth.php) apuntando al formulario de
+            // contraseña, que ya trae la validación visual en vivo.
+            $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
+
+            Notification::send($user, new \App\Notifications\TeamUserInvitationNotification(
+                $this->tenant->name,
+                $user->name,
+                route('filament.tenant.auth.password-reset.reset', ['token' => $token, 'email' => $user->email]),
+            ));
+        } else {
+            // Clave generada con la política (la misma clase que dibuja la validación visual). Antes era
+            // `Str::random(12)`, que no la garantizaba: se le mandaba al usuario una clave que el sistema
+            // le rechazaba al cambiarla.
+            Notification::send($user, new TeamUserActivationNotification($passwordInicial));
+        }
+
+        // Trazabilidad: quién sumó a quién y con qué modalidad.
+        \App\Models\SecurityEvent::record(
+            Auth::user(),
+            \App\Models\SecurityEvent::TEAM_USER_INVITED,
+            $esInvitacion ? 'self' : 'password'
+        );
 
         $this->resetUserForm();
+        $this->inviteMode = 'password';
         $this->users = $this->tenant->users()->get();
     }
 

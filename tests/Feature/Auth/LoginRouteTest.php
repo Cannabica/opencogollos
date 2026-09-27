@@ -15,4 +15,9 @@ class LoginRouteTest extends TestCase
     {
         $this->get(route('login'))->assertRedirect('/tenant/login');
     }
+
+    public function test_tenant_login_panel_renders(): void
+    {
+        $this->get('/tenant/login')->assertStatus(200);
+    }
 }

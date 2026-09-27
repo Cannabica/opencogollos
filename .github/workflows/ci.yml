@@ -1,10 +1,10 @@
 # CI — gate de calidad: tests + análisis estático + escaneo de vulnerabilidades.
 #
-# Contexto (WS2/T2.3): este workflow nace para que el merge tenga GATE. NO reemplaza al pipeline viejo
-# (`ci-cd-pipeline.yml`, que sigue siendo el que construye/publica la imagen y deploya): sacarlo es T3.3.
-# Convivencia medida: el viejo corre en los mismos eventos (push a develop + PR a develop/main) pero su
-# publicación está condicionada a `should_release` (push a main) → en develop sólo buildea local + escanea,
-# no publica. Acá NO se publica nada: los 3 jobs son de verificación.
+# Contexto (WS2/T2.3): este workflow nace para que el merge tenga GATE. Reemplazo al pipeline viejo
+# (`ci-cd-pipeline.yml` + `staging-deploy.yml`), BORRADOS en T3.3 el 2026-09-27: hoy el CI es este
+# archivo y el release a GHCR vive en `release.yml`. El deploy a produccion NO corre desde aca: se
+# dispara desde el repo de operacion `Cannabica/cannabica-deploy` (`deploy-prod.yml`, T1.5).
+# Acá NO se publica nada ni se deploya: los 3 jobs son de verificación.
 #
 # POR QUÉ HAY PASOS DE NODE: el panel registra su CSS con `Vite::asset(...)` en `TenantPanelProvider::panel()`
 # y eso corre al BOOTEAR la app. Sin `public/build/manifest.json`, no sólo fallan los tests: falla hasta

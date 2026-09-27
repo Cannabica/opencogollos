@@ -3,17 +3,20 @@
 namespace App\Filament\Tenant\Pages;
 
 use App\Models\SecurityEvent;
-use Filament\Pages\Page;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
+use App\Notifications\PasswordChangedNotification;
+use App\Services\PasswordChangeNotifier;
+use App\Support\PasswordRequirements;
+use Filament\Actions as PageActions;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
-use Filament\Actions as PageActions;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Filament\Notifications\Notification;
-use Illuminate\Validation\Rules\Password;
 
 class PasswordChange extends Page
 {
@@ -77,15 +80,21 @@ class PasswordChange extends Page
                             ->label('Nueva Contraseña')
                             ->password()
                             ->required()
-                            ->rules([
-                                Password::min(8)
-                                    ->letters()
-                                    ->mixedCase()
-                                    ->numbers()
-                                    ->symbols()
-                            ])
+                            ->rules(PasswordRequirements::rule())
                             ->confirmed()
-                            ->helperText('La contraseña debe tener al menos 8 caracteres, incluir letras mayúsculas y minúsculas, números y símbolos.'),
+                            // `live(onBlur: true)`: los requisitos se actualizan al salir del campo. Con
+                            // `live()` a secas la validación corre en cada tecla y el `confirmed()` da
+                            // "no coincide" mientras todavía se está escribiendo la confirmación.
+                            ->live(onBlur: true)
+                            ->helperText('Los requisitos se marcan abajo a medida que escribís.'),
+
+                        // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que
+                        // la regla, porque sale de la misma clase (PasswordRequirements).
+                        Placeholder::make('requisitos_password')
+                            ->hiddenLabel()
+                            ->content(fn ($get) => view('filament.tenant.partials.requisitos-password', [
+                                'password' => $get('new_password'),
+                            ])),
                         
                         TextInput::make('new_password_confirmation')
                             ->label('Confirmar Nueva Contraseña')
@@ -97,7 +106,7 @@ class PasswordChange extends Page
             ->statePath('data');
     }
 
-    public function changePassword(): void
+    public function changePassword()
     {
         $data = $this->form->getState();
         $user = Auth::user();
@@ -111,15 +120,27 @@ class PasswordChange extends Page
         // que el cambio voluntario, con el contexto que distingue que acá lo impuso el sistema.
         SecurityEvent::record($user, SecurityEvent::PASSWORD_CHANGED, SecurityEvent::CONTEXT_FORCED);
 
-        // Show success notification
+        // Aviso a la cuenta: mail siempre, y Telegram si el grupo tiene un chat asociado.
+        app(PasswordChangeNotifier::class)->notify($user, PasswordChangedNotification::CONTEXT_FORCED);
+
+        // Se cierra la sesión: la credencial vieja ya no vale, así que hay que volver a entrar con la nueva.
+        Auth::logout();
+
+        if (request()->hasSession()) {
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
+
         Notification::make()
-            ->title('Contraseña Cambiada Exitosamente')
-            ->body('Tu contraseña ha sido actualizada correctamente. Ahora puedes acceder al sistema.')
+            ->title('Contraseña cambiada')
+            ->body('Entrá de nuevo con tu contraseña nueva.')
             ->success()
             ->send();
 
-        // Redirect to dashboard
-        redirect()->route('filament.tenant.pages.dashboard');
+        // ⚠️ El `return` es imprescindible: sin él Livewire descarta la redirección y, como la sesión
+        // ya se cerró arriba, el usuario queda en esta pantalla sin sesión -> al volver a entrar se le
+        // vuelve a pedir el cambio (loop reportado 2026-09-27).
+        return redirect()->route('filament.tenant.auth.login');
     }
 
     public function logout(): void

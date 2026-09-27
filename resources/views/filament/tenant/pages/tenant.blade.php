@@ -13,6 +13,92 @@
                 </div>
                 
             </div>
+
+            {{-- Datos del GRUPO: edición inline y sólo para el owner (misma regla que la gestión de
+                 usuarios de abajo; la validación real está en TenantPage::updateTenant). --}}
+            {{-- Acciones en UN solo bloque (revisión de Frankie, 2026-09-27). Dos grupos, mismo lugar:
+                 las del GRUPO las ve sólo el owner; las de la PERSONA las ve cualquiera, porque son sus
+                 propios datos (antes esto estaba en dos bloques separados y parecía repetido). --}}
+            <div class="flex flex-wrap items-center gap-3 pt-4 mt-2 border-t border-gray-100 dark:border-white/10">
+                @if($isOwner && ! $editingTenant)
+                    <x-filament::button
+                        wire:click="editTenant"
+                        color="gray"
+                        size="sm"
+                        icon="heroicon-o-pencil-square"
+                    >
+                        Editar datos del grupo
+                    </x-filament::button>
+
+                    <x-filament::button
+                        wire:click="$set('showUserForm', true)"
+                        color="primary"
+                        size="sm"
+                        icon="heroicon-o-user-plus"
+                    >
+                        Agregar persona al grupo
+                    </x-filament::button>
+
+                    <span class="hidden sm:block w-px h-6 bg-gray-200 dark:bg-white/10"></span>
+                @endif
+
+                <x-filament::button
+                    tag="a"
+                    :href="\App\Filament\Tenant\Pages\Cuenta::getUrl()"
+                    color="gray"
+                    size="sm"
+                    icon="heroicon-o-user-circle"
+                >
+                    Mis datos personales
+                </x-filament::button>
+
+                <x-filament::button
+                    tag="a"
+                    :href="\App\Filament\Tenant\Pages\CambiarPassword::getUrl()"
+                    color="gray"
+                    size="sm"
+                    icon="heroicon-o-key"
+                >
+                    Cambiar mi contraseña
+                </x-filament::button>
+            </div>
+
+            @if($editingTenant)
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <x-filament::input wire:model="tenantName" placeholder="Nombre del grupo" required />
+
+                    {{-- El email del grupo es su canal de contacto: se puede editar (ya no arrastra
+                         permisos: el ownership se resuelve por `tenants.owner_user_id`). Va con
+                         `wire:model.live` para que el casillero de abajo reaccione al escribir. --}}
+                    <div>
+                        <x-filament::input wire:model.live="tenantEmail" type="email" placeholder="Email de contacto" required />
+                    </div>
+                </div>
+
+                {{-- Sólo aparece si el email CAMBIÓ y esa dirección no tiene usuario: si es la misma de
+                     siempre, o ya hay alguien con esa dirección, no hay nada que crear. --}}
+                @if($this->puedeCrearPersonaParaElEmail())
+                    <label class="flex items-start gap-3 cursor-pointer" wire:key="casillero-crear-persona">
+                        <x-filament::input.checkbox wire:model="createUserForEmail" />
+                        <span>
+                            <span class="font-medium">Crear una persona con esta dirección</span>
+                            <span class="block text-sm text-gray-500 dark:text-gray-400">
+                                Le mandamos un link para que elija su contraseña.
+                            </span>
+                        </span>
+                    </label>
+                @endif
+
+                <div class="flex gap-2">
+                    <x-filament::button wire:click="updateTenant" color="primary" size="sm">
+                        Guardar
+                    </x-filament::button>
+                    <x-filament::button wire:click="cancelTenantEdit" color="gray" size="sm">
+                        Cancelar
+                    </x-filament::button>
+                </div>
+            @endif
+
         </div>
     </x-filament::card>
 
@@ -77,15 +163,8 @@
         <div class="space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Usuarios del grupo</h2>
-                @if($isOwner)
-                    <x-filament::button
-                        wire:click="$set('showUserForm', true)"
-                        color="primary"
-                        size="sm"
-                    >
-                        Agregar usuario
-                    </x-filament::button>
-                @endif
+                {{-- El alta vive en el bloque de acciones del grupo, arriba (revisión de Frankie,
+                     2026-09-27): tener "Agregar usuario" acá también duplicaba la acción. --}}
             </div>
             
             @if($showUserForm)
@@ -107,7 +186,33 @@
                             required
                         />
                     </div>
-                    
+
+                    @if(! $editingUser)
+                        {{-- Modalidad del alta (revisión de Frankie, 2026-09-27). Al editar un usuario ya
+                             existente no aplica: la clave ya la tiene. --}}
+                        <div class="mb-4 space-y-2">
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="radio" wire:model="inviteMode" value="password" class="mt-1" />
+                                <span>
+                                    <span class="font-medium">Le mandamos una contraseña segura</span>
+                                    <span class="block text-sm text-gray-500 dark:text-gray-400">
+                                        La recibe por mail; en el primer ingreso se la pide cambiar.
+                                    </span>
+                                </span>
+                            </label>
+
+                            <label class="flex items-start gap-3 cursor-pointer">
+                                <input type="radio" wire:model="inviteMode" value="self" class="mt-1" />
+                                <span>
+                                    <span class="font-medium">La define en su primer ingreso</span>
+                                    <span class="block text-sm text-gray-500 dark:text-gray-400">
+                                        Sin clave: recibe un link por mail (vence en 48 h) para elegir la suya.
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    @endif
+
                     <div class="flex gap-2">
                         <x-filament::button
                             wire:click="{{ $editingUser ? 'updateUser' : 'addUser' }}"
@@ -142,12 +247,31 @@
                     <tbody class="divide-y divide-gray-200">
                         @foreach($users as $user)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {{ $user->name }}
-                                @if($user->id === auth()->id())
-                                    <span class="pildora">🫵🏼</span>
-                                @endif
+                            {{-- `flex-wrap`: con zoom o pantallas angostas, los identificadores bajan a la
+                                 línea siguiente en vez de desbordar sobre la columna de email (reportado
+                                 por Frankie, 2026-09-27). El `whitespace-nowrap` que había antes lo
+                                 impedía. --}}
+                            <td class="px-6 py-4 align-middle">
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
+                                    <span>{{ $user->name }}</span>
+                                    @if($user->isTenantOwner())
+                                        <x-filament::badge color="warning" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px;">
+                                            ★ Administrador
+                                        </x-filament::badge>
+                                    @endif
+                                    @if($user->id === auth()->id())
+                                        {{-- `info` en vez de `gray`: en modo oscuro el gris quedaba con
+                                             contraste bajo (el panel se usa en dark). --}}
+                                        <x-filament::badge color="info" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px;">
+                                            Vos
+                                        </x-filament::badge>
+                                    @endif
+                                </div>
                             </td>
+                            {{-- El email va en UNA línea (Frankie, 2026-09-27: "el email no quiero que lo
+                                 warpee"). Ahora el que cede es la columna del nombre --que envuelve--, y
+                                 para un email muy largo el contenedor de la tabla tiene scroll
+                                 horizontal. --}}
                             <td class="px-6 py-4 whitespace-nowrap">{{ $user->email }}</td>
                             @if($isOwner)
                             
@@ -184,6 +308,19 @@
                                             >
                                                 Forzar cambio
                                             </x-filament::button>
+
+                                            {{-- Transferir la administración del grupo. El aviso es
+                                                 explícito porque quien lo hace deja de ser admin. --}}
+                                            @if(! $user->isTenantOwner())
+                                                <x-filament::button
+                                                    wire:click="makeOwner({{ $user->id }})"
+                                                    color="primary"
+                                                    size="sm"
+                                                    wire:confirm="¿{{ $user->name }} pasa a administrar el grupo? Vos dejarás de ser administrador."
+                                                >
+                                                    Hacer administrador
+                                                </x-filament::button>
+                                            @endif
                                             <x-filament::button
                                                 wire:click="removeUser({{ $user->id }})"
                                                 color="danger"

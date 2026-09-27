@@ -286,6 +286,19 @@
                                             >
                                                 Forzar cambio
                                             </x-filament::button>
+
+                                            {{-- Transferir la administración del grupo. El aviso es
+                                                 explícito porque quien lo hace deja de ser admin. --}}
+                                            @if(! $user->isTenantOwner())
+                                                <x-filament::button
+                                                    wire:click="makeOwner({{ $user->id }})"
+                                                    color="primary"
+                                                    size="sm"
+                                                    wire:confirm="¿{{ $user->name }} pasa a administrar el grupo? Vos dejarás de ser administrador."
+                                                >
+                                                    Hacer administrador
+                                                </x-filament::button>
+                                            @endif
                                             <x-filament::button
                                                 wire:click="removeUser({{ $user->id }})"
                                                 color="danger"

@@ -50,7 +50,8 @@ class ResetPassword extends BaseResetPassword
             ->required()
             ->rules(PasswordRequirements::rule())
             ->same('passwordConfirmation')
-            // `live()` para que los requisitos se marquen mientras se tipea.
-            ->live();
+            // `live(onBlur: true)`: los requisitos se actualizan al salir del campo (con `live()` a secas,
+            // el `same()` da "no coincide" mientras se escribe la confirmación).
+            ->live(onBlur: true);
     }
 }

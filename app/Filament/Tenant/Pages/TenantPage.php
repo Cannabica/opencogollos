@@ -102,6 +102,150 @@ class TenantPage extends Page
     }
 
     // User management methods
+    /*
+    |--------------------------------------------------------------------------
+    | Datos del GRUPO (edición inline, sólo el owner)
+    |--------------------------------------------------------------------------
+    |
+    | El nombre y el email del grupo son la identidad del grupo de trabajo, no un dato personal: los
+    | edita **sólo el owner** (misma regla que la gestión de usuarios de esta página). El email del
+    | grupo NO es credencial de login, así que no pide contraseña ni doble opt-in — pero sí queda en
+    | la trazabilidad de seguridad, porque cambia el canal de contacto del grupo.
+    */
+    public $editingTenant = false;
+
+    public $tenantName = '';
+
+    public $tenantEmail = '';
+
+    /** Si al cambiar el email del grupo se debe crear la persona para esa dirección (opcional). */
+    public $createUserForEmail = false;
+
+    public function editTenant(): void
+    {
+        if (! $this->isOwner) {
+            return;
+        }
+
+        $this->editingTenant = true;
+        // El casillero de "crear la persona" arranca apagado en cada edición (y en `updateTenant` se
+        // vuelve a apagar), así no queda marcado de una edición anterior.
+        $this->createUserForEmail = false;
+        $this->tenantName = $this->tenant->name;
+        $this->tenantEmail = $this->tenant->email;
+    }
+
+    public function cancelTenantEdit(): void
+    {
+        $this->editingTenant = false;
+        $this->tenantName = '';
+        $this->tenantEmail = '';
+    }
+
+    /**
+     * ¿Tiene sentido ofrecer crear una persona para la dirección que se está escribiendo?
+     *
+     * Sólo si el email del grupo CAMBIÓ (si es el mismo, no hay nada que crear) y esa dirección no tiene
+     * usuario. Revisión de Frankie, 2026-09-27: "debe verse solo si se modificó el correo del tenant
+     * admin, sino es innecesario".
+     */
+    public function puedeCrearPersonaParaElEmail(): bool
+    {
+        $email = trim((string) $this->tenantEmail);
+
+        return filled($email)
+            && $email !== $this->tenant->email
+            && ! \App\Models\User::where('email', $email)->exists();
+    }
+
+    public function updateTenant(): void
+    {
+        if (! $this->isOwner) {
+            return;
+        }
+
+        $this->validate([
+            'tenantName' => 'required|string|max:255',
+            'tenantEmail' => 'required|email|unique:tenants,email,' . $this->tenant->id,
+        ]);
+
+        $emailNuevo = $this->tenantEmail;
+        $usuarioConEsaDireccion = \App\Models\User::where('email', $emailNuevo)->first();
+
+        // La dirección no puede pertenecer a OTRO grupo (ni a una cuenta sin grupo, tipo superadmin):
+        // no da permisos (el ownership es por `owner_user_id`), pero deja un dato cruzado entre grupos.
+        if ($usuarioConEsaDireccion && (int) $usuarioConEsaDireccion->tenant_id !== (int) $this->tenant->id) {
+            $this->addError(
+                'tenantEmail',
+                'Esa dirección ya está en uso en otro grupo. Probá con otra o pedí el cambio desde ese grupo.'
+            );
+
+            return;
+        }
+
+        // El email del grupo es su canal de contacto (no una credencial): se puede cambiar. Con el
+        // ownership por id (`tenants.owner_user_id`) ya no arrastra permisos.
+        $this->tenant->update([
+            'name' => $this->tenantName,
+            'email' => $emailNuevo,
+        ]);
+
+        // Opcional y explícito: crear la persona para esa dirección y mandarle el link para definir su
+        // contraseña. Nunca se crea sola — un cambio de contacto no debería dar de alta una cuenta.
+        if ($this->createUserForEmail && ! $usuarioConEsaDireccion) {
+            $this->crearPersonaEnElGrupo($this->tenantName, $emailNuevo);
+        }
+
+        $this->createUserForEmail = false;
+        $this->editingTenant = false;
+
+        \Filament\Notifications\Notification::make()
+            ->title('Datos del grupo actualizados')
+            ->success()
+            ->send();
+    }
+
+    /**
+     * Modalidad del alta (revisión de Frankie, 2026-09-27):
+     *   - 'password': se le manda una contraseña segura por mail (y el primer ingreso le pide cambiarla).
+     *   - 'self':     sin clave: recibe un link para definirla en su primer ingreso.
+     */
+    public $inviteMode = 'password';
+
+    /**
+     * Crea una persona en el grupo y le manda el link para que defina su contraseña (el alta "la define
+     * en su primer ingreso"). Se usa desde el alta explícita y desde el cambio de email del grupo
+     * cuando se pide crear el usuario de esa dirección.
+     *
+     * El link va FIRMADO: Filament exige firma en la ruta de reset (`Panel/Concerns/HasAuth.php` usa
+     * `URL::signedRoute`) y sin firma responde 403 (medido 2026-09-27).
+     */
+    private function crearPersonaEnElGrupo(string $nombre, string $email): \App\Models\User
+    {
+        $user = \App\Models\User::create([
+            'name' => $nombre,
+            'email' => $email,
+            'password' => Hash::make(Str::random(40)),   // nunca se comunica: no tiene acceso hasta el link
+            'tenant_id' => $this->tenant->id,
+            'force_password_change' => true,
+        ]);
+
+        $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
+
+        Notification::send($user, new \App\Notifications\TeamUserInvitationNotification(
+            $this->tenant->name,
+            $user->name,
+            \Illuminate\Support\Facades\URL::signedRoute(
+                'filament.tenant.auth.password-reset.reset',
+                ['token' => $token, 'email' => $user->email],
+            ),
+        ));
+
+        \App\Models\SecurityEvent::record(Auth::user(), \App\Models\SecurityEvent::TEAM_USER_INVITED, 'self');
+
+        return $user;
+    }
+
     public function addUser()
     {
         if (!$this->isOwner) {
@@ -110,25 +254,78 @@ class TenantPage extends Page
 
         $this->validate([
             'userName' => 'required|string|max:255',
-            'userEmail' => 'required|email|unique:users,email'
+            'userEmail' => 'required|email|unique:users,email',
+            'inviteMode' => 'required|in:password,self',
         ]);
 
-        // Generate temporary password
-        $tempPassword = Str::random(12);
+        $esInvitacion = $this->inviteMode === 'self';
 
-        $user = \App\Models\User::create([
-            'name' => $this->userName,
-            'email' => $this->userEmail,
-            'password' => Hash::make($tempPassword),
-            'tenant_id' => $this->tenant->id,
-            'force_password_change' => true
-        ]);
+        if ($esInvitacion) {
+            $this->crearPersonaEnElGrupo($this->userName, $this->userEmail);
+        } else {
+            // Clave generada con la política (la misma clase que dibuja la validación visual). Antes era
+            // `Str::random(12)`, que no la garantizaba: se le mandaba al usuario una clave que el sistema
+            // le rechazaba al cambiarla.
+            $passwordInicial = \App\Support\PasswordRequirements::generate();
 
-        // Send activation notification
-        Notification::send($user, new TeamUserActivationNotification($tempPassword));
+            $user = \App\Models\User::create([
+                'name' => $this->userName,
+                'email' => $this->userEmail,
+                'password' => Hash::make($passwordInicial),
+                'tenant_id' => $this->tenant->id,
+                'force_password_change' => true
+            ]);
+
+            Notification::send($user, new TeamUserActivationNotification($passwordInicial));
+
+            // Trazabilidad: quién sumó a quién y con qué modalidad.
+            \App\Models\SecurityEvent::record(Auth::user(), \App\Models\SecurityEvent::TEAM_USER_INVITED, 'password');
+        }
 
         $this->resetUserForm();
+        $this->inviteMode = 'password';
         $this->users = $this->tenant->users()->get();
+    }
+
+    /**
+     * Designa a un miembro como administrador del grupo (`tenants.owner_user_id`).
+     *
+     * Cierra el último tramo del ownership con señal propia: hasta acá no había forma de transferirlo
+     * desde la app, así que un grupo cuyo email no coincidía con ningún usuario quedaba sin
+     * administrador y sin salida (caso real: "Green Lab Cultivo", resuelto por el backfill de la
+     * migración).
+     */
+    public function makeOwner($userId): void
+    {
+        if (! $this->isOwner) {
+            return;
+        }
+
+        $user = \App\Models\User::find($userId);
+
+        if (! $user || (int) $user->tenant_id !== (int) $this->tenant->id) {
+            return;
+        }
+
+        $anterior = $this->tenant->owner_user_id;
+
+        $this->tenant->update(['owner_user_id' => $user->id]);
+
+        \App\Models\SecurityEvent::record(
+            Auth::user(),
+            \App\Models\SecurityEvent::OWNER_CHANGED,
+            $anterior ? 'transferred' : 'assigned'
+        );
+
+        // Si se lo transferí a otra persona, dejo de administrar: la UI se recalcula sola.
+        $this->isOwner = Auth::user()->fresh()->isTenantOwner();
+        $this->users = $this->tenant->users()->get();
+
+        \Filament\Notifications\Notification::make()
+            ->title('Administrador actualizado')
+            ->body($user->name . ' ahora administra el grupo.')
+            ->success()
+            ->send();
     }
 
     public function editUser($userId)

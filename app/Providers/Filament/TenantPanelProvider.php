@@ -70,7 +70,11 @@ class TenantPanelProvider extends PanelProvider
             ->font('Inter')
             ->login()
             ->registration(\App\Filament\Tenant\Pages\Registration::class)
-            ->passwordReset()
+            // ⚠️ La clase vive FUERA de `app/Filament/Tenant/Pages` a propósito: `discoverPages` la
+            // levantaba como página común y se quedaba con la ruta `password-reset/reset`, dejando la
+            // del vendor atendiendo el link del mail (por eso los cambios de esta clase no corrían:
+            // 2026-09-27). Así la registra sólo el panel, como página de autenticación.
+            ->passwordReset(\App\Filament\Tenant\Auth\ResetPassword::class)
             ->authGuard('web')
             ->default()
             ->favicon(asset(path: 'images/favicon.png'))

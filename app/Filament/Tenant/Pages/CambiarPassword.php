@@ -3,7 +3,11 @@
 namespace App\Filament\Tenant\Pages;
 
 use App\Models\SecurityEvent;
+use App\Notifications\PasswordChangedNotification;
+use App\Services\PasswordChangeNotifier;
+use App\Support\PasswordRequirements;
 use Filament\Actions as PageActions;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -11,7 +15,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 /**
  * "Cambiar contraseña" — página propia (corrección de diseño de Frankie, 2026-09-27).
@@ -38,6 +41,9 @@ class CambiarPassword extends Page
     protected static ?string $navigationGroup = 'Grupo de trabajo';
 
     protected static ?int $navigationSort = 999;
+
+    // Se llega desde "Mi Grupo", no desde el menú lateral (misma decisión que "Mi cuenta").
+    protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
 
@@ -69,15 +75,20 @@ class CambiarPassword extends Page
                             ->label('Nueva contraseña')
                             ->password()
                             ->required()
-                            ->rules([
-                                Password::min(8)
-                                    ->letters()
-                                    ->mixedCase()
-                                    ->numbers()
-                                    ->symbols(),
-                            ])
+                            ->rules(PasswordRequirements::rule())
                             ->confirmed()
-                            ->helperText('Al menos 8 caracteres, con mayúsculas, minúsculas, números y símbolos.'),
+                            // `live(onBlur: true)`: ver el comentario en PasswordChange (con `live()` a
+                            // secas, `confirmed()` falla mientras se escribe la confirmación).
+                            ->live(onBlur: true)
+                            ->helperText('Elegí una contraseña fuerte: los requisitos se marcan abajo en vivo.'),
+
+                        // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que
+                        // la regla de arriba, porque sale de la misma clase (PasswordRequirements).
+                        Placeholder::make('requisitos_password')
+                            ->hiddenLabel()
+                            ->content(fn ($get) => view('filament.tenant.partials.requisitos-password', [
+                                'password' => $get('new_password'),
+                            ])),
 
                         TextInput::make('new_password_confirmation')
                             ->label('Confirmar nueva contraseña')
@@ -104,13 +115,27 @@ class CambiarPassword extends Page
         // Trazabilidad de seguridad (tabla propia, separada de la telemetría de uso).
         SecurityEvent::record($user, SecurityEvent::PASSWORD_CHANGED, SecurityEvent::CONTEXT_VOLUNTARY);
 
+        // Aviso a la cuenta: mail siempre, y Telegram si el grupo tiene un chat asociado.
+        app(PasswordChangeNotifier::class)->notify($user, PasswordChangedNotification::CONTEXT_VOLUNTARY);
+
+        // Cambiar la contraseña cierra la sesión: la que estaba abierta se abrió con la credencial
+        // vieja. Hay que volver a entrar con la nueva (y así el usuario la prueba de verdad).
+        Auth::logout();
+
+        // En el ciclo web normal la request tiene sesión; en un test de Livewire no está seteada, así
+        // que se guarda (el comportamiento donde importa es el mismo).
+        if (request()->hasSession()) {
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
+
         Notification::make()
             ->title('Contraseña actualizada')
-            ->body('Tu contraseña quedó guardada.')
+            ->body('Por seguridad cerramos tu sesión. Entrá de nuevo con tu contraseña nueva.')
             ->success()
             ->send();
 
-        $this->form->fill();
+        redirect()->route('filament.tenant.auth.login');
     }
 
     /**

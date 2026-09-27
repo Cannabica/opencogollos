@@ -23,11 +23,41 @@ class SecurityEvent extends Model
     /** Evento: el usuario cambio su contrasena (ver `context` para el motivo). */
     public const PASSWORD_CHANGED = 'password_changed';
 
+    /**
+     * Evento: cambió el email de la cuenta.
+     *
+     * El email es la credencial de login, así que este cambio es de ALTO RIESGO: se exige la
+     * contraseña actual y se avisa a la dirección vieja Y a la nueva (el aviso a la vieja es lo que
+     * hace visible un cambio no autorizado: el atacante no controla esa casilla).
+     */
+    public const EMAIL_CHANGED = 'email_changed';
+
+    /**
+     * Evento: cambió el email de contacto del GRUPO (no es credencial de login, pero es el canal de
+     * contacto del grupo: lo cambia sólo el owner y queda registrado).
+     */
+    public const TENANT_EMAIL_CHANGED = 'tenant_email_changed';
+
+    /**
+     * Evento: se sumó una persona al grupo. El `context` guarda la modalidad del alta
+     * (`password` = se le mandó una clave segura; `self` = define la suya en el primer ingreso).
+     */
+    public const TEAM_USER_INVITED = 'team_user_invited';
+
+    /**
+     * Evento: cambió quién administra el grupo. El `context` distingue si fue la designación inicial
+     * (`assigned`) o una transferencia a otra persona (`transferred`).
+     */
+    public const OWNER_CHANGED = 'owner_changed';
+
     /** El usuario eligió cambiarla desde "Cambiar contraseña". */
     public const CONTEXT_VOLUNTARY = 'voluntary';
 
     /** El sistema la obligó (primer acceso / reset administrativo). */
     public const CONTEXT_FORCED = 'forced';
+
+    /** La persona la definió al entrar por una invitación (primer acceso auto-gestionado). */
+    public const CONTEXT_INITIAL = 'initial';
 
     protected $fillable = [
         'tenant_id',

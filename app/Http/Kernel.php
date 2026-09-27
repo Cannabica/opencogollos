@@ -35,6 +35,9 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            // Mitigacion mientras esperamos la migracion a Laravel 12 (tarjeta T5.5): la regla `email`
+            // del framework acepta CR/LF, y esos valores terminan en los encabezados de los mails.
+            \App\Http\Middleware\RejectLineBreaksInEmails::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 

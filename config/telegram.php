@@ -160,8 +160,15 @@ return [
     |
     | Default: https://api.telegram.org/bot
     |
+    | OpenIndoor: se expone por env para poder apuntar TODOS los bots al
+    | emulador HTTP local (tools/telegram-emulator) y probar sin tocar los
+    | servidores de Telegram. Vacío = se usa la API real (producción intacta).
+    | Formato: base_bot_url . TOKEN . '/' . metodo (TelegramClient::prepareRequest),
+    | así que el valor tiene que terminar en `/bot`, ej.
+    |   TELEGRAM_BASE_BOT_URL=http://127.0.0.1:8082/bot
+    |
     */
-    'base_bot_url' => null,
+    'base_bot_url' => env('TELEGRAM_BASE_BOT_URL'),
 
     /*
     |--------------------------------------------------------------------------

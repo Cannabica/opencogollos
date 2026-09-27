@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\Api\ApiLoginController;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -66,6 +67,15 @@ class RouteServiceProvider extends ServiceProvider
             foreach (Route::getRoutes() as $route) {
                 if ($route->uri() === 'api/auth/login') {
                     $route->middleware('throttle:api-login');
+
+                    // T10.6: la ACCIÓN también es del paquete, que no mira el estado del tenant y
+                    // emitía el token con la ability comodín `['*']`. Se reemplaza por la nuestra
+                    // (ApiLoginController): 403 si el tenant está inactivo + abilities acotadas.
+                    // Garantía: tests/Feature/ApiLoginHardeningTest.php.
+                    $route->setAction(array_merge($route->getAction(), [
+                        'uses' => ApiLoginController::class . '@login',
+                        'controller' => ApiLoginController::class . '@login',
+                    ]));
                 }
             }
         });

@@ -16,8 +16,11 @@
 
             {{-- Datos del GRUPO: edición inline y sólo para el owner (misma regla que la gestión de
                  usuarios de abajo; la validación real está en TenantPage::updateTenant). --}}
-            @if($isOwner && ! $editingTenant)
-                <div class="flex flex-wrap gap-3">
+            {{-- Acciones en UN solo bloque (revisión de Frankie, 2026-09-27). Dos grupos, mismo lugar:
+                 las del GRUPO las ve sólo el owner; las de la PERSONA las ve cualquiera, porque son sus
+                 propios datos (antes esto estaba en dos bloques separados y parecía repetido). --}}
+            <div class="flex flex-wrap items-center gap-3 pt-4 mt-2 border-t border-gray-100 dark:border-white/10">
+                @if($isOwner && ! $editingTenant)
                     <x-filament::button
                         wire:click="editTenant"
                         color="gray"
@@ -27,8 +30,6 @@
                         Editar datos del grupo
                     </x-filament::button>
 
-                    {{-- Alta de personas al grupo desde acá (revisión de Frankie, 2026-09-27): abre el
-                         formulario de la lista de abajo, donde se elige la modalidad. --}}
                     <x-filament::button
                         wire:click="$set('showUserForm', true)"
                         color="primary"
@@ -37,8 +38,30 @@
                     >
                         Agregar persona al grupo
                     </x-filament::button>
-                </div>
-            @endif
+
+                    <span class="hidden sm:block w-px h-6 bg-gray-200 dark:bg-white/10"></span>
+                @endif
+
+                <x-filament::button
+                    tag="a"
+                    :href="\App\Filament\Tenant\Pages\Cuenta::getUrl()"
+                    color="gray"
+                    size="sm"
+                    icon="heroicon-o-user-circle"
+                >
+                    Mis datos personales
+                </x-filament::button>
+
+                <x-filament::button
+                    tag="a"
+                    :href="\App\Filament\Tenant\Pages\CambiarPassword::getUrl()"
+                    color="gray"
+                    size="sm"
+                    icon="heroicon-o-key"
+                >
+                    Cambiar mi contraseña
+                </x-filament::button>
+            </div>
 
             @if($editingTenant)
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
@@ -64,30 +87,6 @@
                 </div>
             @endif
 
-            {{-- Accesos de cuenta: la experiencia vive integrada en "Mi Grupo" (revisión de Frankie,
-                 2026-09-27). Son las páginas `tenant/cuenta` y `tenant/cambiar-password`, que ya no
-                 aparecen en el menú lateral. --}}
-            <div class="flex flex-wrap gap-3 pt-4 mt-2 border-t border-gray-100 dark:border-white/10">
-                <x-filament::button
-                    tag="a"
-                    :href="\App\Filament\Tenant\Pages\Cuenta::getUrl()"
-                    color="gray"
-                    size="sm"
-                    icon="heroicon-o-user-circle"
-                >
-                    Mis datos personales
-                </x-filament::button>
-
-                <x-filament::button
-                    tag="a"
-                    :href="\App\Filament\Tenant\Pages\CambiarPassword::getUrl()"
-                    color="gray"
-                    size="sm"
-                    icon="heroicon-o-key"
-                >
-                    Cambiar mi contraseña
-                </x-filament::button>
-            </div>
         </div>
     </x-filament::card>
 
@@ -152,15 +151,8 @@
         <div class="space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Usuarios del grupo</h2>
-                @if($isOwner)
-                    <x-filament::button
-                        wire:click="$set('showUserForm', true)"
-                        color="primary"
-                        size="sm"
-                    >
-                        Agregar usuario
-                    </x-filament::button>
-                @endif
+                {{-- El alta vive en el bloque de acciones del grupo, arriba (revisión de Frankie,
+                     2026-09-27): tener "Agregar usuario" acá también duplicaba la acción. --}}
             </div>
             
             @if($showUserForm)

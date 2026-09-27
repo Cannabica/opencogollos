@@ -1,111 +1,215 @@
-# Cannabica OpenIndoor SaaS
+# OpenCogollos
 
-Sistema de gestión para cultivos indoor basado en Laravel y Filament.
+**Registro, trazabilidad y compliance de cultivos** (indoor y exterior): plantas, acciones de
+cuidado, tareas, planes de cultivo y un bot de Telegram para cargar todo desde el celular.
 
-## 🚀 Características Principales
+Laravel 10 + Filament 3, PHP 8.3, PostgreSQL. Multi-tenant (panel de superadministración +
+panel de cultivador). Sin marca propia: es **marca blanca**, cada instalación le pone la suya
+(ver [`docs/BRANDING.md`](docs/BRANDING.md)).
 
-- **Dashboard:** Onboarding rápido, configuración de bot de Telegram y acciones rápidas.
-- **Indoors:** Define el hardware y los entornos (Watts, tipo de LEDs, Sensores) además de establecer parámetros basales.
-- **Semillas:** Base de datos genética detallada de variedades cultivadas, perfil de cannabinoides (THC/CBD), procedencia.
-- **Ciclo de Vida de Plantas:** Seguimiento individual continuo trazando el progreso biológico de las plantas (Germinación -> Plántula -> Vegetativo -> Floración).
-- **Planes de Cultivo:** Plantillas maestras de cultivo (fotoperiodo óptimo, rangos de temperatura, humedad, VPD y recuperación).
-- **Sistema de Acciones y Bitácora:** Registro de riegos o podas que disparan transiciones en el estado lógico de cada planta acorde a su plan.
+- Licencia: **AGPL-3.0-only** (ver [`LICENSE`](LICENSE))
+- Mantenedor: **Cannabica** · `github.com/Cannabica/opencogollos`
+- Imagen Docker: `ghcr.io/cannabica/opencogollos`
 
-## ⚙️ Configuración Inicial
+---
 
-Para arrancar necesitas configurar el archivo de variables de entorno:
+## Qué trae
+
+- **Entornos de cultivo (indoors):** hardware, luces, sensores y parámetros basales.
+- **Plantas y ciclo de vida:** seguimiento individual (germinación → plántula → vegetativo →
+  floración), con calculadora de VPD y alertas.
+- **Acciones y bitácora:** riegos, podas, transplantes, observaciones con foto; cada acción puede
+  disparar transiciones de estado según el plan de la planta.
+- **Semillas / genéticas:** variedades, perfil de cannabinoides, procedencia.
+- **Planes de cultivo:** plantillas con fotoperiodo, rangos de temperatura, humedad y VPD.
+- **Bot de Telegram:** consultar plantas/acciones/indoors, repetir el último riego y registrar
+  observaciones **mandando una foto** ([`docs/TELEGRAM.md`](docs/TELEGRAM.md)).
+- **Multi-tenant:** un panel de superadmin y un panel por cultivador, con datos aislados.
+
+---
+
+## Quickstart (Docker, ~2 minutos)
+
+Necesitás **Docker** con Compose. No hace falta PHP, Composer ni Node en tu máquina: la imagen se
+construye con todo adentro.
 
 ```bash
-cp .env.local.example .env
+git clone https://github.com/Cannabica/opencogollos.git
+cd opencogollos
+cp .env.local.example .env.local
+
+# 1) generar la APP_KEY (indispensable: sin esto la app no arranca).
+#    `key:generate` escribe .env, NO .env.local: aca se pide que la imprima y la pegas vos.
+docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
+    php artisan key:generate --show          # copia esa salida a APP_KEY= en .env.local
+
+# ...o hacele el pegado automatico:
+#   KEY=$(docker compose -f docker-compose.local.yml --env-file .env.local run --rm php \
+#         php artisan key:generate --show | tail -1)
+#   sed -i "s|^APP_KEY=.*|APP_KEY=$KEY|" .env.local
+
+# 2) levantar el stack
+docker compose -f docker-compose.local.yml --env-file .env.local up -d --build
 ```
 
-**Variables importantes a verificar:**
-- Configuración de conexión de base de datos (`DB_CONNECTION`, `DB_HOST`, etc.).
-- **TELEGRAM_BOT_TOKEN** para habilitar y probar envío de alertas locales.
+Listo. La app queda en:
 
-## 💻 Instalación Local (Entorno nativo sin Docker)
+| Servicio | URL |
+|---|---|
+| App | http://localhost:8090 |
+| Mailpit (los mails no salen a internet, se ven acá) | http://localhost:8025 |
+| Adminer (cliente de base de datos) | http://localhost:8080 |
 
-1. Clonar el repositorio e ingresar:
+El stack que levanta este compose es **liviano**: `caddy` (web), `php` (app), `db` (PostgreSQL) y
+`mailpit` (mails de prueba). No incluye el stack de observabilidad.
+
+Después creá tu usuario de administración (si no, no podés entrar a `/superadmin`). Poné tu email
+y una clave en `.env.local` (`ADMIN_EMAIL` y `ADMIN_PASSWORD`), volvé a levantar el stack para que
+el contenedor lea el cambio, y corré el seeder:
+
 ```bash
-git clone <repository-url>
-cd OpenIndoor
+docker compose -f docker-compose.local.yml --env-file .env.local up -d
+docker compose -f docker-compose.local.yml --env-file .env.local exec php \
+    php artisan db:seed --class=SuperAdminSeeder
 ```
 
-2. Instalar todas las dependencias del proyecto:
+- Panel de administración: http://localhost:8090/superadmin
+- Panel de cultivador: http://localhost:8090/tenant
+
+Para frenar todo: `docker compose -f docker-compose.local.yml down` (agregá `-v` si además querés
+borrar la base de datos).
+
+---
+
+## Quickstart (nativo, sin Docker)
+
+Necesitás **PHP 8.3** (con `pdo_pgsql`, `intl`, `gd`, `zip`, `bcmath`, `xml`, `mbstring`),
+**Composer 2**, **Node 20+** y una **PostgreSQL** accesible.
+
 ```bash
+git clone https://github.com/Cannabica/opencogollos.git
+cd opencogollos
+
 composer install
 npm install
-```
 
-3. Preparar Laravel y la base SQLite por defecto (rápido):
-```bash
+cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite
-```
-*(Asegúrate de cambiar `DB_CONNECTION=sqlite` en tu `.env` y eliminar las variables `DB_HOST`/`DB_PORT` si no las usas)*.
 
-4. Ejecutar las migraciones y sembrar datos de prueba (seeders):
-```bash
+# en .env: DB_CONNECTION=pgsql, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
 php artisan migrate --seed
-```
 
-5. Inicializar la app:
-```bash
 npm run build
 php artisan serve
 ```
 
-## 🐳 Instalación con Docker (Desarrollo Local)
+La app queda en `http://127.0.0.1:8000`.
 
-El proyecto incluye un entorno preconfigurado que facilita levantar todos los servicios juntos en 2 pasos usando `docker-compose.local.yml`; esto incluye la App, Base de Datos, Caddy (Servidor) y Mailpit para mock de emails.
+### Variante sin base de datos (SQLite)
 
-1. Otorgar permisos y ejecutar el script de construcción de la imagen inicial:
-```bash
-chmod +x build.sh
-./build.sh
-```
-*(Este script crea contenedores temporales para instalar el bloque de dependencias de Composer y NPM limpiamente).*
+Si no querés levantar PostgreSQL, en teoría alcanza con:
 
-2. Levantar el entorno local:
-```bash
-docker-compose -f docker-compose.local.yml up -d
+```dotenv
+DB_CONNECTION=sqlite
+DB_DATABASE=/ruta/absoluta/a/database/database.sqlite
 ```
 
-> **Nota:** La automatización `entrypoint.sh` dentro del contenedor se encarga de correr `php artisan migrate --seed` automáticamente al arranque, luego de asegurar que la DB esté receptiva.
-
-**Puertos y Servicios Excluidos Localmente:**
-- **APP (Caddy):** `localhost:8090`
-- **Adminer (DB UI):** `localhost:8080`
-- **Mailpit:** `localhost:8025` (UI web) y `1025` (SMTP interno).
-
-## 🔑 Credenciales de Prueba por Defecto
-
-Después de correr los seeders, el sistema queda con la siguiente información poblada para acceder a los paneles:
-
-- **Panel Superadmin**
-  - URL: `/superadmin`
-  - Email: `test@example.com`
-  - Pass: `password`
-
-- **Panel Tenant / Cultivador**
-  - URL: `/tenant` (o `/` directo dependiendo rutas)
-  - Email: `user@tenant.com`
-  - Pass: `password`
-
-## 🛠 Comandos Útiles en Desarrollo
-
 ```bash
-# Limpiar toda la base de datos y recrear registros desde los comandos seeder:
-php artisan migrate:fresh --seed
-
-# Limpiar cacheos completos frente a errores visuales o lógicos de vistas
-php artisan optimize:clear
+touch database/database.sqlite
+php artisan migrate --seed
 ```
 
-## 🌐 Enlaces Oficiales
-- [Cafecito (Apoyo al proyecto)](https://cafecito.app/cannabica_app)
-- [Página central: Cannabica.ar](https://cannabica.ar)
-- [Unirse a Discord](https://discord.gg/jN9Tje3eJe)
-- [Instagram @cannabica.app3](https://www.instagram.com/cannabica.app3/)
-- [Twitter/X](https://x.com/CannabicaApp)
-- [Facebook Oficial](https://www.facebook.com/profile.php?id=61574070621986)
+> ⚠️ **Pendiente.** En el estado actual del repo esta ruta **falla**: la migración
+> `2025_04_26_084932_remove_owner_id_from_tenants_table` usa `dropForeign()`, que SQLite no
+> soporta (`SQLite doesn't support dropping foreign keys`). El fix está en camino; hasta que
+> entre, usá PostgreSQL (las dos rutas de arriba). No la documentamos como verificada a
+> propósito.
+
+Detalle completo de las dos rutas, variables de entorno y troubleshooting:
+**[`docs/INSTALL.md`](docs/INSTALL.md)**.
+
+---
+
+## Crear tu propio bot de Telegram
+
+El bot no viene incluido: cada instalación usa el suyo.
+
+1. Hablale a **@BotFather** en Telegram → `/newbot` → te da un **token**.
+2. Poné el token en tu `.env`:
+
+   ```dotenv
+   TELEGRAM_BOT_TOKEN=<el token que te dio BotFather>
+   ```
+
+3. Registrá el webhook (necesita una URL pública con **HTTPS**):
+
+   ```bash
+   php artisan telegram:webhook:setup          # registrar
+   php artisan telegram:webhook:setup --info   # ver estado, errores y updates pendientes
+   ```
+
+4. Los usuarios se autentican con `/auth <token>`, que generan desde **Mi grupo** en el panel.
+
+Guía completa — comandos, bot de administración, túnel para desarrollo local y troubleshooting:
+**[`docs/TELEGRAM.md`](docs/TELEGRAM.md)**.
+
+---
+
+## Poner tu marca
+
+OpenCogollos no impone marca. `APP_NAME` define el nombre de tu instalación y las 9 claves
+`PLATFORM_*` (opcionales) las superficies: tu web, tu página de estado, tu Discord, tu logo del
+header de los mails. Vacías, la app funciona igual pero sin esos bloques.
+
+```dotenv
+APP_NAME=Mi Cultivo
+PLATFORM_SITE_URL=https://micultivo.example
+PLATFORM_STATUS_PAGE_URL=https://status.micultivo.example
+PLATFORM_ADMIN_EMAIL=admin@micultivo.example
+PLATFORM_TELEGRAM_BOT_USERNAME=micultivo_bot
+```
+
+Tabla completa, ejemplo neutro vs. con marca y cómo aplicar los cambios:
+**[`docs/BRANDING.md`](docs/BRANDING.md)**.
+
+---
+
+## Documentación
+
+| Documento | Contenido |
+|---|---|
+| [`docs/INSTALL.md`](docs/INSTALL.md) | Instalación paso a paso (Docker y nativa), variables de entorno, admin inicial, mails, troubleshooting |
+| [`docs/TELEGRAM.md`](docs/TELEGRAM.md) | Crear tu bot con BotFather, webhook, comandos, bot de admin |
+| [`docs/BRANDING.md`](docs/BRANDING.md) | Las 9 claves `PLATFORM_*`, `APP_NAME` y el remitente de los mails |
+| [`scripts/verificacion-integral.sh`](scripts/verificacion-integral.sh) | Verificación integral del repo (clone fresco → README → app arriba, grep de fugas, checks de CI/deploy). Herramienta del mantenedor |
+
+## Comandos útiles
+
+```bash
+php artisan migrate:fresh --seed   # recrear la base y cargar datos de demo
+php artisan optimize:clear         # limpiar todas las cachés (config, rutas, vistas)
+php artisan test --testdox         # correr la suite de tests
+php artisan telegram:commands:list # ver los comandos del bot registrados
+```
+
+---
+
+## Mantenedor y comunidad
+
+OpenCogollos es software libre bajo **AGPL-3.0-only**, mantenido por **Cannabica**.
+
+- **Issues y propuestas:** abrí un issue en este repositorio. Es el canal para reportar bugs,
+  pedir funcionalidad y preguntar.
+- **Comunidad:** el Discord de **Cannabica**, el mantenedor — <https://discord.com/invite/jN9Tje3eJe>.
+  (Es la comunidad del proyecto, no un bloque de la app: si montás tu propia instancia y querés tu
+  propio Discord, se configura con `PLATFORM_DISCORD_URL`; vacío, la app no muestra el link.)
+- **Contribuciones:** rama desde `develop` → cambios con tests → pull request. El CI corre la
+  suite y el análisis estático en cada PR; se mergea con CI verde.
+- **Antes de abrir el repo al público:** `scripts/verificacion-integral.sh` corre el checklist de
+  verificación (clone fresco, fugas de infraestructura/marca en el historial y en el árbol, app
+  levantada sin ninguna marca configurada).
+- **Qué implica la AGPL:** si corrés una versión modificada de OpenCogollos como servicio en red,
+  tenés que ofrecer a tus usuarios el código fuente de esa versión modificada.
+
+¿Sos una institución, cooperativa o proyecto que quiere su propia instancia? Abrí un issue y
+contanos el caso.

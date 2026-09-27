@@ -76,18 +76,21 @@ class TenantGroupDataTest extends TestCase
         $this->assertSame('Grupo Viejo', $tenant->fresh()->name, 'El nombre del grupo no lo cambia cualquier miembro.');
     }
 
-    public function test_el_email_del_grupo_no_se_puede_cambiar_desde_la_pantalla(): void
+    public function test_el_email_del_grupo_se_puede_cambiar(): void
     {
+        // Dejó de estar bloqueado: con el ownership por id, el email del grupo ya no arrastra permisos.
         ['tenant' => $tenant, 'owner' => $owner] = $this->entorno();
+        $tenant->update(['owner_user_id' => $owner->id]);
         $this->actingAs($owner);
 
         Livewire::test(TenantPage::class)
             ->call('editTenant')
-            ->set('tenantEmail', 'otro@ejemplo.test')
+            ->set('tenantEmail', 'nuevo-grupo@ejemplo.test')
             ->call('updateTenant')
-            ->assertHasErrors('tenantEmail');
+            ->assertHasNoErrors();
 
-        $this->assertSame('grupo@ejemplo.test', $tenant->fresh()->email);
+        $this->assertSame('nuevo-grupo@ejemplo.test', $tenant->fresh()->email);
+        $this->assertTrue($owner->fresh()->isTenantOwner(), 'El admin no puede perder el panel por esto.');
     }
 
     public function test_el_owner_sigue_siendo_owner_despues_de_editar_el_grupo(): void

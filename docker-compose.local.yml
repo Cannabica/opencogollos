@@ -8,7 +8,10 @@ services:
       - .env.local
     volumes:
       - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
-      - .:/var/www/html
+      # Los assets que sirve el `file_server` vienen del volumen compartido con php (que se inicializa
+      # desde la IMAGEN, con `public/build` ya compilado). Con un bind mount del código del host, un
+      # clone limpio no tiene `public/build` y la app se ve SIN CSS/JS.
+      - app_public:/var/www/html/public:ro
       - caddy_data_local:/data
       - caddy_config_local:/config
     depends_on:
@@ -21,7 +24,8 @@ services:
       dockerfile: docker/php/Dockerfile
       # network: host
     user: "1000:1000"
-    env_file: .env.local
+    env_file:
+      - .env.local
     environment:
       - APP_USER_ID=1000
       - APP_GROUP_ID=1000
@@ -31,10 +35,28 @@ services:
       - "9000"
       - "8000"
     volumes:
-      - .:/var/www/html
-      - ./vendor:/var/www/html/vendor
-      - ./node_modules:/var/www/html/node_modules
+      # El quickstart no puede depender de que el host tenga PHP/Composer/Node NI de que el código
+      # del host esté preparado: las dependencias (`vendor/`, `node_modules/`) y los assets
+      # (`public/build`) vienen de la IMAGEN, por volúmenes que Docker inicializa con su contenido.
+      #
+      # ⚠️ NO se monta `.:/var/www/html`. Por dos razones, las dos medidas:
+      #   1. En un clone fresco tapa las deps de la imagen con carpetas vacías del host →
+      #      `php artisan` devuelve 255 → el entrypoint muere en `migrate --force` → 502 del proxy
+      #      (`board/epicas/2026-09-27-prueba-tercero-hallazgos.md`).
+      #   2. Docker CREA en el HOST el punto de montaje de los volúmenes que caen dentro de ese bind
+      #      (`vendor/`, `node_modules/`) y lo crea como **root** → después el que clonó no puede
+      #      correr `composer install`/`npm install` (Permission denied) y el camino de desarrollo
+      #      del README queda trabado. Medido 2026-09-27.
+      #
+      # `storage/` y `bootstrap/cache/` SÍ se montan del clone: los trae el repo, son del usuario que
+      # clonó (uid 1000, el mismo que corre el contenedor) y son los dos que la app necesita
+      # ESCRIBIR (logs y cachés). Tomados de la imagen quedarían de dueño `www-data` → Permission
+      # denied en los logs → el entrypoint falla igual.
+      - app_vendor:/var/www/html/vendor
+      - app_node_modules:/var/www/html/node_modules
+      - app_public:/var/www/html/public
       - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
     working_dir: /var/www/html
     depends_on:
       - db
@@ -43,7 +65,8 @@ services:
     build:
       context: .
       dockerfile: docker/db/Dockerfile
-    env_file: .env.local
+    env_file:
+      - .env.local
     ports:
       - "5434:5432"
     volumes:
@@ -66,41 +89,13 @@ services:
       - "8025:8025"
       - "1025:1025"
 
-  loki:
-    image: grafana/loki:3.0.0
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/config.yaml
-    volumes:
-      - ./docker/loki/loki-config.yaml:/etc/loki/config.yaml:ro
-      - loki_data:/loki
-    restart: unless-stopped
-
-  promtail:
-    image: grafana/promtail:3.0.0
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro
-    command: -config.file=/etc/promtail/config.yaml
-    restart: unless-stopped
-  grafana:
-    image: grafana/grafana:11.0.0
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./docker/grafana-provisioning/dashboards-config:/etc/grafana/provisioning/dashboards:ro
-      - ./docker/grafana-provisioning/datasources:/etc/grafana/provisioning/datasources:ro
-      - ./docker/grafana-provisioning/dashboards:/etc/grafana/dashboards:ro
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    restart: unless-stopped
-
 volumes:
   postgres_data_dev:
-  laravel_storage:
-  laravel_logs:
-  grafana_data:
-  loki_data:
+  # Los tres volúmenes que se inicializan desde la IMAGEN (php) y hacen que el quickstart no necesite
+  # nada instalado en el host. `app_public` además se comparte con caddy (los assets compilados que
+  # sirve su `file_server`).
+  app_vendor:
+  app_node_modules:
+  app_public:
   caddy_data_local:
   caddy_config_local:

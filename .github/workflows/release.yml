@@ -1,18 +1,16 @@
 # Release — en push a main: tag semver desde composer.json + imagen en GHCR.
 #
-# Contexto (WS2/T2.4): hoy el release lo hace el pipeline VIEJO (`ci-cd-pipeline.yml`, jobs release +
-# deploy) publicando a Docker Hub y deployando al VPS. Este workflow NO lo reemplaza (eso es T3.3):
-# conviven, y la convivencia está medida (informe de WS2 §3.3):
-#   - MISMO evento (push a main) y MISMA fuente de la versión (composer.json) → el tag es el mismo.
-#   - DISTINTO registry: el viejo publica `cannabica/cannabica-php` en Docker Hub; éste publica
-#     `ghcr.io/cannabica/opencogollos` (el registry canónico de T0.2/WS4) con el GITHUB_TOKEN.
-#   - Costo de convivir: un build de imagen duplicado por release (~2-4 min de runner). No hay colisión
-#     funcional: nadie consume todavía la imagen de GHCR (el VPS sigue pulleando Docker Hub).
-#   - El deploy NO está acá: sale del repo de operación (`deploy-prod.yml`, T1.3/T1.5).
+# Contexto (WS2/T2.4): es el ÚNICO release desde que T3.3 borró el pipeline viejo (`ci-cd-pipeline.yml`
+# + `staging-deploy.yml`, 2026-09-27). Antes convivían y esa convivencia se midió (informe de WS2 §3.3);
+# ya no aplica ni el build duplicado ni el registry de Docker Hub (`cannabica/cannabica-php`), que era
+# de una cuenta personal y quedó fuera del camino de la apertura.
+#   - Evento: push a `main`; fuente de la versión: `composer.json` (mismo tag `vX.Y.Z`).
+#   - Registry: `ghcr.io/cannabica/opencogollos` (el canónico de T0.2), con el `GITHUB_TOKEN` — cero secrets.
+#   - El deploy NO está acá: sale del repo de operación (`deploy-prod.yml`, T1.5).
 #
-# DIFERENCIA A FAVOR respecto del viejo: si el tag ya existe apuntando a OTRO commit, este workflow
-# FALLA con un error explícito en vez de saltear el tag en silencio (el viejo hace "Tag already exists.
-# No action taken." y después publica igual la imagen del tag viejo = versión stale en composer.json).
+# Guarda: si el tag ya existe apuntando a OTRO commit, este workflow
+# FALLA con un error explícito en vez de saltear el tag en silencio (eso hacía el pipeline viejo:
+# "Tag already exists. No action taken." y después publicaba igual la imagen del tag viejo).
 #
 # Sin secrets de operación: sólo GITHUB_TOKEN (contents:write para el tag, packages:write para GHCR).
 # Actions pineadas por SHA.

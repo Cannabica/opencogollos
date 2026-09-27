@@ -5,17 +5,18 @@ namespace App\Filament\Tenant\Pages;
 use App\Models\SecurityEvent;
 use App\Notifications\PasswordChangedNotification;
 use App\Services\PasswordChangeNotifier;
-use Filament\Pages\Page;
-use Filament\Forms\Form;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
+use App\Support\PasswordRequirements;
+use Filament\Actions as PageActions;
 use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action;
-use Filament\Actions as PageActions;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Filament\Notifications\Notification;
-use Illuminate\Validation\Rules\Password;
 
 class PasswordChange extends Page
 {
@@ -79,15 +80,19 @@ class PasswordChange extends Page
                             ->label('Nueva Contraseña')
                             ->password()
                             ->required()
-                            ->rules([
-                                Password::min(8)
-                                    ->letters()
-                                    ->mixedCase()
-                                    ->numbers()
-                                    ->symbols()
-                            ])
+                            ->rules(PasswordRequirements::rule())
                             ->confirmed()
-                            ->helperText('La contraseña debe tener al menos 8 caracteres, incluir letras mayúsculas y minúsculas, números y símbolos.'),
+                            // `live()` para que los requisitos se marquen mientras se tipea.
+                            ->live()
+                            ->helperText('Los requisitos se marcan abajo a medida que escribís.'),
+
+                        // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que
+                        // la regla, porque sale de la misma clase (PasswordRequirements).
+                        Placeholder::make('requisitos_password')
+                            ->hiddenLabel()
+                            ->content(fn ($get) => view('filament.tenant.partials.requisitos-password', [
+                                'password' => $get('new_password'),
+                            ])),
                         
                         TextInput::make('new_password_confirmation')
                             ->label('Confirmar Nueva Contraseña')

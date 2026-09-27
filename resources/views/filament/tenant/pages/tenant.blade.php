@@ -256,14 +256,14 @@
                                      sueltas (`bg-*-100`) no se veían: no están en el CSS compilado.
                                      Quién administra sale de `tenants.owner_user_id`. --}}
                                 @if($user->isTenantOwner())
-                                    <x-filament::badge color="warning" size="xs" style="display: inline-flex; padding: 3px 10px; vertical-align: middle;" class="ml-2">
+                                    <x-filament::badge color="warning" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px; vertical-align: middle;" class="ml-2">
                                         ★ Administrador
                                     </x-filament::badge>
                                 @endif
                                 @if($user->id === auth()->id())
                                     {{-- `info` en vez de `gray`: en modo oscuro el gris quedaba con
                                          contraste bajo (el panel se usa en dark). --}}
-                                    <x-filament::badge color="info" size="xs" style="display: inline-flex; padding: 3px 10px; vertical-align: middle;" class="ml-2">
+                                    <x-filament::badge color="info" size="xs" style="display: inline-flex; align-items: center; padding: 4px 12px; vertical-align: middle;" class="ml-3">
                                         Vos
                                     </x-filament::badge>
                                 @endif

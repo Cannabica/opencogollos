@@ -35,6 +35,9 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            // Mitigacion mientras esperamos la migracion a Laravel 12 (tarjeta T5.5): la regla `email`
+            // del framework acepta CR/LF, y esos valores terminan en los encabezados de los mails.
+            \App\Http\Middleware\RejectLineBreaksInEmails::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
@@ -62,7 +65,6 @@ class Kernel extends HttpKernel
         'check.password.change' => \App\Http\Middleware\CheckPasswordChange::class,
         'check.tenant.activation' => \App\Http\Middleware\CheckTenantActivation::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'tenant.token' => \App\Http\Middleware\TenantTokenMiddleware::class,

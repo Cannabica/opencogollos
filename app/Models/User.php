@@ -133,7 +133,20 @@ class User extends Authenticatable implements FilamentUser, HasTenants, JWTSubje
      */
     public function isTenantOwner(): bool
     {
-        return $this->tenant && $this->email === $this->tenant->email;
+        if (! $this->tenant) {
+            return false;
+        }
+
+        // El vínculo de propiedad es un id explícito (`tenants.owner_user_id`). El email queda como
+        // fallback para los grupos que todavía no tienen administrador designado, así el cambio de
+        // migración no rompe nada.
+        //
+        // Por qué se dejó de comparar emails (2026-09-27): cambiar el email —el propio o el del grupo—
+        // le sacaba el panel al owner, y un grupo cuyo email no coincide con ningún usuario se quedaba
+        // sin administrador (caso real: "Green Lab Cultivo").
+        return $this->tenant->owner_user_id !== null
+            ? (int) $this->tenant->owner_user_id === (int) $this->id
+            : $this->email === $this->tenant->email;
     }
 
     /**

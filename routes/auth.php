@@ -1,59 +1,34 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\ConfirmablePasswordController;
-use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
-// Route::middleware('guest')->group(function () {
-//     Route::get('register', [RegisteredUserController::class, 'create'])
-//                 ->name('register');
-
-//     Route::post('register', [RegisteredUserController::class, 'store']);
-
-//     Route::get('login', [AuthenticatedSessionController::class, 'create'])
-//                 ->name('login');
-
-//     Route::post('login', [AuthenticatedSessionController::class, 'store']);
-
-//     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-//                 ->name('password.request');
-
-//     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-//                 ->name('password.email');
-
-//     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-//                 ->name('password.reset');
-
-//     Route::post('reset-password', [NewPasswordController::class, 'store'])
-//                 ->name('password.store');
-// });
+/*
+|--------------------------------------------------------------------------
+| Rutas de auth — sólo el logout
+|--------------------------------------------------------------------------
+|
+| Acá no vive nada más, a propósito. Este archivo era el scaffold de Breeze
+| completo: login, registro, reset de password, confirmación de password,
+| verificación de email y el perfil (con borrado de cuenta). El 2026-09-14 se
+| podó esa superficie entera: autenticación, registro, reset, cambio de
+| password y perfil los sirve el panel Filament (/tenant/* y /superadmin/*),
+| que además rate-limita el intento de login (Login::rateLimit(5)).
+|
+| Por qué se BORRÓ en vez de dejarlo apagado (el bloque `guest` estaba
+| comentado): cada ruta viva es una puerta. Lo que quedaba abierto era, en
+| particular, un perfil paralelo al de Filament que podía BORRAR LA CUENTA
+| (DELETE /profile, dejando el tenant huérfano) y un cambio de email que
+| desverificaba al usuario sin forma de volver (el mail de verificación no sale).
+| Nada de eso vuelve sin decidir antes las reglas: ver las tarjetas T10.x del
+| board (perfil, baja y verificación in-house con Filament).
+|
+| Regla al tocar este archivo: toda ruta que (a) acepte una credencial,
+| (b) cambie credenciales o (c) dispare un envío, va con `throttle`.
+|
+*/
 
 Route::middleware('auth')->group(function () {
-    Route::get('verify-email', EmailVerificationPromptController::class)
-        ->name('verification.notice');
-
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-
-    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-        ->middleware('throttle:6,1')
-        ->name('verification.send');
-
-    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
-        ->name('password.confirm');
-
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
-
-    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
-
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });

@@ -40,8 +40,9 @@ cp .env.local.example .env.local
 
 # 1) generar la APP_KEY (indispensable: sin esto la app no arranca).
 #    `key:generate` escribe .env, NO .env.local: acá se pide el valor con --show y va a tu .env.local.
-#    El `--entrypoint php --no-deps` evita correr el entrypoint del contenedor (que migra y siembra)
-#    sólo para imprimir una key.
+#    El `--entrypoint php --no-deps` evita correr el entrypoint del contenedor (que migra la base)
+#    sólo para imprimir una clave. OJO: este comando es el que CONSTRUYE la imagen la primera vez
+#    (`composer install` + build de assets adentro): ahí está la espera larga del quickstart, no en el `up`.
 docker compose -f docker-compose.local.yml --env-file .env.local run --rm --no-deps \
     --entrypoint php php artisan key:generate --show      # copiá esa salida a APP_KEY= en .env.local
 
@@ -84,6 +85,33 @@ El stack que levanta este compose es **liviano**: `caddy` (web), `php` (app), `d
 > `php artisan` devuelve 255, el contenedor muere en las migraciones y el proxy devuelve 502. Fue un
 > bug real, corregido el 2026-09-27.
 
+### Creá tu usuario (la base arranca vacía)
+
+El contenedor **migra pero no siembra**: después del quickstart vas a tener las tablas creadas y
+**cero usuarios**, así que todavía no podés entrar. Poné tu email y una clave en `.env.local`
+(`ADMIN_EMAIL` y `ADMIN_PASSWORD`), volvé a levantar el stack para que el contenedor lea el cambio, y
+corré el seeder:
+
+```bash
+docker compose -f docker-compose.local.yml --env-file .env.local up -d
+docker compose -f docker-compose.local.yml --env-file .env.local exec php \
+    php artisan db:seed --class=SuperAdminSeeder
+```
+
+¿Preferís arrancar con **datos de ejemplo** en vez de una base vacía? El default trae una demo
+completa (5 perfiles de cultivador, con sus entornos, plantas y acciones):
+
+```bash
+docker compose -f docker-compose.local.yml --env-file .env.local exec php \
+    php artisan migrate:fresh --seed
+```
+
+- Panel de administración: http://localhost:8090/superadmin
+- Panel de cultivador: http://localhost:8090/tenant
+
+Para frenar todo: `docker compose -f docker-compose.local.yml down` (agregá `-v` si además querés
+borrar la base de datos).
+
 ### Desarrollo (hot-reload)
 
 Si vas a **modificar el código**, montá el repo desde tu host con el override:
@@ -96,22 +124,6 @@ docker compose -f docker-compose.local.yml -f docker-compose.dev.yml --env-file 
 El override agrega los bind mounts de `.:/var/www/html`, `vendor/`, `node_modules/`, `public/` y
 `storage/`. Si te olvidás del `composer install`/`npm run build`, vas a ver el mismo 502 de arriba:
 ese camino **sí** exige las dependencias en el host.
-
-Después creá tu usuario de administración (si no, no podés entrar a `/superadmin`). Poné tu email
-y una clave en `.env.local` (`ADMIN_EMAIL` y `ADMIN_PASSWORD`), volvé a levantar el stack para que
-el contenedor lea el cambio, y corré el seeder:
-
-```bash
-docker compose -f docker-compose.local.yml --env-file .env.local up -d
-docker compose -f docker-compose.local.yml --env-file .env.local exec php \
-    php artisan db:seed --class=SuperAdminSeeder
-```
-
-- Panel de administración: http://localhost:8090/superadmin
-- Panel de cultivador: http://localhost:8090/tenant
-
-Para frenar todo: `docker compose -f docker-compose.local.yml down` (agregá `-v` si además querés
-borrar la base de datos).
 
 ---
 

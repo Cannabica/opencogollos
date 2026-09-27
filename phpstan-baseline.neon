@@ -96,6 +96,16 @@ parameters:
 			path: app/Filament/Tenant/Pages/ActivationPending.php
 
 		-
+			message: "#^Access to an undefined property App\\\\Filament\\\\Tenant\\\\Pages\\\\CambiarPassword\\:\\:\\$form\\.$#"
+			count: 3
+			path: app/Filament/Tenant/Pages/CambiarPassword.php
+
+		-
+			message: "#^Access to an undefined property App\\\\Filament\\\\Tenant\\\\Pages\\\\Cuenta\\:\\:\\$form\\.$#"
+			count: 2
+			path: app/Filament/Tenant/Pages/Cuenta.php
+
+		-
 			message: "#^Access to an undefined property App\\\\Filament\\\\Tenant\\\\Pages\\\\PasswordChange\\:\\:\\$form\\.$#"
 			count: 2
 			path: app/Filament/Tenant/Pages/PasswordChange.php

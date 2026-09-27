@@ -2,6 +2,7 @@
 
 namespace App\Filament\Tenant\Pages;
 
+use App\Models\SecurityEvent;
 use Filament\Pages\Page;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
@@ -105,6 +106,10 @@ class PasswordChange extends Page
         $user->password = Hash::make($data['new_password']);
         $user->force_password_change = false;
         $user->save();
+
+        // Trazabilidad de seguridad (tabla propia, separada de la telemetría de uso): el mismo evento
+        // que el cambio voluntario, con el contexto que distingue que acá lo impuso el sistema.
+        SecurityEvent::record($user, SecurityEvent::PASSWORD_CHANGED, SecurityEvent::CONTEXT_FORCED);
 
         // Show success notification
         Notification::make()

@@ -94,6 +94,15 @@ return [
     'admin_secret' => env('TELEGRAM_ADMIN_SECRET_TOKEN'),
 
     /*
+     * Secret del webhook del bot TENANT (el que usan los usuarios). Telegram lo devuelve en el header
+     * `X-Telegram-Bot-Api-Secret-Token` de cada update si el webhook se registró con él
+     * (ver WebhookSetupCommand). Lo verifica el middleware VerifyTelegramTenant.
+     * Sin esto el webhook es forjable: cualquiera puede mandar un update falso con el from.id que
+     * quiera y el bot actúa como ese usuario (tarjeta T10.7). Va en el .env del server, nunca en el repo.
+     */
+    'tenant_secret' => env('TELEGRAM_SECRET_TOKEN'),
+
+    /*
     |--------------------------------------------------------------------------
     | Admin Bot Allowed User Ids
     |--------------------------------------------------------------------------

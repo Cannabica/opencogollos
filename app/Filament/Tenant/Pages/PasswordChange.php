@@ -82,8 +82,10 @@ class PasswordChange extends Page
                             ->required()
                             ->rules(PasswordRequirements::rule())
                             ->confirmed()
-                            // `live()` para que los requisitos se marquen mientras se tipea.
-                            ->live()
+                            // `live(onBlur: true)`: los requisitos se actualizan al salir del campo. Con
+                            // `live()` a secas la validación corre en cada tecla y el `confirmed()` da
+                            // "no coincide" mientras todavía se está escribiendo la confirmación.
+                            ->live(onBlur: true)
                             ->helperText('Los requisitos se marcan abajo a medida que escribís.'),
 
                         // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que
@@ -104,7 +106,7 @@ class PasswordChange extends Page
             ->statePath('data');
     }
 
-    public function changePassword(): void
+    public function changePassword()
     {
         $data = $this->form->getState();
         $user = Auth::user();
@@ -135,7 +137,10 @@ class PasswordChange extends Page
             ->success()
             ->send();
 
-        redirect()->route('filament.tenant.auth.login');
+        // ⚠️ El `return` es imprescindible: sin él Livewire descarta la redirección y, como la sesión
+        // ya se cerró arriba, el usuario queda en esta pantalla sin sesión -> al volver a entrar se le
+        // vuelve a pedir el cambio (loop reportado 2026-09-27).
+        return redirect()->route('filament.tenant.auth.login');
     }
 
     public function logout(): void

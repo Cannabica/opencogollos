@@ -77,8 +77,9 @@ class CambiarPassword extends Page
                             ->required()
                             ->rules(PasswordRequirements::rule())
                             ->confirmed()
-                            // `live()` para que los requisitos se marquen mientras se tipea.
-                            ->live()
+                            // `live(onBlur: true)`: ver el comentario en PasswordChange (con `live()` a
+                            // secas, `confirmed()` falla mientras se escribe la confirmación).
+                            ->live(onBlur: true)
                             ->helperText('Elegí una contraseña fuerte: los requisitos se marcan abajo en vivo.'),
 
                         // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Tenant\Pages;
+namespace App\Filament\Tenant\Auth;
 
 use App\Support\PasswordRequirements;
 use Filament\Forms\Components\Component;
@@ -67,19 +67,10 @@ class ResetPassword extends BaseResetPassword
      */
     public function resetPassword(): ?PasswordResetResponse
     {
-        $response = parent::resetPassword();
-
-        if ($response !== null) {
-            $user = \App\Models\User::where('email', $this->email)->first();
-
-            if ($user && $user->force_password_change) {
-                $user->force_password_change = false;
-                $user->save();
-
-                \App\Models\SecurityEvent::record($user, \App\Models\SecurityEvent::PASSWORD_CHANGED, \App\Models\SecurityEvent::CONTEXT_INITIAL);
-            }
-        }
-
-        return $response;
+        // El cierre del primer acceso NO se hace acá: lo hace el listener
+        // `LimpiarCambioObligatorioAlDefinirLaContrasena`, escuchando el evento `PasswordReset`, porque
+        // esa ruta puede quedar atendida por la clase de Filament (ver TenantPanelProvider) y este
+        // override nunca correría.
+        return parent::resetPassword();
     }
 }

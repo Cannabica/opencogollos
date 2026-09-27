@@ -64,3 +64,6 @@ vps-deploy.md
 # Basura de herramientas locales (WS5/T5.1)
 .config/psysh/psysh_history
 /tmp/
+
+# Planes de trabajo por sesión (planning-with-files): son locales, no van al repo.
+.planning/

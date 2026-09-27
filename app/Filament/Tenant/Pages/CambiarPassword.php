@@ -5,7 +5,9 @@ namespace App\Filament\Tenant\Pages;
 use App\Models\SecurityEvent;
 use App\Notifications\PasswordChangedNotification;
 use App\Services\PasswordChangeNotifier;
+use App\Support\PasswordRequirements;
 use Filament\Actions as PageActions;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -13,7 +15,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 /**
  * "Cambiar contraseña" — página propia (corrección de diseño de Frankie, 2026-09-27).
@@ -74,15 +75,19 @@ class CambiarPassword extends Page
                             ->label('Nueva contraseña')
                             ->password()
                             ->required()
-                            ->rules([
-                                Password::min(8)
-                                    ->letters()
-                                    ->mixedCase()
-                                    ->numbers()
-                                    ->symbols(),
-                            ])
+                            ->rules(PasswordRequirements::rule())
                             ->confirmed()
-                            ->helperText('Al menos 8 caracteres, con mayúsculas, minúsculas, números y símbolos.'),
+                            // `live()` para que los requisitos se marquen mientras se tipea.
+                            ->live()
+                            ->helperText('Elegí una contraseña fuerte: los requisitos se marcan abajo en vivo.'),
+
+                        // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que
+                        // la regla de arriba, porque sale de la misma clase (PasswordRequirements).
+                        Placeholder::make('requisitos_password')
+                            ->hiddenLabel()
+                            ->content(fn ($get) => view('filament.tenant.partials.requisitos-password', [
+                                'password' => $get('new_password'),
+                            ])),
 
                         TextInput::make('new_password_confirmation')
                             ->label('Confirmar nueva contraseña')

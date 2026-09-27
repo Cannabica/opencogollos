@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * Evento de seguridad (trazabilidad separada de la telemetría de uso).
+ *
+ * `usage_events` mide cómo se usa el producto (pageviews); esto es otra cosa: acciones con
+ * consecuencia sobre la cuenta y la seguridad. Hoy hay un solo tipo —cambio de contraseña— y el
+ * modelo queda preparado para los que vengan (cambio de email, baja de cuenta, login fallido).
+ */
+class SecurityEvent extends Model
+{
+    /**
+     * Solo created_at: los eventos de seguridad son inmutables por diseño.
+     */
+    public const UPDATED_AT = null;
+
+    /** Evento: el usuario cambio su contrasena (ver `context` para el motivo). */
+    public const PASSWORD_CHANGED = 'password_changed';
+
+    /** El usuario eligió cambiarla desde "Cambiar contraseña". */
+    public const CONTEXT_VOLUNTARY = 'voluntary';
+
+    /** El sistema la obligó (primer acceso / reset administrativo). */
+    public const CONTEXT_FORCED = 'forced';
+
+    protected $fillable = [
+        'tenant_id',
+        'user_id',
+        'event',
+        'context',
+    ];
+
+    /**
+     * Registra un evento de seguridad.
+     *
+     * Nunca tira excepción: igual que la telemetría de uso, un problema al auditar no puede tumbar
+     * la acción que el usuario acaba de hacer bien (si la contraseña ya cambió, cambió).
+     */
+    public static function record(User $user, string $event, ?string $context = null): ?self
+    {
+        try {
+            return self::create([
+                'tenant_id' => $user->tenant_id,
+                'user_id' => $user->id,
+                'event' => $event,
+                'context' => $context,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('security_events: no se pudo registrar', [
+                'event' => $event,
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}

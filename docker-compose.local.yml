@@ -35,18 +35,24 @@ services:
       - "9000"
       - "8000"
     volumes:
-      # ⚠️ INSTALACIÓN LIMPIA (el quickstart del README): NO se monta el código del repo ni `vendor/`,
-      # `node_modules/` o `public/` del host. Se usan los de la IMAGEN, que se construyó con
-      # `composer install` + `npm run build`.
+      # El quickstart no puede depender de que el host tenga PHP/Composer/Node (es la promesa del
+      # README): el CÓDIGO se monta desde el clone (existe siempre) y lo que un clone NO trae —
+      # `vendor/`, `node_modules/`, `public/build/` — viene de la IMAGEN por volúmenes, que Docker
+      # inicializa con el contenido de la imagen en ese path.
       #
-      # Por qué: con `- .:/var/www/html` (y encima `./vendor`, `./node_modules`) un clone fresco deja
-      # esos directorios VACÍOS en el contenedor —Docker crea las carpetas del host y las monta encima—
-      # → `php artisan` devuelve 255 → el entrypoint muere en `migrate --force` (30 reintentos) →
-      # php-fpm no arranca → 502 del proxy. Medido: 2026-09-27, `board/epicas/2026-09-27-prueba-tercero-hallazgos.md`.
+      # Por qué no `- ./vendor:/...` y `- ./node_modules:/...`: en un clone fresco esos directorios no
+      # existen, Docker crea carpetas vacías en el host y las monta ENCIMA de las deps de la imagen →
+      # `php artisan` devuelve 255 → el entrypoint muere en `migrate --force` (30 reintentos) → php-fpm
+      # no arranca → 502 del proxy. Medido 2026-09-27
+      # (`board/epicas/2026-09-27-prueba-tercero-hallazgos.md`).
       #
-      # Para DESARROLLO con hot-reload está `docker-compose.dev.yml` (ver README §Desarrollo).
+      # `storage/` y `bootstrap/cache/` SÍ van del host (los trae el clone y el proceso corre como
+      # uid 1000): si se toman de la imagen quedan con dueño `www-data` y el contenedor no puede
+      # escribir los logs (`Permission denied` → el entrypoint falla igual).
+      - .:/var/www/html
+      - app_vendor:/var/www/html/vendor
+      - app_node_modules:/var/www/html/node_modules
       - app_public:/var/www/html/public
-      - laravel_storage:/var/www/html/storage
     working_dir: /var/www/html
     depends_on:
       - db
@@ -81,9 +87,11 @@ services:
 
 volumes:
   postgres_data_dev:
-  laravel_storage:
-  # Compartido entre php y caddy: se inicializa con el `public/` de la imagen (incluye `build/`).
-  # `php` lo monta primero (caddy tiene `depends_on: php`), así que el contenido es el de la imagen.
+  # Los tres volúmenes que se inicializan desde la IMAGEN (php) y hacen que el quickstart no necesite
+  # nada instalado en el host. `app_public` además se comparte con caddy (los assets compilados que
+  # sirve su `file_server`).
+  app_vendor:
+  app_node_modules:
   app_public:
   caddy_data_local:
   caddy_config_local:

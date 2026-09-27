@@ -36,6 +36,12 @@ class RegistrationConfirmationNotification extends Notification implements Shoul
      */
     public function toMail(object $notifiable): MailMessage
     {
+        // La invitación a Discord solo se menciona si hay una comunidad configurada.
+        $status = 'Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista';
+        $status .= filled(config('platform.community.discord_url'))
+            ? ', sumate al servidor de discord si querés interactuar o realizar alguna consulta.'
+            : '.';
+
         return (new MailMessage)
             ->subject('Confirmación de Registro - ' . $this->tenantName)
             ->greeting('¡Hola ' . $notifiable->name . '!')
@@ -45,7 +51,7 @@ class RegistrationConfirmationNotification extends Notification implements Shoul
             ->line('Email: ' . $notifiable->email)
             ->line('Tenant: ' . $this->tenantName)
             ->line('')
-            ->line('Tu cuenta está siendo verificada. Te notificaremos por correo electrónico cuando esté lista, sumate al servidor de discord si querés interactuar o realizar alguna consulta.')
+            ->line($status)
             ->action('Iniciar Sesión', url('/tenant/login'))
             ->line('')
             ->salutation('Gracias por unirte a nuestra comunidad!');

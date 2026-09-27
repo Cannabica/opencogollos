@@ -37,8 +37,8 @@ class TeamUserActivationNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $tenantName = $notifiable->tenant ? $notifiable->tenant->name : 'Sistema';
-        
-        return (new MailMessage)
+
+        $message = (new MailMessage)
             ->subject('Activación de cuenta - ' . $tenantName)
             ->greeting('¡Hola ' . $notifiable->name . '!')
             ->line('Has sido agregado al equipo de ' . $tenantName)
@@ -49,9 +49,15 @@ class TeamUserActivationNotification extends Notification implements ShouldQueue
             ->line('**Importante:** Deberás cambiar tu contraseña en el primer inicio de sesión.')
             ->action('Iniciar Sesión', url('/tenant/login'))
             ->line('Tu cuenta está activa y lista para usar.')
-            ->line('')
-            ->line('Para ver el estado del sistema, visita: https://status.cannabica.ar')
-            ->salutation('Si tienes alguna duda, no dudes en contactarnos.');
+            ->line('');
+
+        // La página de estado es opcional: sin config('platform.status_page_url')
+        // la instalación no anuncia ningún monitor propio.
+        if (filled(config('platform.status_page_url'))) {
+            $message->line('Para ver el estado del sistema, visita: ' . config('platform.status_page_url'));
+        }
+
+        return $message->salutation('Si tienes alguna duda, no dudes en contactarnos.');
     }
 
     /**

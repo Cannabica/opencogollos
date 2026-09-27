@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\PostponeProductReminderController;
 use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,10 @@ Route::get('/login', function () {
 Route::get('/dashboard', function () {
     return redirect('/tenant');
 })->middleware('auth')->name('dashboard');
+
+// Manifest de la PWA. El nombre sale de config('app.name') (el default del repo
+// es el nombre del producto; la instalación muestra el suyo vía APP_NAME).
+Route::get('/manifest.json', ManifestController::class)->name('manifest');
 
 // Protected storage files - auth + tenant ownership check
 Route::get('/storage/{path}', [StorageController::class, 'show'])

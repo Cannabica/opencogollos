@@ -35,24 +35,28 @@ services:
       - "9000"
       - "8000"
     volumes:
-      # El quickstart no puede depender de que el host tenga PHP/Composer/Node (es la promesa del
-      # README): el CÓDIGO se monta desde el clone (existe siempre) y lo que un clone NO trae —
-      # `vendor/`, `node_modules/`, `public/build/` — viene de la IMAGEN por volúmenes, que Docker
-      # inicializa con el contenido de la imagen en ese path.
+      # El quickstart no puede depender de que el host tenga PHP/Composer/Node NI de que el código
+      # del host esté preparado: las dependencias (`vendor/`, `node_modules/`) y los assets
+      # (`public/build`) vienen de la IMAGEN, por volúmenes que Docker inicializa con su contenido.
       #
-      # Por qué no `- ./vendor:/...` y `- ./node_modules:/...`: en un clone fresco esos directorios no
-      # existen, Docker crea carpetas vacías en el host y las monta ENCIMA de las deps de la imagen →
-      # `php artisan` devuelve 255 → el entrypoint muere en `migrate --force` (30 reintentos) → php-fpm
-      # no arranca → 502 del proxy. Medido 2026-09-27
-      # (`board/epicas/2026-09-27-prueba-tercero-hallazgos.md`).
+      # ⚠️ NO se monta `.:/var/www/html`. Por dos razones, las dos medidas:
+      #   1. En un clone fresco tapa las deps de la imagen con carpetas vacías del host →
+      #      `php artisan` devuelve 255 → el entrypoint muere en `migrate --force` → 502 del proxy
+      #      (`board/epicas/2026-09-27-prueba-tercero-hallazgos.md`).
+      #   2. Docker CREA en el HOST el punto de montaje de los volúmenes que caen dentro de ese bind
+      #      (`vendor/`, `node_modules/`) y lo crea como **root** → después el que clonó no puede
+      #      correr `composer install`/`npm install` (Permission denied) y el camino de desarrollo
+      #      del README queda trabado. Medido 2026-09-27.
       #
-      # `storage/` y `bootstrap/cache/` SÍ van del host (los trae el clone y el proceso corre como
-      # uid 1000): si se toman de la imagen quedan con dueño `www-data` y el contenedor no puede
-      # escribir los logs (`Permission denied` → el entrypoint falla igual).
-      - .:/var/www/html
+      # `storage/` y `bootstrap/cache/` SÍ se montan del clone: los trae el repo, son del usuario que
+      # clonó (uid 1000, el mismo que corre el contenedor) y son los dos que la app necesita
+      # ESCRIBIR (logs y cachés). Tomados de la imagen quedarían de dueño `www-data` → Permission
+      # denied en los logs → el entrypoint falla igual.
       - app_vendor:/var/www/html/vendor
       - app_node_modules:/var/www/html/node_modules
       - app_public:/var/www/html/public
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
     working_dir: /var/www/html
     depends_on:
       - db

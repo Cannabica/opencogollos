@@ -1,5 +1,9 @@
 includes:
     - vendor/larastan/larastan/extension.neon
+    # Tipa `Mockery::mock(X::class)` como `X&MockInterface`: sin esto, un helper de test que devuelve
+    # el mock de una clase concreta da un falso positivo `return.type` (visto en
+    # StartCommandLocalizationTest::apiMock(), WS4).
+    - vendor/phpstan/phpstan-mockery/extension.neon
     - phpstan-baseline.neon
 
 parameters:

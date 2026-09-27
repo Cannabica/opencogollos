@@ -44,6 +44,12 @@ class SecurityEvent extends Model
      */
     public const TEAM_USER_INVITED = 'team_user_invited';
 
+    /**
+     * Evento: cambió quién administra el grupo. El `context` distingue si fue la designación inicial
+     * (`assigned`) o una transferencia a otra persona (`transferred`).
+     */
+    public const OWNER_CHANGED = 'owner_changed';
+
     /** El usuario eligió cambiarla desde "Cambiar contraseña". */
     public const CONTEXT_VOLUNTARY = 'voluntary';
 

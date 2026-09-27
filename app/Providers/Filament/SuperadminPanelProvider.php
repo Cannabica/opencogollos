@@ -31,6 +31,9 @@ class SuperadminPanelProvider extends PanelProvider
             ->id('superadmin')
             ->path('superadmin')
             ->login()
+            // C4e (WS9/T9.5): mismo criterio que el panel tenant (el SuperAdmin no setea
+            // logo propio y usa el default de Filament, pero si comparte el nombre).
+            ->brandName(fn() => config('platform.brand_name') ?: config('app.name'))
             ->colors([
                 'primary' => Color::hex('#006400'),
             ])

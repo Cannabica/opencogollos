@@ -229,23 +229,47 @@ class Registration extends Register
                     </x-filament::button>
                     BLADE))),
                 
-                // Footer with status monitoring link
-                \Filament\Forms\Components\Placeholder::make('')
-                    ->content(new HtmlString('
-                        <div class="mt-8 pt-6 border-t border-gray-200 text-center">
-                            <p class="text-sm text-gray-600">
-                                ¿Problemas con el sistema? Verifica el estado en 
-                                <a href="https://status.cannabica.ar" target="_blank" class="text-cadetblue hover:text-cadetblue-700 font-medium">
-                                    status.cannabica.ar
-                                </a>
-                            </p>
-                            <p class="text-xs text-gray-500 mt-2">
-                                &copy; ' . date('Y') . ' Cannabica. Todos los derechos reservados.
-                            </p>
-                        </div>
-                    '))
-                    ->columnSpanFull(),
+                // Footer de marca (link de estado + copyright): sin config('platform.*')
+                // no se renderiza NADA (instalación neutra).
+                ...$this->brandFooterPlaceholder(),
             ]);
+    }
+
+    /**
+     * Placeholder del footer de marca, o array vacío si no hay nada configurado.
+     *
+     * @return array<int, \Filament\Forms\Components\Component>
+     */
+    protected function brandFooterPlaceholder(): array
+    {
+        $statusUrl = config('platform.status_page_url');
+        $brandName = config('platform.brand_name');
+
+        if (blank($statusUrl) && blank($brandName)) {
+            return [];
+        }
+
+        $html = '<div class="mt-8 pt-6 border-t border-gray-200 text-center">';
+
+        if (filled($statusUrl)) {
+            $html .= '<p class="text-sm text-gray-600">¿Problemas con el sistema? Verifica el estado en '
+                . '<a href="' . e($statusUrl) . '" target="_blank" class="text-cadetblue hover:text-cadetblue-700 font-medium">'
+                . e(parse_url($statusUrl, PHP_URL_HOST) ?: $statusUrl)
+                . '</a></p>';
+        }
+
+        if (filled($brandName)) {
+            $html .= '<p class="text-xs text-gray-500 mt-2">&copy; ' . date('Y') . ' ' . e($brandName)
+                . '. Todos los derechos reservados.</p>';
+        }
+
+        $html .= '</div>';
+
+        return [
+            \Filament\Forms\Components\Placeholder::make('brand_footer')
+                ->content(new HtmlString($html))
+                ->columnSpanFull(),
+        ];
     }
 
     protected function getFormActions(): array

@@ -210,10 +210,16 @@ class TenantPage extends Page
             // contraseña, que ya trae la validación visual en vivo.
             $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
 
+            // ⚠️ La URL va FIRMADA: Filament exige firma en la ruta de reset
+            // (`Panel/Concerns/HasAuth.php` usa `URL::signedRoute`) y con `route()` la ruta responde
+            // 403 por el middleware `signed` -- medido con curl: firmada 200, sin firma 403.
             Notification::send($user, new \App\Notifications\TeamUserInvitationNotification(
                 $this->tenant->name,
                 $user->name,
-                route('filament.tenant.auth.password-reset.reset', ['token' => $token, 'email' => $user->email]),
+                \Illuminate\Support\Facades\URL::signedRoute(
+                    'filament.tenant.auth.password-reset.reset',
+                    ['token' => $token, 'email' => $user->email],
+                ),
             ));
         } else {
             // Clave generada con la política (la misma clase que dibuja la validación visual). Antes era

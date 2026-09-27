@@ -7,6 +7,7 @@ use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Http\Responses\Auth\Contracts\PasswordResetResponse;
 use Filament\Pages\Auth\PasswordReset\ResetPassword as BaseResetPassword;
 
 /**
@@ -53,5 +54,32 @@ class ResetPassword extends BaseResetPassword
             // `live(onBlur: true)`: los requisitos se actualizan al salir del campo (con `live()` a secas,
             // el `same()` da "no coincide" mientras se escribe la confirmación).
             ->live(onBlur: true);
+    }
+
+    /**
+     * Definir la contraseña desde acá **termina** el primer acceso si venía de una invitación.
+     *
+     * El alta de una persona deja `force_password_change = true` para que el sistema le pida cambiarla.
+     * Pero cuando la persona llega por el link de la invitación ("elegí tu contraseña") ya la está
+     * definiendo: si el flag queda en true, el middleware la manda a cambiarla otra vez al entrar
+     * (loop reportado por Frankie, 2026-09-27). Acá se limpia y queda registrado como el
+     * establecimiento inicial.
+     */
+    public function resetPassword(): ?PasswordResetResponse
+    {
+        $response = parent::resetPassword();
+
+        if ($response !== null) {
+            $user = \App\Models\User::where('email', $this->email)->first();
+
+            if ($user && $user->force_password_change) {
+                $user->force_password_change = false;
+                $user->save();
+
+                \App\Models\SecurityEvent::record($user, \App\Models\SecurityEvent::PASSWORD_CHANGED, \App\Models\SecurityEvent::CONTEXT_INITIAL);
+            }
+        }
+
+        return $response;
     }
 }

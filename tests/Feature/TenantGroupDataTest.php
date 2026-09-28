@@ -10,7 +10,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Datos del GRUPO editables inline desde "Mi Grupo" (revisión de Frankie, 2026-09-27).
+ * Datos del GRUPO editables inline desde "Mi Grupo" (revisión del dueño del repo, 2026-09-27).
  *
  * Reglas:
  *  - los edita **sólo el owner** (misma regla que la gestión de usuarios de esa página),

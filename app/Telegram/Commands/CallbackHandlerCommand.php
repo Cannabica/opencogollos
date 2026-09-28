@@ -116,13 +116,32 @@ class CallbackHandlerCommand extends Command
         $parts = explode(':', $data);
         $indoorId = end($parts);
         
-        // Obtener plantas no muertas del indoor
+        // Obtener plantas no muertas del indoor — SIEMPRE del tenant de la asociación.
+        // Antes no se cruzaba el tenant: `select_indoor:<id ajeno>` listaba las plantas de otro grupo
+        // y dejaba observarlas.
         $plants = Plant::where('indoor_id', $indoorId)
+            ->whereHas('indoor', fn ($query) => $query->where('tenant_id', $association->tenant_id))
             ->where('state', '!=', 'muerta')
             ->orderBy('name')
             ->get();
 
-        $indoor = Indoor::find($indoorId);
+        $indoor = Indoor::where('tenant_id', $association->tenant_id)->find($indoorId);
+
+        if (! $indoor) {
+            Log::warning('Callback select_indoor sobre un indoor de otro tenant', [
+                'indoor_id' => $indoorId,
+                'tenant_id' => $association->tenant_id,
+                'user_id' => $callbackQuery->from->id,
+            ]);
+
+            $this->telegram->answerCallbackQuery([
+                'callback_query_id' => $callbackQuery->id,
+                'text' => '❌ No se encontró el indoor',
+                'show_alert' => true,
+            ]);
+
+            return;
+        }
         
         // Recuperar información de la foto usando el message_id del callback
         // El mensaje original de la foto debería ser el mensaje al que responde este callback
@@ -266,6 +285,27 @@ class CallbackHandlerCommand extends Command
         $indoorId = $parts[1];
         $description = urldecode($parts[2] ?? '');
 
+        // El indoor sale del callback_data (lo elige el usuario), así que hay que cruzarlo contra el
+        // tenant de la asociación: sin esto, `confirm_observation:<indoor ajeno>` creaba una acción
+        // dentro de un indoor de otro grupo.
+        $indoor = Indoor::where('tenant_id', $association->tenant_id)->find($indoorId);
+
+        if (! $indoor) {
+            Log::warning('Callback confirm_observation sobre un indoor de otro tenant', [
+                'indoor_id' => $indoorId,
+                'tenant_id' => $association->tenant_id,
+                'user_id' => $callbackQuery->from->id,
+            ]);
+
+            $this->telegram->answerCallbackQuery([
+                'callback_query_id' => $callbackQuery->id,
+                'text' => '❌ No se encontró el indoor',
+                'show_alert' => true,
+            ]);
+
+            return;
+        }
+
         // Obtener información de observación del cache
         $observationData = cache()->get('observation_step_' . $callbackQuery->from->id);
         if (!$observationData || !isset($observationData['photo_info'])) {
@@ -343,7 +383,7 @@ class CallbackHandlerCommand extends Command
         ]);
 
         $messageText = "✅ *Observación " . (!empty($photoInfo['is_album']) ? "con álbum" : "con foto") . " creada exitosamente*\n\n";
-        $messageText .= "🏠 *Indoor:* " . Indoor::find($indoorId)->name . "\n";
+        $messageText .= "🏠 *Indoor:* " . $indoor->name . "\n";
         $messageText .= "📝 *Descripción:* " . ($description ?: 'Sin descripción') . "\n";
         $messageText .= "🖼️ *" . (!empty($photoInfo['is_album']) ? "Álbum" : "Foto") . ":* " . count($photoFileIds) . " " . (!empty($photoInfo['is_album']) ? "fotos adjuntadas" : "adjuntada") . "\n";
         $messageText .= "📅 *Fecha:* " . now()->format('d/m/Y H:i');
@@ -407,13 +447,34 @@ class CallbackHandlerCommand extends Command
         $selectedPlantIds = [];
 
         if ($plantSelection !== 'all') {
-            $plant = Plant::find($plantSelection);
-            $plantName = $plant ? htmlspecialchars($plant->name, ENT_QUOTES, 'UTF-8') : 'Planta específica';
-            $selectedPlantIds = [$plantSelection];
+            // La planta tiene que ser del tenant de la asociación: si no, se guardaba su id en el cache
+            // y la observación terminaba creando una acción con plantas de otro grupo.
+            $plant = Plant::whereHas('indoor', fn ($query) => $query->where('tenant_id', $association->tenant_id))
+                ->find($plantSelection);
+
+            if (! $plant) {
+                Log::warning('Callback select_plants sobre una planta de otro tenant', [
+                    'plant_id' => $plantSelection,
+                    'tenant_id' => $association->tenant_id,
+                    'user_id' => $callbackQuery->from->id,
+                ]);
+
+                $this->telegram->answerCallbackQuery([
+                    'callback_query_id' => $callbackQuery->id,
+                    'text' => '❌ No se encontró la planta',
+                    'show_alert' => true,
+                ]);
+
+                return;
+            }
+
+            $plantName = htmlspecialchars($plant->name, ENT_QUOTES, 'UTF-8');
+            $selectedPlantIds = [$plant->id];
         } else {
             // Obtener todas las plantas activas del indoor
             if ($indoorId) {
                 $plants = Plant::where('indoor_id', $indoorId)
+                    ->whereHas('indoor', fn ($query) => $query->where('tenant_id', $association->tenant_id))
                     ->where('state', '!=', 'muerta')
                     ->orderBy('name')
                     ->get();
@@ -464,7 +525,7 @@ class CallbackHandlerCommand extends Command
         $currentText = $currentMessage->text;
         
         // Extraer el indoor_id del texto del mensaje o del cache
-        $indoorId = $this->extractIndoorIdFromMessage($currentText);
+        $indoorId = $this->extractIndoorIdFromMessage($currentText, $association);
         
         if (!$indoorId) {
             // Intentar obtener del cache como fallback
@@ -487,13 +548,14 @@ class CallbackHandlerCommand extends Command
             return;
         }
 
-        // Obtener plantas no muertas del indoor
+        // Obtener plantas no muertas del indoor — del tenant de la asociación
         $plants = Plant::where('indoor_id', $indoorId)
+            ->whereHas('indoor', fn ($query) => $query->where('tenant_id', $association->tenant_id))
             ->where('state', '!=', 'muerta')
             ->orderBy('name')
             ->get();
 
-        $indoor = Indoor::find($indoorId);
+        $indoor = Indoor::where('tenant_id', $association->tenant_id)->find($indoorId);
         
         // Crear teclado para selección de plantas
         $keyboard = Keyboard::make()->inline();
@@ -565,7 +627,7 @@ class CallbackHandlerCommand extends Command
         ]);
     }
     
-    protected function extractIndoorIdFromMessage($messageText)
+    protected function extractIndoorIdFromMessage($messageText, $association)
     {
         // Buscar el indoor_id en el texto del mensaje
         // El formato esperado es: "🏠 *Indoor seleccionado:* Nombre del Indoor"
@@ -574,8 +636,11 @@ class CallbackHandlerCommand extends Command
         if (preg_match('/🏠 \*Indoor seleccionado:\* (.+?)(?:\n|$)/', $messageText, $matches)) {
             $indoorName = trim($matches[1]);
             
-            // Buscar el indoor por nombre
-            $indoor = Indoor::where('name', $indoorName)->first();
+            // Buscar el indoor por nombre — SÓLO entre los del tenant de la asociación: dos grupos
+            // pueden tener un indoor con el mismo nombre y no hay que resolver al ajeno.
+            $indoor = Indoor::where('tenant_id', $association->tenant_id)
+                ->where('name', $indoorName)
+                ->first();
             
             if ($indoor) {
                 return $indoor->id;
@@ -680,8 +745,12 @@ class CallbackHandlerCommand extends Command
         $parts = explode(':', $data);
         $actionId = $parts[1];
 
-        // Get the original irrigation action
-        $originalAction = Action::with('plants')->find($actionId);
+        // Get the original irrigation action — SÓLO del tenant de la asociación. Antes, un
+        // `repeat_irrigation:<acción ajena>` creaba una acción nueva con el indoor y las plantas de
+        // otro grupo (fuga de ESCRITURA).
+        $originalAction = Action::with('plants')
+            ->where('tenant_id', $association->tenant_id)
+            ->find($actionId);
 
         if (!$originalAction || $originalAction->action_type_id !== 1) {
             $this->telegram->answerCallbackQuery([
@@ -701,7 +770,8 @@ class CallbackHandlerCommand extends Command
             'data' => $originalAction->data
         ]);
 
-        // Attach the same plants
+        // Attach the same plants. El contexto del tenant + el `TenantScope` de `Plant` dejan sólo
+        // plantas del mismo grupo (una acción ajena ya no llega hasta acá, pero el filtro queda igual).
         if ($originalAction->plants->count() > 0) {
             $newAction->plants()->attach($originalAction->plants->pluck('id'));
         }

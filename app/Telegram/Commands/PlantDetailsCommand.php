@@ -14,7 +14,8 @@ class PlantDetailsCommand extends Command
     use ChecksTelegramExpiration;
 
     protected string $name = 'plantdetails';
-    protected string $pattern = '{plant_id?:\d+}';
+    // ⚠️ OJO con la sintaxis: el SDK (3.16) NO soporta `{arg?:patrón}` (ver ActionDetailsCommand).
+    protected string $pattern = '{plant_id}';
     protected string $description = 'Muestra detalles de una planta específica';
 
     protected function translateIndicesToLabels($data, array $options): string
@@ -76,6 +77,7 @@ class PlantDetailsCommand extends Command
         }
 
         $plant = Plant::where('id', $plantId)
+            ->whereHas('indoor', fn ($query) => $query->where('tenant_id', $association->tenant_id))
             ->with(['indoor', 'seedType'])
             ->first();
 
@@ -88,7 +90,8 @@ class PlantDetailsCommand extends Command
             return;
         }
 
-        $actions = \App\Models\Action::whereHas('plants', function($query) use ($plantId) {
+        $actions = \App\Models\Action::where('tenant_id', $association->tenant_id)
+            ->whereHas('plants', function($query) use ($plantId) {
                 $query->where('plant_id', $plantId);
             })
             ->with('action_type')
@@ -96,7 +99,8 @@ class PlantDetailsCommand extends Command
             ->take(5)
             ->get();
 
-        $actionStats = \App\Models\Action::whereHas('plants', function($query) use ($plantId) {
+        $actionStats = \App\Models\Action::where('tenant_id', $association->tenant_id)
+            ->whereHas('plants', function($query) use ($plantId) {
                 $query->where('plant_id', $plantId);
             })
             ->selectRaw('action_type_id, count(*) as count')

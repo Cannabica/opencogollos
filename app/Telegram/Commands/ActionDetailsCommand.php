@@ -14,7 +14,12 @@ class ActionDetailsCommand extends Command
     use ChecksTelegramExpiration;
 
     protected string $name = 'actiondetails';
-    protected string $pattern = '{action_id?:\d+}';
+    // ⚠️ OJO con la sintaxis: el SDK (3.16) NO soporta `{arg?:patrón}` — genera la regex
+    // `(?:/)(?:actiondetails)(?:@\w*bot)?\s+`, se come el argumento y no captura nada, así que
+    // `/actiondetails 5` contestaba SIEMPRE "Debes especificar un ID de acción válido" (medido
+    // 2026-09-28 con `makeRegexPattern()` por reflection). Con `{action_id}` el grupo se arma bien
+    // (`(?<action_id>[^ ]++)?`) y la validación numérica la hace el `handle()`.
+    protected string $pattern = '{action_id}';
     protected string $description = 'Muestra detalles de una acción específica';
 
     public function handle()
@@ -48,6 +53,7 @@ class ActionDetailsCommand extends Command
         }
 
         $action = Action::where('id', $actionId)
+            ->where('tenant_id', $association->tenant_id)
             ->with(['indoor', 'action_type', 'plants'])
             ->first();
 

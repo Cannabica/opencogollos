@@ -35,8 +35,10 @@ regexes = ['''secreto-de-prueba''']
 # una decisión aparte). El token YA NO ESTÁ en el árbol — se movió a config/env — y este match es por
 # el NOMBRE DE LA VARIABLE, no por el valor: el valor no se escribe acá.
 #
-# DEUDA ABIERTA: rotar/revocar ese token si sigue vivo en alguna base (tarea en el board). Rotado,
-# esta excepción queda sin riesgo real.
+# VERIFICADO 2026-09-28 — EL TOKEN NO ESTÁ VIVO: 0 filas por su sha256 en `api_tokens` de la base de
+# producción, y la columna `token` (texto plano) está vacía en las 5 filas de esa tabla. No hay nada
+# que rotar. La excepción queda por el hallazgo HISTÓRICO: el valor sigue en commits viejos de la
+# historia pública, así que gitleaks lo ve aunque no sirva contra ningún entorno.
 [[allowlists]]
 description = "Token de tenant histórico en un comando de prueba (ya sacado del árbol; pendiente de rotación)"
 paths = ['''app/Telegram/Commands/TestForbiddenCommand\.php''']

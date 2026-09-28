@@ -23,7 +23,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         // Definir la contraseña por el link de la invitación (o por "olvidé mi contraseña") CIERRA el
         // primer acceso. Se cuelga del evento del broker y no de la pantalla, para que valga sin importar
-        // qué clase atienda la ruta (loop reportado por Frankie, 2026-09-27).
+        // qué clase atienda la ruta (loop reportado por el dueño del repo, 2026-09-27).
         \Illuminate\Auth\Events\PasswordReset::class => [
             \App\Listeners\LimpiarCambioObligatorioAlDefinirLaContrasena::class,
         ],

@@ -13,7 +13,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Cambiar el email del grupo: qué pasa con la dirección nueva (revisión de Frankie, 2026-09-27).
+ * Cambiar el email del grupo: qué pasa con la dirección nueva (revisión del dueño del repo, 2026-09-27).
  *
  * El email del grupo es su **canal de contacto**, no una credencial (los permisos van por
  * `tenants.owner_user_id`). Entonces:
@@ -49,7 +49,7 @@ class TenantEmailChangeTest extends TestCase
 
     public function test_el_casillero_solo_se_ofrece_si_el_email_cambio_y_no_tiene_usuario(): void
     {
-        // Revisión de Frankie, 2026-09-27: "debe verse solo si se modificó el correo del tenant admin,
+        // Revisión del dueño del repo, 2026-09-27: "debe verse solo si se modificó el correo del tenant admin,
         // sino es innecesario".
         Notification::fake();
         ['tenant' => $tenant, 'owner' => $owner] = $this->entorno();

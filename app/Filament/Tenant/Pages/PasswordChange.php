@@ -88,7 +88,7 @@ class PasswordChange extends Page
                             ->live(onBlur: true)
                             ->helperText('Los requisitos se marcan abajo a medida que escribís.'),
 
-                        // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que
+                        // Validación visual en vivo (revisión del dueño del repo, 2026-09-27): mismo desglose que
                         // la regla, porque sale de la misma clase (PasswordRequirements).
                         Placeholder::make('requisitos_password')
                             ->hiddenLabel()

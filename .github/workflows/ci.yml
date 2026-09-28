@@ -148,7 +148,7 @@ jobs:
           fetch-depth: 0   # gitleaks escanea la historia: sin esto sólo vería el último commit
 
       - name: Guard de fugas (infraestructura + identidad) — archivos trackeados
-        run: bash scripts/guard-fugas.sh
+        run: python3 scripts/guard-fugas.py
 
       # gitleaks por BINARIO OFICIAL y no con `gitleaks/gitleaks-action`: esa action exige licencia
       # (GITLEAKS_LICENSE) en repos de ORGANIZACIÓN. El binario es gratis, no depende de una action

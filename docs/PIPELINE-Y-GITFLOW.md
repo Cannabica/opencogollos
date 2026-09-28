@@ -68,9 +68,10 @@ gh pr create --base main --title "Hotfix v0.21.2" --fill   # merge -> tag + imag
 Todo lo que se commitea acá queda indexado para siempre, incluso si se borra en el commit siguiente.
 El job `fugas` de `ci.yml` corre dos capas:
 
-- **`scripts/guard-fugas.sh`** — infraestructura de una instalación concreta (direcciones IP, puertos
-  de administración, hosts internos, rutas del servidor) e identidad personal (usuario, emails).
-  **Bloquea.** Las menciones de la *marca* sólo se reportan como aviso: el repo se limpia de
+- **`scripts/guard-fugas.py`** — infraestructura de una instalación concreta (direcciones IP, rutas
+  home, emails de proveedores personales) e identidad personal. **Bloquea.** Los valores exactos de
+  la instancia **no están en el script** (es público): van como SHA-256 en la `DENYLIST`. Las
+  menciones de la *marca* y las IPs públicas sólo se reportan como aviso: el repo se limpia de
   infraestructura, no de marca.
 - **`gitleaks`** — credenciales, sobre la **historia completa**, con el binario oficial pineado por
   versión y sha256. Las excepciones aprobadas viven en `.gitleaks.toml`, scoped por path + patrón.

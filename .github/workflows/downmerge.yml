@@ -27,6 +27,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write   # fallback: si la org no deja crear PRs desde Actions, se deja un issue
 
 # Un solo downmerge a la vez: si llegan dos pushes a main seguidos, el segundo espera.
 concurrency:
@@ -62,35 +63,63 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
+
           ABIERTOS="$(gh pr list --base develop --head main --state open --json number --jq 'length')"
           if [ "$ABIERTOS" != "0" ]; then
             echo "Ya hay un PR abierto de main a develop: no se abre otro."
             exit 0
           fi
 
-          gh pr create \
+          if gh pr create \
             --base develop \
             --head main \
             --title "downmerge: main → develop (post-release automático)" \
             --body "$(printf '%s\n' \
-              'Downmerge automático disparado por el push a \`main\` (\`downmerge.yml\`).' \
+              'Downmerge automático disparado por el push a `main` (`downmerge.yml`).' \
               '' \
-              '**Por qué**: el release mergea \`develop\` → \`main\`, y ese merge commit queda sólo en \`main\`.' \
-              'Sin bajarlo, las dos ramas divergen un commit por release y \`develop\` deja de contener producción.' \
+              '**Por qué**: el release mergea `develop` → `main`, y ese merge commit queda sólo en `main`.' \
+              'Sin bajarlo, las dos ramas divergen un commit por release y `develop` deja de contener producción.' \
               '' \
-              '**Qué revisar**: nada del código es nuevo (ya estaba en \`main\`, que pasó CI antes de entrar).' \
+              '**Qué revisar**: nada del código es nuevo (ya estaba en `main`, que pasó CI antes de entrar).' \
               'El CI de este PR corre igual porque el downmerge es un cambio como cualquier otro.' \
               '' \
               '- [ ] el CI pasó (si el repo tiene auto-merge, se mergea solo al dar verde)' \
-              '- [ ] al mergear, `git rev-list --count main..develop` vuelve a 0')"
-
-          # `--auto` sólo funciona con el auto-merge habilitado en el repo; si no lo está, el PR
-          # queda abierto y esto NO es un error (por eso el `|| true` con aviso).
-          if gh pr merge --auto --merge >/dev/null 2>&1; then
-            echo "Auto-merge armado: el PR se mergea solo cuando el CI dé verde."
+              '- [ ] al mergear, `git rev-list --count main..develop` vuelve a 0')"; then
+            # `--auto` sólo funciona con el auto-merge habilitado; si no, el PR queda abierto y
+            # esto NO es un error. El destinatario va EXPLÍCITO (rama `main`): sin argumento,
+            # `gh pr merge` falla en un workflow porque no hay un PR "actual" en contexto.
+            if gh pr merge main --auto --merge >/dev/null 2>&1; then
+              echo "Auto-merge armado: el PR se mergea solo cuando el CI dé verde."
+            else
+              echo "::notice::Auto-merge no disponible (¿allow_auto_merge apagado?): el PR queda abierto para mergear a mano."
+            fi
           else
-            echo "::notice::Auto-merge no disponible (¿allow_auto_merge apagado?): el PR queda abierto para mergear a mano."
+            # Fallback: la ORGANIZACIÓN puede tener deshabilitado "Allow GitHub Actions to create
+            # or approve pull requests" (viene así por defecto y sólo lo cambia un owner con
+            # admin:org). Sin eso, Actions NO puede abrir el PR. Crear un issue sí está permitido
+            # y deja el downmerge visible y accionable en vez de un workflow rojo que nadie mira.
+            echo "::warning::No se pudo crear el PR (¿la org no permite que Actions cree PRs?). Se deja un issue como recordatorio."
+            YA="$(gh issue list --state open --search 'in:title "downmerge pendiente"' --json number --jq 'length')"
+            if [ "$YA" != "0" ]; then
+              echo "Ya hay un issue de downmerge abierto: no se crea otro."
+              exit 0
+            fi
+            gh issue create \
+              --title "downmerge pendiente: main → develop" \
+              --body "$(printf '%s\n' \
+                'El push a `main` dejó a `develop` sin los commits del release (`downmerge.yml` no pudo abrir el PR).' \
+                '' \
+                '**Salida rápida** (a mano, requiere permiso de escritura):' \
+                '' \
+                '```bash' \
+                'gh pr create --base develop --head main --title "downmerge: main → develop" --fill' \
+                'gh pr merge main --auto --merge' \
+                '```' \
+                '' \
+                '**Salida de fondo**: un owner de la organización puede habilitar' \
+                '*Settings → Actions → General → Workflow permissions → “Allow GitHub Actions to create and approve pull requests”*,' \
+                'y entonces `downmerge.yml` abre el PR solo después de cada release.')"
           fi
 
       - name: Resumen

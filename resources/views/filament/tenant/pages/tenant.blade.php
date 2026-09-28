@@ -16,7 +16,7 @@
 
             {{-- Datos del GRUPO: edición inline y sólo para el owner (misma regla que la gestión de
                  usuarios de abajo; la validación real está en TenantPage::updateTenant). --}}
-            {{-- Acciones en UN solo bloque (revisión de Frankie, 2026-09-27). Dos grupos, mismo lugar:
+            {{-- Acciones en UN solo bloque (revisión del dueño del repo, 2026-09-27). Dos grupos, mismo lugar:
                  las del GRUPO las ve sólo el owner; las de la PERSONA las ve cualquiera, porque son sus
                  propios datos (antes esto estaba en dos bloques separados y parecía repetido). --}}
             <div class="flex flex-wrap items-center gap-3 pt-4 mt-2 border-t border-gray-100 dark:border-white/10">
@@ -163,7 +163,7 @@
         <div class="space-y-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Usuarios del grupo</h2>
-                {{-- El alta vive en el bloque de acciones del grupo, arriba (revisión de Frankie,
+                {{-- El alta vive en el bloque de acciones del grupo, arriba (revisión del dueño del repo,
                      2026-09-27): tener "Agregar usuario" acá también duplicaba la acción. --}}
             </div>
             
@@ -188,7 +188,7 @@
                     </div>
 
                     @if(! $editingUser)
-                        {{-- Modalidad del alta (revisión de Frankie, 2026-09-27). Al editar un usuario ya
+                        {{-- Modalidad del alta (revisión del dueño del repo, 2026-09-27). Al editar un usuario ya
                              existente no aplica: la clave ya la tiene. --}}
                         <div class="mb-4 space-y-2">
                             <label class="flex items-start gap-3 cursor-pointer">
@@ -249,7 +249,7 @@
                         <tr>
                             {{-- `flex-wrap`: con zoom o pantallas angostas, los identificadores bajan a la
                                  línea siguiente en vez de desbordar sobre la columna de email (reportado
-                                 por Frankie, 2026-09-27). El `whitespace-nowrap` que había antes lo
+                                 por el dueño del repo, 2026-09-27). El `whitespace-nowrap` que había antes lo
                                  impedía. --}}
                             <td class="px-6 py-4 align-middle">
                                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
@@ -268,7 +268,7 @@
                                     @endif
                                 </div>
                             </td>
-                            {{-- El email va en UNA línea (Frankie, 2026-09-27: "el email no quiero que lo
+                            {{-- El email va en UNA línea (pedido del dueño del repo, 2026-09-27: "el email no quiero que lo
                                  warpee"). Ahora el que cede es la columna del nombre --que envuelve--, y
                                  para un email muy largo el contenedor de la tabla tiene scroll
                                  horizontal. --}}

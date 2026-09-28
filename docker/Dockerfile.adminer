@@ -1,4 +1,0 @@
-FROM adminer:latest
-
-# Exponer el puerto por defecto de Adminer
-EXPOSE 8080 

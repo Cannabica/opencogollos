@@ -176,11 +176,22 @@ class TenantPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
                 LogUsageMiddleware::class,
             ])
+            // `isPersistent: true` (2026-09-28): los requests de Livewire (POST
+            // /livewire/update) NO pasan por el stack del panel — esa ruta se registra sólo
+            // con el grupo `web`. Sin marcar estos middlewares como persistentes, un tenant
+            // desactivado (o un usuario con cambio de clave pendiente) seguía operando el
+            // panel por Livewire: el GET lo redirigía a la pantalla de activación, pero los
+            // widgets, las tablas y las acciones se hidrataban igual.
+            // Medido con el snapshot de la base de producción: un usuario de un tenant con
+            // active=false obtenía el widget de gráficos por /livewire/update sin redirect.
+            // Filament ya persiste Authenticate/SetUpPanel (FilamentServiceProvider); estos
+            // dos son nuestros. El comentario de LogUsageMiddleware sigue vigente: la
+            // telemetría es por GET de página, no por request de Livewire (a propósito).
             ->authMiddleware([
                 Authenticate::class,
                 \App\Http\Middleware\CheckPasswordChange::class,
                 \App\Http\Middleware\CheckTenantActivation::class,
-            ])
+            ], isPersistent: true)
             ->databaseNotifications();
     }
 }

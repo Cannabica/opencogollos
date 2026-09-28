@@ -67,6 +67,7 @@ class TenantScopeTest extends TestCase
 
         $tipo = ActionType::create([
             'name' => 'RIEGO-'.$nombre,
+            'tenant_id' => $tenant->id,
             'action_class' => 'App\\Utilities\\PlantActions\\RegisterState',
         ]);
 
@@ -110,6 +111,27 @@ class TenantScopeTest extends TestCase
         $this->assertSame(1, Action::count());
         $this->assertSame($a['accion']->id, Action::first()->id);
         $this->assertSame(1, Seed::count());
+    }
+
+    public function test_los_catalogos_ven_lo_propio_y_lo_global_y_nada_ajeno(): void
+    {
+        $a = $this->grupo('A');
+        $this->grupo('B');
+
+        ActionType::create([
+            'name' => 'TIPO-GLOBAL', 'tenant_id' => null,
+            'action_class' => 'App\\Utilities\\PlantActions\\RegisterState',
+        ]);
+
+        TenantContext::use($a['tenant']->id);
+
+        $nombres = ActionType::pluck('name')->all();
+        $this->assertContains('RIEGO-A', $nombres, 'el grupo no ve su propio tipo de acción');
+        $this->assertContains('TIPO-GLOBAL', $nombres, 'el grupo no ve el catálogo global');
+        $this->assertNotContains('RIEGO-B', $nombres, 'el catálogo mostró los tipos personalizados de otro grupo');
+
+        $planes = \App\Models\CropPlan::pluck('name')->all();
+        $this->assertSame([], $planes, 'sin planes propios, el grupo no debería ver ninguno');
     }
 
     public function test_un_usuario_de_un_grupo_solo_ve_lo_suyo(): void

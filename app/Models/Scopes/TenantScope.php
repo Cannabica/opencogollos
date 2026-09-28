@@ -2,7 +2,6 @@
 
 namespace App\Models\Scopes;
 
-use App\Models\Seed;
 use App\Support\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +25,12 @@ use Illuminate\Database\Eloquent\Scope;
  */
 class TenantScope implements Scope
 {
-    public function __construct(public bool $byIndoor = false) {}
+    /**
+     * @param  bool  $byIndoor     El modelo NO tiene `tenant_id`: el tenant sale del indoor (`Plant`).
+     * @param  bool  $allowGlobal  Además de lo del tenant, ve lo global (`tenant_id` null): catálogos
+     *                             compartidos que cada grupo puede extender (`Seed`, `ActionType`).
+     */
+    public function __construct(public bool $byIndoor = false, public bool $allowGlobal = false) {}
 
     /**
      * Apply the scope to a given Eloquent query builder.
@@ -54,8 +58,8 @@ class TenantScope implements Scope
             return;
         }
 
-        if ($model instanceof Seed) {
-            // Las semillas propias + las globales (sin tenant), que son de todos.
+        if ($this->allowGlobal) {
+            // Lo propio + lo global (sin tenant), que es de todos: catálogos compartidos.
             $builder->where(function (Builder $query) use ($tenantId) {
                 $query->where('tenant_id', $tenantId)
                     ->orWhereNull('tenant_id');

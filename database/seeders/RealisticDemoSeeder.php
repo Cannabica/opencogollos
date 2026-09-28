@@ -10,7 +10,6 @@ use App\Models\Plant;
 use App\Models\Seed;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Scopes\CropPlanScope;
 use App\Models\Scopes\TenantScope;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -100,7 +99,7 @@ class RealisticDemoSeeder extends Seeder
         ];
 
         foreach ($planes as [$key, $name, $rp, $rf, $sf, $irr, $g, $p, $v, $f]) {
-            $plan = CropPlan::withoutGlobalScope(CropPlanScope::class)->firstOrCreate(
+            $plan = CropPlan::withoutGlobalScope(TenantScope::class)->firstOrCreate(
                 ['tenant_id' => null, 'name' => $name],
                 $this->payloadPlan($name, $rp, $rf, $sf, $irr, $g, $p, $v, $f)
             );

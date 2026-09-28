@@ -201,4 +201,47 @@ class PlatformConfigTest extends TestCase
             );
         }
     }
+
+    /**
+     * Las 9 keys tienen que estar documentadas en `.env.example`.
+     *
+     * Es el guardarraíl de la ventana automática: si una PLATFORM_* nueva se usa pero no se
+     * documenta, ni el self-hoster ni el deploy de la instancia se enteran de que existe (en
+     * producción la superficie simplemente desaparece, sin error).
+     */
+    public function test_las_keys_de_plataforma_estan_documentadas_en_env_example(): void
+    {
+        $envExample = (string) file_get_contents(base_path('.env.example'));
+
+        foreach (self::PLATFORM_KEYS as $env) {
+            $this->assertMatchesRegularExpression(
+                '/^#?' . preg_quote($env, '/') . '=/m',
+                $envExample,
+                "{$env} no está en .env.example: una instalación nueva no se entera de que existe",
+            );
+        }
+    }
+
+    /**
+     * El mapa de arriba y `config/platform.php` no pueden desincronizarse.
+     *
+     * Al agregar una `env('PLATFORM_*')` nueva hay que actualizar el mapa: eso obliga a
+     * documentarla en `.env.example` (test de arriba) y a cargarla en el deploy de la instancia.
+     */
+    public function test_el_mapa_de_keys_cubre_todas_las_variables_del_config(): void
+    {
+        $source = (string) file_get_contents(config_path('platform.php'));
+
+        preg_match_all('/env\(\s*\'(PLATFORM_[A-Z0-9_]+)\'/', $source, $matches);
+        $enConfig = array_values(array_unique($matches[1] ?? []));
+        $enMapa = array_values(self::PLATFORM_KEYS);
+        sort($enConfig);
+        sort($enMapa);
+
+        $this->assertSame(
+            $enMapa,
+            $enConfig,
+            'El mapa PLATFORM_KEYS y config/platform.php se desincronizaron: actualizá el mapa (y .env.example)',
+        );
+    }
 }

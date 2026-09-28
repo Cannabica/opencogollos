@@ -3,6 +3,7 @@
 namespace App\Telegram\Admin\Commands;
 
 use App\Services\Admin\AdminAuthorizer;
+use App\Support\TenantContext;
 use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Commands\Command;
 use Telegram\Bot\Objects\Message;
@@ -23,6 +24,11 @@ abstract class AdminCommand extends Command
         $userId = $this->currentUserId();
 
         if (app(AdminAuthorizer::class)->isAllowed($userId)) {
+            // El webhook no tiene sesión: el bot de admin es un contexto de SERVICIO y mira todos los
+            // tenants a propósito (es el bot del superadmin). Sin esto, el `TenantScope` (que ahora
+            // falla cerrado sin usuario) dejaría `/metricas` y `/tenant` en cero.
+            TenantContext::useAll();
+
             return true;
         }
 

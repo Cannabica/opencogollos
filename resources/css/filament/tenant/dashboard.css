@@ -2280,6 +2280,40 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     background-color: #1A4F88;
 }
 
+/* --- Full layout: esta página no usa el padding del panel ni scrollea la
+       página entera; el muro ocupa el alto disponible y cada bloque scrollea
+       en vertical solo si su contenido no entra. --- */
+.fi-main:has(.dashboard-container) {
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+.dashboard-container {
+    padding: 0.75rem 1rem 0.25rem;
+    gap: 0.5rem;
+}
+
+.muro {
+    align-items: flex-start;
+}
+
+/* Cada bloque se arma con el espacio, sus plantas y sus acciones */
+.muro-plantas-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-content: start;
+}
+
+.muro-bloque::-webkit-scrollbar {
+    width: 8px;
+}
+
+.muro-bloque::-webkit-scrollbar-thumb {
+    background: rgba(95, 158, 160, 0.45);
+    border-radius: 9999px;
+}
+
 /* --- Pantallas chicas: los bloques se apilan (sin scroll anidado) --- */
 @media (max-width: 1100px) {
     .muro {

@@ -24,8 +24,17 @@ class Dashboard extends BaseDashboard
     protected static ?string $title = 'Dashboard';
 
     /**
-     * El dashboard trabaja con CARRILES horizontales: cuantos más px de ancho,
-     * más espacios visibles a la vez. El default de Filament (max-w-7xl ≈ 1280px)
+     * El dashboard es un muro a pantalla completa: no lleva el encabezado
+     * "Dashboard" del layout (el resumen va dentro de la primera tarjeta).
+     */
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable
+    {
+        return '';
+    }
+
+    /**
+     * El dashboard trabaja con un muro de tarjetas: cuantos más px de ancho,
+     * más tarjetas visibles a la vez. El default de Filament (max-w-7xl ≈ 1280px)
      * dejaba ~700px sin usar en un monitor 16:9. Se amplía solo esta página.
      */
     public function getMaxContentWidth(): MaxWidth | string | null

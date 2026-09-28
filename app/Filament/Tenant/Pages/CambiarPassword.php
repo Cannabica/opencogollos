@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * "Cambiar contraseña" — página propia (corrección de diseño de Frankie, 2026-09-27).
+ * "Cambiar contraseña" — página propia (corrección de diseño del dueño del repo, 2026-09-27).
  *
  * Por qué va separada de "Mi cuenta" y no como una sección adentro: el cambio de contraseña tiene
  * **su propia trazabilidad** (`security_events`, aparte de la telemetría de uso de `usage_events`),
@@ -82,7 +82,7 @@ class CambiarPassword extends Page
                             ->live(onBlur: true)
                             ->helperText('Elegí una contraseña fuerte: los requisitos se marcan abajo en vivo.'),
 
-                        // Validación visual en vivo (revisión de Frankie, 2026-09-27): mismo desglose que
+                        // Validación visual en vivo (revisión del dueño del repo, 2026-09-27): mismo desglose que
                         // la regla de arriba, porque sale de la misma clase (PasswordRequirements).
                         Placeholder::make('requisitos_password')
                             ->hiddenLabel()

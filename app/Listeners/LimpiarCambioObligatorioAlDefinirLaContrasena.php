@@ -11,7 +11,7 @@ use Illuminate\Auth\Events\PasswordReset;
  * Cuando se da de alta a una persona, queda `force_password_change = true` para que el sistema le pida
  * cambiarla. Pero si la contraseña se define por el **link de la invitación** (o por "olvidé mi
  * contraseña"), ya está definida: si el flag queda en true, el middleware la manda a cambiarla otra vez
- * (loop reportado por Frankie, 2026-09-27).
+ * (loop reportado por el dueño del repo, 2026-09-27).
  *
  * Se hace escuchando el evento `PasswordReset` de Laravel en vez de extender la página de reset: ese
  * evento lo dispara el broker **siempre**, sin importar qué pantalla completó el cambio. La versión

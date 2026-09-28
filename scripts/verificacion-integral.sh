@@ -24,12 +24,10 @@ DB_PORT="${DB_PORT:-15434}"
 MAIL_PORT="${MAIL_PORT:-18025}"
 SKIP_DOCKER="${SKIP_DOCKER:-0}"
 
-# Patrón EXACTO del criterio de aceptación de T6.3.
-LEAK_RE='cannabica\.(ar|app)|192\.168\.|frankie|REDACTADO|REDACTADO'
-
-# Archivos exentos: documentación de mantenedor aprobada / artefactos internos.
-# (vacío por ahora: si se aprueba una excepción, va acá y el script excluye ESE path nomás)
-LEAK_ALLOWLIST_FILE="${LEAK_ALLOWLIST_FILE:-}"
+# El chequeo de fugas NO vive más acá: este script es PÚBLICO y listaba los valores de la instancia
+# en texto plano. Ahora delega en `scripts/guard-fugas.py`, que no publica lo que protege (los
+# valores van como SHA-256 en su DENYLIST, y el resto se cubre con reglas genéricas).
+GUARD="scripts/guard-fugas.py"
 
 FAILS=0
 pass() { printf '  \033[32mPASS\033[0m  %s\n' "$1"; }
@@ -75,24 +73,14 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-head1 "1. grep de fugas sobre HEAD = 0"
+head1 "1. Guard de fugas (delegado a $GUARD)"
 # ---------------------------------------------------------------------------
-GREP_CMD="grep -rniE \"$LEAK_RE\""
-echo "  (comando del criterio: $GREP_CMD .  — acá con git grep = sólo archivos trackeados)"
-# El propio script contiene el patrón por definición (es la regla que verifica), así que se excluye:
-# si no, el criterio nunca podría dar PASS.
-LEAKS="$(git grep -niE "$LEAK_RE" -- . ':(exclude)scripts/verificacion-integral.sh' || true)"
-LEAK_COUNT="$(printf '%s' "$LEAKS" | grep -c . || true)"
-if [ -n "$LEAK_ALLOWLIST_FILE" ] && [ -f "$LEAK_ALLOWLIST_FILE" ]; then
-    LEAKS="$(printf '%s\n' "$LEAKS" | grep -vFf "$LEAK_ALLOWLIST_FILE" || true)"
-    LEAK_COUNT="$(printf '%s' "$LEAKS" | grep -c . || true)"
-    echo "  (aplicada allowlist: $LEAK_ALLOWLIST_FILE)"
-fi
-if [ "$LEAK_COUNT" -eq 0 ]; then
-    pass "0 fugas"
+# El patrón NO vive acá (este script es público): lo resuelve el guard, con los valores de la
+# instancia como SHA-256. Un solo lugar donde mantener la regla.
+if [ -f "$GUARD" ] && python3 "$GUARD" ${REF:+--ref "$REF"}; then
+    pass "guard de fugas: 0 bloqueantes"
 else
-    fail "$LEAK_COUNT fugas — ver abajo"
-    printf '%s\n' "$LEAKS" | sed 's/^/        /'
+    fail "el guard de fugas encontró bloqueantes (salida arriba)"
 fi
 
 # ---------------------------------------------------------------------------
@@ -143,13 +131,17 @@ else
                     || fail "/superadmin/login no respondió 200 (último: ${code:-sin respuesta})"
 
     # El login no debe traer marca de otra instalación (instalación neutra).
+    # Se busca el NOMBRE DE LA MARCA, que es información pública (web/redes): no es un dato de
+    # infraestructura y por eso no tiene sentido esconderlo detrás de un hash. La lista completa de
+    # valores de la instancia la cubre el guard (paso 1); acá el objetivo es otro: que una
+    # instalación neutra no muestre la marca de OTRA.
     if [ "$ok" = "1" ]; then
         BODY="$(curl -s "http://localhost:$APP_PORT/superadmin/login")"
-        if printf '%s' "$BODY" | grep -qiE "$LEAK_RE"; then
-            fail "el HTML servido contiene datos de una instalación concreta"
-            printf '%s' "$BODY" | grep -ioE "$LEAK_RE" | sort -u | sed 's/^/        /'
+        if printf '%s' "$BODY" | grep -qiE 'cannabica'; then
+            fail "el HTML servido contiene la marca de otra instalación"
+            printf '%s' "$BODY" | grep -ioE 'cannabica[a-z.]*' | sort -u | sed 's/^/        /'
         else
-            pass "el HTML servido no contiene datos de una instalación concreta"
+            pass "el HTML servido no contiene marca de otra instalación"
         fi
     fi
     $COMPOSE logs php --tail 20 | sed 's/^/        /'

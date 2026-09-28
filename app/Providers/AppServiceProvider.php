@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\TenantContext;
 use Illuminate\Support\ServiceProvider;
 use Filament\Facades\Filament;
 use Filament\View\PanelsRenderHook;
@@ -18,7 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Contexto de tenant de la request (lo lee `TenantScope`). `scoped` = una instancia por
+        // request/job: se descarta entre requests (Octane) y entre jobs de un worker, así que el
+        // tenant de un webhook no se filtra al siguiente. Ver App\Support\TenantContext.
+        $this->app->scoped(TenantContext::class);
     }
 
     /**

@@ -63,9 +63,10 @@ class ApiTokenPlaintextTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        /** @var \Illuminate\Database\Migrations\Migration $migracion */
+        // El archivo devuelve una clase anónima que extiende `Migration` (sin `up()` declarado en la
+        // clase base), así que se invoca con un callable: PHPStan no puede tipar el método.
         $migracion = require database_path('migrations/2026_09_28_120000_purge_plain_text_tokens_from_api_tokens.php');
-        $migracion->up();
+        call_user_func([$migracion, 'up']);
 
         $fila = DB::table('api_tokens')->first();
         $metadata = json_decode((string) $fila->metadata, true);

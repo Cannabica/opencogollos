@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Scope;
 /**
  * Aísla las consultas por tenant.
  *
- * Fuente del tenant: `TenantContext::resolve()` (contexto explícito → usuario logueado → consola).
+ * Fuente del tenant: `TenantContext::current()` (contexto explícito → usuario logueado → consola).
  * Sin contexto y sin usuario **no devuelve nada** (falla cerrado): antes, ese caso era un `return`
  * silencioso (sin filtro) y por ahí se filtraban datos entre grupos — el webhook de Telegram no tiene
  * sesión, así que `Plant::find($id)` de un comando devolvía la planta de cualquier tenant.
@@ -33,7 +33,7 @@ class TenantScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        $tenantId = TenantContext::resolve();
+        $tenantId = TenantContext::current();
 
         if ($tenantId === false) {
             // Sin contexto ni usuario: no devolvemos nada (falla cerrado).

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
  * Por qué existe: el `TenantScope` filtraba con `auth()->user()`, y en el webhook del bot NO hay sesión.
  * Con el scope "no-op" cuando no hay usuario, cualquier `Plant::find($id)` devolvía datos de otro
  * tenant: `/actiondetails`, `/plantdetails` y los callbacks `select_indoor:` / `repeat_irrigation:`
- * mostraban (y escribían sobre) datos ajenos. Ver `hotfix` del 2026-09-28 y el §5.2 de
+ * mostraban (y escribían sobre) datos ajenos. Ver §5.2 de
  * `board/epicas/2026-09-18-revision-fugas-dashboard-widgets.md`.
  *
  * Reglas de resolución (las aplica `TenantScope::apply`):
@@ -27,37 +27,42 @@ use Illuminate\Support\Facades\Auth;
  * `use($tenantId)` después de resolver la asociación del chat — lo hace
  * `App\Telegram\Commands\ChecksTelegramExpiration::checkTelegramAssociation()`. Si no lo hiciera, no
  * vería nada (que es exactamente la falla segura que se buscó).
+ *
+ * ⚠️ El estado vive en el CONTENEDOR (`scoped`), no en una propiedad estática: un estático se filtraba
+ * entre tests —`AdminCommand::ensureAuthorized()` hace `useAll()` y el siguiente test perdía el
+ * aislamiento— y también entre jobs de un worker. Acá cada request/job arranca limpio. Los métodos
+ * `TenantContext::use()/useAll()/forget()/current()` son atajos sobre la instancia del contenedor.
  */
 final class TenantContext
 {
-    private static ?int $tenantId = null;
+    private ?int $tenantId = null;
 
-    private static bool $explicit = false;
+    private bool $explicit = false;
 
     /** Filtra por este tenant durante el resto del request. */
-    public static function use(int $tenantId): void
+    public function set(int $tenantId): void
     {
-        self::$tenantId = $tenantId;
-        self::$explicit = true;
+        $this->tenantId = $tenantId;
+        $this->explicit = true;
     }
 
     /** Contexto de servicio: sin filtro de tenant (superadmin / panel admin del bot / consola). */
-    public static function useAll(): void
+    public function setAll(): void
     {
-        self::$tenantId = null;
-        self::$explicit = true;
+        $this->tenantId = null;
+        $this->explicit = true;
     }
 
     /** Vuelve al comportamiento por defecto (usuario logueado → consola → falla cerrado). */
-    public static function forget(): void
+    public function clear(): void
     {
-        self::$tenantId = null;
-        self::$explicit = false;
+        $this->tenantId = null;
+        $this->explicit = false;
     }
 
-    public static function isExplicit(): bool
+    public function isExplicit(): bool
     {
-        return self::$explicit;
+        return $this->explicit;
     }
 
     /**
@@ -66,10 +71,10 @@ final class TenantContext
      * @return int|false|null int = ese tenant; null = sin filtro (contexto de servicio); false = no hay
      *                        contexto → el scope no devuelve nada.
      */
-    public static function resolve(): int|false|null
+    public function resolve(): int|false|null
     {
-        if (self::$explicit) {
-            return self::$tenantId;
+        if ($this->explicit) {
+            return $this->tenantId;
         }
 
         $user = Auth::user();
@@ -86,5 +91,29 @@ final class TenantContext
         }
 
         return false;
+    }
+
+    // ---------------------------------------------------------------------
+    // Atajos estáticos sobre la instancia del contenedor (una por request/job)
+    // ---------------------------------------------------------------------
+
+    public static function use(int $tenantId): void
+    {
+        app(self::class)->set($tenantId);
+    }
+
+    public static function useAll(): void
+    {
+        app(self::class)->setAll();
+    }
+
+    public static function forget(): void
+    {
+        app(self::class)->clear();
+    }
+
+    public static function current(): int|false|null
+    {
+        return app(self::class)->resolve();
     }
 }

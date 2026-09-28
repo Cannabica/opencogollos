@@ -16,7 +16,7 @@ use Tests\TestCase;
  *
  * Cierra el ownership con señal propia: hasta acá no había forma de designar administrador, así que un
  * grupo cuyo email no coincidía con ningún usuario quedaba sin salida desde la app, y una persona nueva
- * no podía llegar a administrar nunca (Frankie lo chocó el 2026-09-27: estaba logueado con una persona
+ * no podía llegar a administrar nunca (el dueño del repo lo chocó el 2026-09-27: estaba logueado con una persona
  * recién invitada y no podía ver el formulario del grupo).
  */
 class OwnerTransferTest extends TestCase

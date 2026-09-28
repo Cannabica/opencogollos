@@ -52,7 +52,7 @@ class EmailChangeController extends Controller
         $user->save();
 
         // Si esta persona administra un grupo cuyo email de contacto ES la dirección vieja, el grupo
-        // quedaría apuntando a una dirección que ya no existe (reportado por Frankie, 2026-09-27: "quedó
+        // quedaría apuntando a una dirección que ya no existe (reportado por el dueño del repo, 2026-09-27: "quedó
         // desvinculado, no hay usuario que tenga el correo del admin del tenant"). El contacto acompaña:
         // sigue siendo la misma persona.
         //

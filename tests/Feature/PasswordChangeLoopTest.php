@@ -16,7 +16,7 @@ use Tests\TestCase;
 /**
  * El cambio obligatorio del primer acceso tiene que **terminar** (no ser un loop).
  *
- * Frankie, 2026-09-27: "estoy en un loop que siempre me saca la sesión y me vuelve a pedir que haga el
+ * El dueño del repo, 2026-09-27: "estoy en un loop que siempre me saca la sesión y me vuelve a pedir que haga el
  * cambio de clave obligatorio". El flujo vive en tres piezas que tienen que estar de acuerdo:
  *
  *   1. `PasswordChange::changePassword()` guarda y pone `force_password_change = false`,
@@ -96,7 +96,7 @@ class PasswordChangeLoopTest extends TestCase
 
     public function test_definir_la_contrasena_por_la_invitacion_no_vuelve_a_pedir_el_cambio(): void
     {
-        // Flujo real reportado por Frankie (2026-09-27): la persona recibe el link "elegí tu contraseña",
+        // Flujo real reportado por el dueño del repo (2026-09-27): la persona recibe el link "elegí tu contraseña",
         // la define... y el sistema le pedía OTRA VEZ el cambio obligatorio al entrar, porque el alta
         // dejó `force_password_change = true` y el flujo de reset no lo limpiaba.
         Notification::fake();

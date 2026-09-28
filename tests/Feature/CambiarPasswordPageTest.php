@@ -17,7 +17,7 @@ use Tests\TestCase;
 /**
  * "Cambiar contraseña" (página propia) + su trazabilidad y sus avisos.
  *
- * Tres reglas del producto (revisión de Frankie, 2026-09-27):
+ * Tres reglas del producto (revisión del dueño del repo, 2026-09-27):
  *  1. El cambio vive en su propia página (se llega desde "Mi Grupo", no del menú).
  *  2. Cada cambio queda en `security_events` — tabla propia, separada de la telemetría de uso.
  *  3. Después de cambiar la contraseña **se cierra la sesión** (la abierta usaba la credencial vieja)

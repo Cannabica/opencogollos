@@ -62,7 +62,7 @@ class ResetPassword extends BaseResetPassword
      * El alta de una persona deja `force_password_change = true` para que el sistema le pida cambiarla.
      * Pero cuando la persona llega por el link de la invitación ("elegí tu contraseña") ya la está
      * definiendo: si el flag queda en true, el middleware la manda a cambiarla otra vez al entrar
-     * (loop reportado por Frankie, 2026-09-27). Acá se limpia y queda registrado como el
+     * (loop reportado por el dueño del repo, 2026-09-27). Acá se limpia y queda registrado como el
      * establecimiento inicial.
      */
     public function resetPassword(): ?PasswordResetResponse

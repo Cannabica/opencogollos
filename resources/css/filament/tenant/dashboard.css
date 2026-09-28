@@ -2049,8 +2049,8 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .muro-filtro {
-    flex: 0 1 15rem;
-    min-width: 12rem;
+    flex: 1 1 18rem;
+    min-width: 14rem;
 }
 
 .muro-filtro .fi-fo-field-wrp {
@@ -2119,8 +2119,20 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     overflow-wrap: anywhere;
 }
 
+/* La tarjeta angosta nunca debe truncar el estado de la planta */
+.muro-card--planta .muro-plant-top h4 {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.9375rem;
+}
+
+.muro-card--planta .state-badge {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 .muro-plant-seed {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: #4b5563;
     line-height: 1.35;
 }
@@ -2133,7 +2145,7 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: #4b5563;
 }
 

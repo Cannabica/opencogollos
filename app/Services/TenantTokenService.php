@@ -17,7 +17,11 @@ class TenantTokenService
 
         $plainTextToken = Str::random(40);
 
-        $metadata = ['plain_text_token' => $plainTextToken];
+        // El token en CLARO no se guarda: en la DB va sólo su hash (`token_hash`), que es lo único que
+        // hace falta para autenticar. Antes se escribía `plain_text_token` en `metadata` — un secreto
+        // persistido al lado de su propio hash, sin ningún consumidor que lo justificara
+        // (`getCurrentToken()` no lo llamaba nadie). Ver tests/Feature/ApiTokenPlaintextTest.php.
+        $metadata = [];
         if ($chatId) {
             $metadata['telegram_chat_id'] = $chatId;
         }
@@ -51,7 +55,7 @@ class TenantTokenService
             $plainTextToken = Str::random(40);
 
             $metadata = json_decode($apiToken->metadata, true) ?? [];
-            $metadata['plain_text_token'] = $plainTextToken;
+            unset($metadata['plain_text_token']);
 
             $apiToken->update([
                 'token_hash' => hash('sha256', $plainTextToken),
@@ -73,23 +77,6 @@ class TenantTokenService
             ]);
             return null;
         }
-    }
-
-    public function getCurrentToken(int $chatId): ?string
-    {
-        $apiTokens = ApiToken::where('expires_at', '>', now())
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        foreach ($apiTokens as $apiToken) {
-            $metadata = json_decode($apiToken->metadata, true);
-            if (($metadata['telegram_chat_id'] ?? null) == $chatId) {
-                return $metadata['plain_text_token'] ?? null;
-            }
-        }
-
-        \Log::debug('No active token found for chat', ['chat_id' => $chatId]);
-        return null;
     }
 
     public function getTenantIdFromToken(string $token): ?array

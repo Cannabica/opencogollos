@@ -233,7 +233,7 @@ class PlatformConfigTest extends TestCase
         $source = (string) file_get_contents(config_path('platform.php'));
 
         preg_match_all('/env\(\s*\'(PLATFORM_[A-Z0-9_]+)\'/', $source, $matches);
-        $enConfig = array_values(array_unique($matches[1] ?? []));
+        $enConfig = array_values(array_unique($matches[1]));
         $enMapa = array_values(self::PLATFORM_KEYS);
         sort($enConfig);
         sort($enMapa);

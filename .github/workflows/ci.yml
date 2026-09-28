@@ -26,9 +26,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, 'release/**']
   push:
-    branches: [develop]
+    branches: [develop, 'release/**']
 
 # No necesita escribir nada: sólo leer el repo.
 permissions:

@@ -1,0 +1,44 @@
+# Config de gitleaks para este repo (PÚBLICO).
+#
+# POR QUÉ: todo lo que se commitea queda indexado para siempre, incluso si se borra en el commit
+# siguiente. `gitleaks detect` corre en el job `fugas` del CI sobre la HISTORIA COMPLETA
+# (fetch-depth: 0), así que un secreto que entra y se saca en el commit siguiente igual se detecta.
+# Este archivo sólo AGREGA excepciones al ruleset por defecto: nunca lo reemplaza (si `useDefault` se
+# apaga, el escaneo deja de detectar ~150 tipos de credenciales).
+#
+# Cómo correrlo local (misma versión que el CI):
+#   docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.28.0 \
+#     detect --source=/repo --config=/repo/.gitleaks.toml --redact --no-banner
+#
+# POR QUÉ NO USAMOS `--baseline-path` (probado 2026-09-27): el baseline de gitleaks matchea el
+# finding COMPLETO — Author, Email, Date, Message y Link incluidos. Vaciar o quitar CUALQUIERA de
+# esos campos hace que el match falle y el hallazgo vuelva a romper el build, y dejarlos tal cual
+# publicaría el email personal del autor del commit en un archivo del repo. Las excepciones van acá,
+# scoped por path + patrón.
+
+[extend]
+useDefault = true
+
+# ---------------------------------------------------------------------------
+# Excepciones aprobadas (cada una con su motivo; sin comodines sueltos)
+# ---------------------------------------------------------------------------
+
+# El test necesita UN string cualquiera como secreto del webhook: no es una credencial.
+[[allowlists]]
+description = "Literal de PRUEBA en un test: no es una credencial, es el valor del header del webhook"
+paths = ['''tests/Feature/TelegramWebhookSecretTest\.php''']
+regexTarget = "line"
+regexes = ['''secreto-de-prueba''']
+
+# Hallazgo HISTÓRICO que no se puede arreglar editando el archivo (el token sigue en el commit
+# fe60080a de la historia pública desde 2025-06; sacarlo de ahí exige reescribir la historia, que es
+# una decisión aparte). El token YA NO ESTÁ en el árbol — se movió a config/env — y este match es por
+# el NOMBRE DE LA VARIABLE, no por el valor: el valor no se escribe acá.
+#
+# DEUDA ABIERTA: rotar/revocar ese token si sigue vivo en alguna base (tarea en el board). Rotado,
+# esta excepción queda sin riesgo real.
+[[allowlists]]
+description = "Token de tenant histórico en un comando de prueba (ya sacado del árbol; pendiente de rotación)"
+paths = ['''app/Telegram/Commands/TestForbiddenCommand\.php''']
+regexTarget = "match"
+regexes = ['''otherTenantToken\s*=''']

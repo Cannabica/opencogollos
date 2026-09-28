@@ -10,9 +10,8 @@
         @endphp
 
         <div class="muro-head">
-            <h3 class="muro-title">Tu cultivo</h3>
+            <span class="muro-hint">Desplazate a la derecha para ver más</span>
             <div class="muro-nav">
-                <span class="muro-hint">Desplazate a la derecha para ver más</span>
                 <button type="button" title="Desplazar a la izquierda"
                     @click="$refs.muro.scrollBy({ left: -680, behavior: 'smooth' })">
                     <x-icon name="heroicon-o-chevron-left" class="w-5 h-5" />
@@ -32,6 +31,19 @@
                 const el = $refs.muro;
                 el.addEventListener('wheel', (e) => {
                     if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+
+                    /* Si el bloque bajo el cursor todavía tiene contenido vertical
+                       para mostrar, la rueda lo scrollea a él. */
+                    let nodo = e.target;
+                    while (nodo && nodo !== el) {
+                        if (nodo.classList && nodo.classList.contains('muro-bloque')) {
+                            const maxY = nodo.scrollHeight - nodo.clientHeight;
+                            const puedeY = e.deltaY > 0 ? nodo.scrollTop < maxY - 1 : nodo.scrollTop > 1;
+                            if (maxY > 0 && puedeY) return;
+                        }
+                        nodo = nodo.parentElement;
+                    }
+
                     const max = el.scrollWidth - el.clientWidth;
                     if (max <= 0) return;
                     const abajo = e.deltaY > 0;
@@ -162,14 +174,17 @@
                     </div>
                 </div>
             @else
-                {{-- ── Bloque medio: los espacios, con la info que los identifica ── --}}
-                <div class="muro-bloque muro-bloque--media">
-                    @foreach ($indoors as $indoor)
-                        @php
-                            $plantas = $this->getPlants($indoor->id);
-                            $estados = $plantas->groupBy('state');
-                        @endphp
+                {{-- ── Un bloque por espacio: el espacio, sus plantas y sus acciones, juntos ── --}}
+                @foreach ($indoors as $indoor)
+                    @php
+                        $plantas = $this->getPlants($indoor->id);
+                        $estados = $plantas->groupBy('state');
+                        $actions = $this->getLastActionsForIndoor($indoor->id);
+                    @endphp
 
+                    {{-- El ancho del bloque responde a cuánto tiene que mostrar:
+                         los espacios con pocas plantas van en columna angosta. --}}
+                    <div class="muro-bloque {{ $plantas->count() <= 2 ? 'muro-bloque--angosta' : 'muro-bloque--media' }}">
                         <div class="muro-card muro-card--espacio">
                             <div class="muro-card-head">
                                 <h3>{{ $indoor->name }}</h3>
@@ -204,62 +219,46 @@
                                 </div>
                             </div>
                         </div>
-                    @endforeach
-                </div>
 
-                {{-- ── Bloques angostos: las plantas, en tarjetas compactas de a 6 por columna ── --}}
-                @foreach ($plantasConEspacio->chunk(6) as $grupo)
-                    <div class="muro-bloque muro-bloque--angosta">
-                        @foreach ($grupo as $item)
-                            @php $plant = $item['plant']; $espacio = $item['indoor']; @endphp
-
-                            <div class="muro-card muro-card--planta">
-                                <div class="muro-card-body">
-                                    <div class="muro-plant-top">
-                                        <h4>{{ $plant->name }}</h4>
-                                        <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $plant->state)) }}">
-                                            {{ str_replace(['Etapa de ', 'Etapa '], '', $plant->state) }}
-                                        </span>
-                                    </div>
-
-                                    <p class="muro-plant-seed">
-                                        @if ($plant->seedType)
-                                            {{ $plant->seedType->name }} ({{ $plant->seedType->seed_type }})
-                                        @else
-                                            Sin semilla cargada
-                                        @endif
-                                    </p>
-
-                                    <div class="plant-meta">
-                                        @if ($plant->germination_date)
-                                            <span>
-                                                <x-icon name="heroicon-o-clock" class="w-3.5 h-3.5" />
-                                                {{ now()->diffInDays($plant->germination_date) }} días
+                        <div class="muro-plantas-grid">
+                            @foreach ($plantas as $plant)
+                                <div class="muro-card muro-card--planta">
+                                    <div class="muro-card-body">
+                                        <div class="muro-plant-top">
+                                            <h4>{{ $plant->name }}</h4>
+                                            <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $plant->state)) }}">
+                                                {{ str_replace(['Etapa de ', 'Etapa '], '', $plant->state) }}
                                             </span>
-                                        @endif
-                                        <span>
-                                            <x-icon name="heroicon-o-beaker" class="w-3.5 h-3.5" />
-                                            {{ 'Maceta ' . $plant->flowerpot ?? 'N/A' }}: {{ $plant->capacity ?? '00' }}L
-                                        </span>
-                                    </div>
+                                        </div>
 
-                                    <div class="muro-chips">
-                                        <span class="muro-chip muro-chip--space">{{ $espacio->name }}</span>
+                                        <p class="muro-plant-seed">
+                                            @if ($plant->seedType)
+                                                {{ $plant->seedType->name }} ({{ $plant->seedType->seed_type }})
+                                            @else
+                                                Sin semilla cargada
+                                            @endif
+                                        </p>
+
+                                        <div class="plant-meta">
+                                            @if ($plant->germination_date)
+                                                <span>
+                                                    <x-icon name="heroicon-o-clock" class="w-3.5 h-3.5" />
+                                                    {{ now()->diffInDays($plant->germination_date) }} días
+                                                </span>
+                                            @endif
+                                            <span>
+                                                <x-icon name="heroicon-o-beaker" class="w-3.5 h-3.5" />
+                                                {{ 'Maceta ' . $plant->flowerpot ?? 'N/A' }}: {{ $plant->capacity ?? '00' }}L
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endforeach
-
-                {{-- ── Bloque medio: lo último que pasó en cada espacio ── --}}
-                <div class="muro-bloque muro-bloque--media">
-                    @foreach ($indoors as $indoor)
-                        @php $actions = $this->getLastActionsForIndoor($indoor->id); @endphp
+                            @endforeach
+                        </div>
 
                         <div class="muro-card muro-card--acciones">
                             <div class="muro-card-head">
-                                <h3>Últimas acciones · {{ $indoor->name }}</h3>
+                                <h3>Últimas acciones</h3>
                             </div>
                             <div class="muro-card-body">
                                 @if ($actions->isNotEmpty())
@@ -281,8 +280,8 @@
                                 @endif
                             </div>
                         </div>
-                    @endforeach
-                </div>
+                    </div>
+                @endforeach
             @endif
         </div>
 

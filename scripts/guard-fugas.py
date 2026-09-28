@@ -93,8 +93,8 @@ AVISOS = [
 
 # Tokens candidatos para cruzar contra la DENYLIST: palabras, paths, emails, IPs y puertos.
 TOKEN = re.compile(r"[A-Za-z0-9_.@:/-]{4,80}")
-# Archivos exentos: contienen los patrones POR DEFINICIÓN (son la regla que se verifica).
-EXENTOS = {"scripts/guard-fugas.py", "scripts/verificacion-integral.sh"}
+# Archivos exentos: contiene los patrones POR DEFINICIÓN (es la regla que se verifica).
+EXENTOS = {"scripts/guard-fugas.py"}
 
 # Lockfiles: llevan METADATA de terceros (emails de autores de paquetes, números con forma de IP
 # tipo "1.54.0.1" en una versión). No son datos de esta instalación y generarían ruido permanente,

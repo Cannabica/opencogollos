@@ -25,7 +25,7 @@ use Illuminate\Validation\Rule;
  *
  * Qué NO está acá a propósito:
  *  - **Contraseña**: tiene su propia página (`CambiarPassword`) porque su trazabilidad es de
- *    seguridad y va separada de la telemetría de uso (corrección de diseño de Frankie, 2026-09-27).
+ *    seguridad y va separada de la telemetría de uso (corrección de diseño del dueño del repo, 2026-09-27).
  *  - **Tokens de API**: son del grupo de trabajo, no de la persona. Siguen en "Mi Grupo".
  */
 class Cuenta extends Page
@@ -43,7 +43,7 @@ class Cuenta extends Page
     protected static ?int $navigationSort = 998;
 
     // Se llega desde "Mi Grupo" (bloque de datos del grupo), no desde el menú lateral: la experiencia
-    // de cuenta vive integrada ahí (decisión de Frankie, revisión del 2026-09-27).
+    // de cuenta vive integrada ahí (decisión del dueño del repo, revisión del 2026-09-27).
     protected static bool $shouldRegisterNavigation = false;
 
     public ?array $data = [];
@@ -91,8 +91,8 @@ class Cuenta extends Page
                     ])
                     ->columns(1),
 
-                // La contraseña se pide AL FINAL y sólo si hay un cambio que guardar (revisión de
-                // Frankie, 2026-09-27): quien viene a corregir su nombre no ve un campo de contraseña.
+                // La contraseña se pide AL FINAL y sólo si hay un cambio que guardar (revisión del
+                // dueño del repo, 2026-09-27): quien viene a corregir su nombre no ve un campo de contraseña.
                 Section::make('Confirmá el cambio de email')
                     ->description('El email es tu credencial de acceso, así que este cambio se confirma desde la dirección nueva.')
                     ->visible(fn ($get) => $get('email') !== Auth::user()->email)

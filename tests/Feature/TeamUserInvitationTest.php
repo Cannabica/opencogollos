@@ -16,7 +16,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * Alta de personas al grupo, con las dos modalidades (revisión de Frankie, 2026-09-27).
+ * Alta de personas al grupo, con las dos modalidades (revisión del dueño del repo, 2026-09-27).
  *
  *  - `password`: se le manda una contraseña **que cumple la política** (antes era `Str::random(12)`, que
  *    podía no cumplirla y el usuario recibía algo que el sistema le rechazaba al cambiarla).

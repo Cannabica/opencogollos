@@ -146,7 +146,7 @@ class TenantPage extends Page
      * ¿Tiene sentido ofrecer crear una persona para la dirección que se está escribiendo?
      *
      * Sólo si el email del grupo CAMBIÓ (si es el mismo, no hay nada que crear) y esa dirección no tiene
-     * usuario. Revisión de Frankie, 2026-09-27: "debe verse solo si se modificó el correo del tenant
+     * usuario. Revisión del dueño del repo, 2026-09-27: "debe verse solo si se modificó el correo del tenant
      * admin, sino es innecesario".
      */
     public function puedeCrearPersonaParaElEmail(): bool
@@ -206,7 +206,7 @@ class TenantPage extends Page
     }
 
     /**
-     * Modalidad del alta (revisión de Frankie, 2026-09-27):
+     * Modalidad del alta (revisión del dueño del repo, 2026-09-27):
      *   - 'password': se le manda una contraseña segura por mail (y el primer ingreso le pide cambiarla).
      *   - 'self':     sin clave: recibe un link para definirla en su primer ingreso.
      */

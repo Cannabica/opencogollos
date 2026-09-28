@@ -51,7 +51,7 @@ class SendDelayedProductNotificationTest extends TestCase
         TelegramUserTenant::create([
             'telegram_user_id' => self::TELEGRAM_CHAT_ID,
             'tenant_id' => $tenant->id,
-            'telegram_username' => 'frankie_toledo',
+            'telegram_username' => 'cultivador',
         ]);
 
         (new SendDelayedProductNotification('flora', 3, $tenant->id))->handle();

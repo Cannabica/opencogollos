@@ -67,3 +67,7 @@ vps-deploy.md
 
 # Planes de trabajo por sesión (planning-with-files): son locales, no van al repo.
 .planning/
+
+# Python (guard-fugas.py)
+__pycache__/
+*.pyc

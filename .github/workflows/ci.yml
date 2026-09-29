@@ -73,7 +73,7 @@ jobs:
         run: composer dump-autoload
       - name: APP_KEY
         run: php artisan key:generate
-      # La suite corre con sqlite :memory: (phpunit.xml, T2.2): NO necesita servicio de base.
+      # La suite corre con sqlite :memory: (phpunit.xml): NO necesita servicio de base.
       - name: Tests
         run: php artisan test --testdox
 
@@ -103,7 +103,7 @@ jobs:
         run: npm run build
       - name: "Scripts de composer (package:discover, ya con el manifest)"
         run: composer dump-autoload
-      # `composer phpstan` = nivel 5 con larastan + baseline (T2.1): lo que NO está en el baseline,
+      # `composer phpstan` = nivel 5 con larastan + baseline: lo que NO está en el baseline,
       # rompe el gate. Los 4 hallazgos estructurales que PHPStan no deja baselinear están documentados
       # en phpstan.neon (exclusiones con comentario y ticket).
       - name: Análisis estático
@@ -121,7 +121,7 @@ jobs:
       #   - rompe con CRITICAL/HIGH QUE TENGAN FIX (`ignore-unfixed`), para no bloquear por CVEs de
       #     base image sin parche disponible.
       #   - la única excepción aceptada está en `.trivyignore` (advisory de Laravel 10 sin fix en la
-      #     rama: la deuda es la migración de T5.5). Un advisory nuevo → el job falla.
+      #     rama). Un advisory nuevo → el job falla.
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs

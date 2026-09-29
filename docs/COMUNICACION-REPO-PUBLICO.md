@@ -41,10 +41,9 @@ Orden correcto:
 4. Recién ahí el PR queda como documentación pública. Si el deploy va después del merge, **el merge
    y el deploy van en la misma ventana**: minutos, no días.
 
-Medido en el único hotfix de seguridad de esta serie (2026-09-29): PR publicado 03:08:02Z, fix vivo
-en producción 03:14:35Z → **ventana de 6 minutos**. Ése es el estándar; se sostiene así porque el
-deploy se dispara enseguida. Si un merge tiene que esperar una ventana de deploy larga, el orden se
-invierte: primero la imagen y la ventana, después el merge.
+La ventana se mide desde que el merge es público hasta que la instalación tiene el fix. Se sostiene
+corta porque el deploy se dispara enseguida; si un merge tiene que esperar una ventana larga, el
+orden se invierte: primero la imagen y la ventana, después el merge.
 
 ## 3. Redacción: los títulos y los mensajes
 
@@ -88,12 +87,12 @@ voseo se queda en el blog.
 | «0 llamadores, verificado en `app/`, `routes/` y `tests/`» | «se verificó exhaustivamente» |
 | «borra X», «reemplaza Y» | «fue realizada la remoción» |
 | dice el error: «nunca se había corrido completo» | lo esconde: «se optimizó el script» |
-| «cada consulta se acota al grupo del chat» | «con el id de otro grupo devolvía sus fotos» |
+| «la consulta se acota a su alcance» | «con el id de otro alcance devolvía sus datos» |
 
 ### La regla que ordena todo lo demás
 
-**El criterio se publica; el caso va al canal privado.** «Cada consulta se acota al grupo del chat» es
-publicable; «con el id de otro grupo devolvía sus fotos» no. Es la misma línea del efecto y el vector,
+**El criterio se publica; el caso va al canal privado.** «La consulta se acota a su alcance» es
+publicable; «con el id de otro alcance devolvía sus datos» no. Es la misma línea del efecto y el vector,
 aplicada a la voz: el diseño es público, el incidente no.
 
 Esa distinción resuelve los casos sin necesidad de listar prohibiciones:
@@ -169,26 +168,13 @@ Consecuencia para escribir un PR: **una vez que tocás «Create», el texto ya e
 "lo edito después". El gate de comunicación bloquea lo que sí se puede arreglar antes de mergear, y
 reporta como deuda lo que ya quedó.
 
-## 5. Las 3 formas en que este repo se filtró a sí mismo (2026-09)
+## 5. Incidentes
 
-Ninguna de las tres fue un archivo con una contraseña. Las tres fueron **texto libre**.
-
-1. **El guard que se publicó a sí mismo.** El primer guard de fugas listaba, en su propio código,
-   los valores que protegía: la IP del servidor, el puerto de administración, la ruta home, el host
-   del homelab y el usuario y el email del mantenedor. El guard era la fuga. → *Regla actual: los
-   valores protegidos van **hasheados** (SHA-256) con su descripción; el valor no se escribe nunca,
-   ni en el código ni en el log.*
-2. **El cuerpo del PR que apuntaba a los datos.** Dos PRs explicaron en su cuerpo qué dato se había
-   escapado y en qué commit estaba (con el SHA). Le señalan el tesoro a quien lo vaya a buscar. →
-   *Regla actual: el detalle de una fuga vive en el canal privado; el PR público dice el efecto.*
-3. **El PR de hotfix que explicaba el vector.** El cuerpo describía la falla de autorización con sus
-   rutas concretas y los ids de ejemplo con los que se probó. Publicado en un repo público, eso es
-   una guía de explotación — y en el medio de la ventana de deploy. → *Regla actual: efecto sí,
-   vector no; y el vector va al aviso privado.*
-
-Lección transversal: **el archivo es la parte fácil de cuidar.** Los gates miraban el árbol
-(`guard-fugas.py`), las credenciales (`gitleaks`) y las dependencias (`trivy`); el texto libre de
-GitHub no lo miraba nadie. Ahí es donde se escapó.
+El detalle de los incidentes que originaron esta política —qué se filtró, dónde y cómo se
+descubrió— vive en el **canal privado del proyecto**. Lo que queda acá es la regla que salió de
+cada uno: los valores de una instalación no se escriben en un repo (ni hasheados con su
+descripción), el PR público dice el efecto y no el vector, y el mensaje de commit cuenta como
+superficie.
 
 ## 6. Cómo se hace cumplir
 

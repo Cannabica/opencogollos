@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -89,6 +90,9 @@ class Action extends Model
 
     protected static function booted()
     {
+        // `actions` sí tiene `tenant_id`: variante normal del scope.
+        static::addGlobalScope(new TenantScope);
+
         static::created(function ($action) {
             Log::debug('📢 Acción creada - Evento modelo', [
                 'action_id' => $action->id,

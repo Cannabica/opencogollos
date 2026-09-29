@@ -72,6 +72,9 @@ class Plant extends Model
 
     protected static function booted()
     {
-        
+        // `plants` NO tiene columna `tenant_id`: el tenant sale del indoor (variante byIndoor).
+        // Sin esto, cualquier `Plant::find($id)` (los comandos del bot, por ejemplo) veía plantas de
+        // otros grupos. Era un `use` importado y el `addGlobalScope` olvidado (ver §5.2 del board).
+        static::addGlobalScope(new TenantScope(byIndoor: true));
     }
 }

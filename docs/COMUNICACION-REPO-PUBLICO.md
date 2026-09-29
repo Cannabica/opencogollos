@@ -67,27 +67,33 @@ GitHub es la superficie **más lejana al usuario final y la más cercana a otro 
 se acompaña a una persona: se le describe un cambio a un par. Por eso el registro es impersonal, y el
 voseo se queda en el blog.
 
-**Un texto que se lee con criterio hace cuatro cosas:**
+**Un texto de comunicación hace cuatro cosas:**
 
+- **Informa lo que el producto hace**, no lo que dejó de fallar. El comportamiento que queda, en
+  presente.
 - **Enuncia el criterio**, no el arreglo. «Si el proceso no trae su grupo, no lee ni escribe» es una
   decisión que se puede discutir; «los caminos quedan acotados» sólo reporta.
-- **Dice el estado real**, incluido el propio error, sin disculparse. El que sabe no necesita
-  justificarse.
 - **Da el número.** Cada afirmación viaja con su medición.
 - **Escribe para quien va a mantener el código**, no para el tablero.
 
-**Y tres que hace de más:**
+**Y cuatro que no hace:**
 
-- **Pide permiso.** «Decisión de <Nombre>» donde va un criterio de producto.
-- **Explica el cómo.** La ruta exacta, el id, el paso a paso.
-- **Envuelve en ceremonia.** El checklist de seis secciones, el emoji de ánimo, la mayúscula que grita.
+- **Confesar el defecto.** «El guard era la fuga», «no arrancaba», «tuvimos un bug»: lo que pasó no se
+  narra. Se describe lo que ahora hace.
+- **Pedir permiso.** «Decisión de <Nombre>» donde va un criterio de producto.
+- **Explicar el cómo.** La ruta exacta, el id, el paso a paso.
+- **Envolver en ceremonia.** El checklist de seis secciones, el emoji de ánimo, la mayúscula que grita.
 
 | Nuestra voz | Lo que evitamos |
 |---|---|
 | «0 llamadores, verificado en `app/`, `routes/` y `tests/`» | «se verificó exhaustivamente» |
 | «borra X», «reemplaza Y» | «fue realizada la remoción» |
-| dice el error: «nunca se había corrido completo» | lo esconde: «se optimizó el script» |
-| «la consulta se acota a su alcance» | «con el id de otro alcance devolvía sus datos» |
+| «la consulta se acota a su alcance» | «con el id de otro alcance se veían datos ajenos» |
+| «el quickstart levanta en un clone limpio» | «el quickstart no arrancaba y moría con 502» |
+
+**El registro no autoriza a decir cualquier cosa.** No se afirma nada que no sea cierto: si la suite
+tiene fallos ajenos al cambio, no se declara «todo pasa» — simplemente no se reporta lo que no es del
+cambio. Y el diff sigue público: lo que sale de la prosa no se esconde del código, sale de la cita.
 
 ### La regla que ordena todo lo demás
 

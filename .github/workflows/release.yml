@@ -100,5 +100,5 @@ jobs:
             echo ""
             echo "- Versión leída de \`composer.json\`: \`${{ steps.version.outputs.version }}\`"
             echo "- Imagen: \`${{ env.IMAGE }}:${{ steps.version.outputs.tag }}\` (+ \`latest\`)"
-            echo "- El deploy a prod NO sale de este repo: se dispara desde \`cannabica-deploy\` (\`deploy-prod.yml\`, \`workflow_dispatch\` con la versión)."
+            echo "- El deploy a prod NO sale de este repo: lo dispara la operación del mantenedor (\`workflow_dispatch\` con la versión)."
           } >> "$GITHUB_STEP_SUMMARY"

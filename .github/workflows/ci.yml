@@ -2,8 +2,8 @@
 #
 # Contexto (WS2/T2.3): este workflow nace para que el merge tenga GATE. Reemplazo al pipeline viejo
 # (`ci-cd-pipeline.yml` + `staging-deploy.yml`), BORRADOS en T3.3 el 2026-09-27: hoy el CI es este
-# archivo y el release a GHCR vive en `release.yml`. El deploy a produccion NO corre desde aca: se
-# dispara desde el repo de operacion `Cannabica/cannabica-deploy` (`deploy-prod.yml`, T1.5).
+# archivo y el release a GHCR vive en `release.yml`. El deploy a produccion NO corre desde aca: lo
+# dispara la operacion del mantenedor (`workflow_dispatch`, ver `docs/PIPELINE-Y-GITFLOW.md`).
 # Acá NO se publica nada ni se deploya: los 4 jobs son de verificación.
 #
 # POR QUÉ HAY PASOS DE NODE: el panel registra su CSS con `Vite::asset(...)` en `TenantPanelProvider::panel()`

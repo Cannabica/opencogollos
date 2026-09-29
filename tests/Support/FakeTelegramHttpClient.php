@@ -265,8 +265,8 @@ final class FakeTelegramHttpClient implements HttpClientInterface
             'from' => [
                 'id' => 987654321,
                 'is_bot' => true,
-                'first_name' => 'OpenIndoor Emulador',
-                'username' => 'openindoor_emulador_bot',
+                'first_name' => 'OpenCogollos Emulador',
+                'username' => 'opencogollos_emulador_bot',
             ],
             'chat' => [
                 'id' => is_numeric($chatId) ? (int) $chatId : 0,
@@ -288,8 +288,8 @@ final class FakeTelegramHttpClient implements HttpClientInterface
             'getMe' => [
                 'id' => 987654321,
                 'is_bot' => true,
-                'first_name' => 'OpenIndoor Emulador',
-                'username' => 'openindoor_emulador_bot',
+                'first_name' => 'OpenCogollos Emulador',
+                'username' => 'opencogollos_emulador_bot',
             ],
             'getWebhookInfo' => [
                 'url' => '',

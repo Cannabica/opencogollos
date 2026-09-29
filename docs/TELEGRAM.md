@@ -173,8 +173,8 @@ php artisan telegram:webhook:setup --bot=admin
 ## 7. Probar los bots sin tocar Telegram (devkit local)
 
 Para desarrollar el bot no hace falta internet, ni un bot real, ni abrir el chat desde el celular. El
-**devkit local** vive en un repo aparte (`Cannabica/opencogollos-devkit`, hermano de
-`cannabica-deploy`) para no meter herramientas de desarrollo dentro de este repo. Trae:
+**devkit local** se entrega aparte (no vive en este repo, para no meter herramientas de desarrollo
+adentro: pedilo en el Discord del proyecto). Trae:
 
 - un **emulador HTTP del Bot API** que emula el subconjunto que usa la app, entrega los updates al
   webhook y **registra los mensajes salientes** para poder verificarlos;
@@ -182,11 +182,10 @@ Para desarrollar el bot no hace falta internet, ni un bot real, ni abrir el chat
   `telegram:webhook:setup` real se puede usar en local).
 
 ```bash
-git clone https://github.com/Cannabica/opencogollos-devkit.git
-cd opencogollos-devkit
+cd /ruta/al/devkit                          # donde tengas el devkit local
 make up                                    # emulador (8082) + front TLS (8443)
 make ca                                    # CA interna, para el webhook https
-make app APP=/ruta/a/OpenIndoor            # levanta la app contra el devkit
+make app APP=/ruta/a/opencogollos          # levanta la app contra el devkit
 make smoke SMOKE_TLS=1 SMOKE_TEXT=/estado  # E2E: inyecta un update y muestra la respuesta
 ```
 

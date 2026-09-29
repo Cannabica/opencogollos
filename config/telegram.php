@@ -176,8 +176,8 @@ return [
     |
     | Default: https://api.telegram.org/bot
     |
-    | OpenIndoor: se expone por env para poder apuntar TODOS los bots al
-    | emulador HTTP local del devkit (repo aparte: Cannabica/opencogollos-devkit)
+    | OpenCogollos: se expone por env para poder apuntar TODOS los bots al
+    | emulador HTTP local del devkit de desarrollo (se entrega aparte)
     | y probar sin tocar los servidores de Telegram. Vacío = API real (producción
     | intacta). También lo usan los tests sin red (config('telegram.base_bot_url')).
     | Formato: base_bot_url . TOKEN . '/' . metodo (TelegramClient::prepareRequest),

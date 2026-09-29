@@ -22,8 +22,8 @@ class StartCommand extends AdminCommand
         $lines[] = '👋 ¡Buenas, admin!';
         $lines[] = '';
         $lines[] = filled($brandName)
-            ? "Soy el bot de administración de {$brandName} / OpenIndoor."
-            : 'Soy el bot de administración de OpenIndoor.';
+            ? "Soy el bot de administración de {$brandName} / OpenCogollos."
+            : 'Soy el bot de administración de OpenCogollos.';
         $lines[] = 'Escribí /help para ver los comandos disponibles.';
 
         $this->reply(implode("\n", $lines));

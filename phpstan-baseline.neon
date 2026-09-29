@@ -356,11 +356,6 @@ parameters:
 			path: app/Jobs/SendDelayedProductNotification.php
 
 		-
-			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$tenant\\.$#"
-			count: 1
-			path: app/Models/Scopes/TenantScope.php
-
-		-
 			message: "#^Access to an undefined property App\\\\Models\\\\User\\:\\:\\$plants_per_cycle\\.$#"
 			count: 1
 			path: app/Models/User.php
@@ -551,6 +546,11 @@ parameters:
 			path: app/Telegram/Commands/CallbackHandlerCommand.php
 
 		-
+			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
+			count: 4
+			path: app/Telegram/Commands/CallbackHandlerCommand.php
+
+		-
 			message: "#^Access to an undefined property App\\\\Models\\\\Indoor\\:\\:\\$actions\\.$#"
 			count: 2
 			path: app/Telegram/Commands/IndoorDetailsCommand.php
@@ -667,7 +667,7 @@ parameters:
 
 		-
 			message: "#^Relation 'indoor' is not found in App\\\\Models\\\\Plant model\\.$#"
-			count: 1
+			count: 2
 			path: app/Telegram/Commands/PlantDetailsCommand.php
 
 		-

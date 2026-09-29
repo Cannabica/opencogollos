@@ -127,6 +127,31 @@ y un gate que frena por estilo termina desactivado. Señales que avisa:
 producto (falso positivo medido). Y la atribución se detecta **por la forma** (`decisión de
 <Capital>`) y no por el nombre: así no hay un solo nombre escrito en el guard y cubre a cualquiera.
 
+## 3ter. Cuánta información lleva un PR
+
+El diff ya muestra el código. Esta sección es sobre lo que **agregamos encima** del diff: el título,
+el cuerpo y los mensajes de commit. Cada línea de más es superficie.
+
+**Lo máximo que agrega el cuerpo:**
+1. **Qué cambia**, 1-3 líneas, en términos del efecto.
+2. **Verificación**: qué corre y qué devolvió (un número, no la transcripción).
+3. **Notas** para quien instala o mantiene, sólo si las necesita.
+
+**Lo que NO va, aunque sea cierto:**
+- El **vector**: rutas exactas, ids de ejemplo, payloads, el paso a paso.
+- El **mapa de riesgos**: qué modelos no tenían scope, qué archivo hacía qué, dónde faltaba el filtro.
+  Es, literalmente, la lista de dónde mirar.
+- La **deuda interna**: decir lo que todavía no está cubierto le señala al lector dónde no hay control.
+- **Nombres de personas** y decisiones con fecha.
+- Salidas de comandos largas: alcanza el número.
+
+⚠️ **El límite honesto: el diff es público.** Nadie esconde el código (nombres de clases, archivos,
+migraciones) escribiendo menos en el cuerpo. Lo que se reduce es la **interpretación** —qué importa,
+dónde faltaba algo, cómo se explota—, y eso es justo lo que un cuerpo largo regala.
+
+**Regla de tamaño:** si el cuerpo pasa de ~15 líneas, probablemente esté contando algo que va al canal
+privado.
+
 ## 4. GitHub no olvida: qué es reversible y qué no
 
 | Superficie | ¿Se puede limpiar? |

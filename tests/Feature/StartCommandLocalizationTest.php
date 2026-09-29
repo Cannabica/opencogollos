@@ -120,9 +120,9 @@ class StartCommandLocalizationTest extends TestCase
 
         $text = $this->runStart(AdminStartCommand::class);
 
-        $this->assertStringContainsString('bot de administración de OpenIndoor.', $text);
+        $this->assertStringContainsString('bot de administración de OpenCogollos.', $text);
         $this->assertStringNotContainsString('mimarca', $text);
-        $this->assertStringNotContainsString('de  / OpenIndoor', $text);
+        $this->assertStringNotContainsString('de  / OpenCogollos', $text);
     }
 
     public function test_admin_start_con_config_muestra_la_marca(): void
@@ -134,6 +134,6 @@ class StartCommandLocalizationTest extends TestCase
 
         $text = $this->runStart(AdminStartCommand::class);
 
-        $this->assertStringContainsString('bot de administración de ' . self::BRAND . ' / OpenIndoor.', $text);
+        $this->assertStringContainsString('bot de administración de ' . self::BRAND . ' / OpenCogollos.', $text);
     }
 }

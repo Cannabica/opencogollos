@@ -9,7 +9,10 @@
 ## Antes de crear el PR (el repo es PÚBLICO: lo que escribís queda indexado para siempre)
 
 - [ ] El título y el cuerpo dicen **qué cambia**, no **cómo se explota**: sin la ruta exacta, sin el id
-      de ejemplo, sin el paso a paso. Si hay un vector, va al aviso privado (`SECURITY.md`).
+      de ejemplo, sin el paso a paso. El **expediente del hallazgo** (el vector, la reproducción, el
+      impacto, cómo se descubrió) va al **canal privado del proyecto**, no a este repo.
+- [ ] El **mensaje de commit** sigue el mismo límite. Y como no se puede editar, es el peor lugar
+      para equivocarse: lo que escribas ahí queda para siempre.
 - [ ] Sin datos de una instalación (IP, puerto, host, rutas del server) ni de personas (nombres,
       emails), ni acá ni en los mensajes de commit.
 - [ ] Sin deuda interna ni el mapa de lo que falta: eso vive en el canal privado, no en la vitrina.

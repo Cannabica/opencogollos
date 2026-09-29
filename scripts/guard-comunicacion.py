@@ -92,12 +92,21 @@ def es_email_de_persona(texto: str) -> bool:
 
 # --- El PAR EXPLOTABLE -------------------------------------------------------------------
 # Un mecanismo de ataque NOMBRADO. Solo, es un aviso (la política permite describir el efecto).
+# El segundo bloque son las formas en las que el texto ADMITE un agujero SIN nombrar la clase:
+# medido, un PR que describía el vector con sus rutas y decía «el worker lo dejaba abierto / leía la
+# fila de cualquier grupo» pasaba limpio, porque el par exigía la sigla. La sigla es lo que el autor
+# cuidadoso NO escribe, así que sin esto el guard castigaba al que escribe bien.
 MECANISMOS = re.compile(
     r"\b(idor|bypass|eludi\w+|escalad\w+\s+de\s+privilegios|"
     r"fuga\s+(entre|de)\s+(grupos?|tenants?|cuentas?|datos?)|"
     r"acceso\s+no\s+autorizado|sin\s+autorizaci[oó]n|"
     r"robo\s+de\s+token|token\s+en\s+claro|"
-    r"enumeraci[oó]n\s+de\s+(ids?|recursos?))\b",
+    r"enumeraci[oó]n\s+de\s+(ids?|recursos?))\b"
+    r"|queda\s+(?:abiert[oa]|expuest[oa])"
+    r"|\bsin\s+control\b"
+    r"|\bno\s+(?:cruza|filtra|valida)\b"
+    r"|\b(?:le[íi]a|lee|leer|accede|alcanza)\s+(?:la\s+fila|datos|registros?)\s+de\s+(?:cualquier|otro)"
+    r"|\b(?:datos|acciones?|indoor|plantas?|registros?)\s+(?:ajen[oa]s?|de\s+otro\s+(?:grupo|tenant))",
     re.IGNORECASE,
 )
 # El vector CONCRETO: una ruta de la app o un callback con id. Solo, no significa nada.

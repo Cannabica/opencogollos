@@ -31,6 +31,7 @@ USO
 from __future__ import annotations
 
 import hashlib
+import os
 import re
 import subprocess
 import sys
@@ -45,27 +46,37 @@ from pathlib import Path
 # infraestructura de la instalación.
 #
 # Se carga de afuera, si está:
-#   · local  → `.instance-values` en la raíz del repo (gitignored): una línea por valor,
-#              con el formato `<descripción corta>=<valor>`.
-#   · CI de este repo → no está: se corre con las reglas genéricas y el reporte lo dice.
-#   · CI del repo de operación → lo escribe desde el secret de la instancia antes de correr.
+#   · CI de este repo    → no está: se corre con las reglas genéricas y el reporte lo dice.
+#   · CI del repo de operación → lo escribe desde el secret antes de correr ($INSTANCE_VALUES).
+#   · tu máquina         → `~/.cannabica/instance-values` (chmod 600), una sola vez y lo encuentra
+#                          desde cualquier worktree o clon. También vale `.instance-values` en la
+#                          raíz del repo (gitignored), un valor por línea.
+# Formato de cada línea:  <descripción corta>=<valor>
 # --------------------------------------------------------------------------------------
 ARCHIVO_VALORES = Path(".instance-values")
+ARCHIVO_VALORES_MAQUINA = Path.home() / ".cannabica" / "instance-values"
 
 
-def cargar_denylist(ruta: Path = ARCHIVO_VALORES) -> dict[str, str]:
-    """{sha256(valor): descripción}. Vacío si el archivo no está (el repo público no lo tiene)."""
-    if not ruta.exists():
-        return {}
+def fuentes_de_valores() -> list[Path]:
+    """Dónde se buscan los valores, en orden. Se leen TODAS las que existan."""
+    env = os.environ.get("INSTANCE_VALUES")
+    return ([Path(env)] if env else []) + [ARCHIVO_VALORES, ARCHIVO_VALORES_MAQUINA]
+
+
+def cargar_denylist() -> dict[str, str]:
+    """{sha256(valor): descripción}. Vacío si no hay ninguna fuente (el repo público no la tiene)."""
     vals: dict[str, str] = {}
-    for linea in ruta.read_text(encoding="utf-8").splitlines():
-        linea = linea.strip()
-        if not linea or linea.startswith("#") or "=" not in linea:
+    for ruta in fuentes_de_valores():
+        if not ruta.exists():
             continue
-        desc, _, valor = linea.partition("=")
-        valor = valor.strip()
-        if valor:
-            vals[hashlib.sha256(valor.encode()).hexdigest()] = desc.strip() or "valor de la instancia"
+        for linea in ruta.read_text(encoding="utf-8", errors="replace").splitlines():
+            linea = linea.strip()
+            if not linea or linea.startswith("#") or "=" not in linea:
+                continue
+            desc, _, valor = linea.partition("=")
+            valor = valor.strip()
+            if valor:
+                vals[hashlib.sha256(valor.encode()).hexdigest()] = desc.strip() or "valor de la instancia"
     return vals
 
 
@@ -232,8 +243,9 @@ def main() -> int:
 
     print()
     if not DENYLIST:
-        print("  (denylist de la instancia NO cargada: corre sólo con las reglas genéricas.")
-        print("   El repo público no tiene los valores a propósito — ver scripts/guard-fugas.py)")
+        print("  (denylist de la instancia NO cargada: corre sólo con las reglas genéricas.)")
+        print("   Para cargarla en tu máquina:  ~/.cannabica/instance-values  (chmod 600)")
+        print("   El repo público no tiene los valores a propósito — ver scripts/guard-fugas.py")
     print("== BLOQUEANTE: infraestructura / identidad / datos de la instancia ==")
     if bloqueantes:
         for b in dict.fromkeys(bloqueantes):

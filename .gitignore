@@ -70,4 +70,8 @@ vps-deploy.md
 
 # Python (guard-fugas.py)
 __pycache__/
+
+# Artefacto del contenedor de Caddy corriendo en el checkout (rama root): ensucia `git status` y
+# hace fallar `pint --test` con "RecursiveDirectoryIterator: Permission denied".
+/.config/
 *.pyc

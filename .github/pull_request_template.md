@@ -39,6 +39,16 @@
 - [ ] `DB_CONNECTION=sqlite DB_DATABASE=":memory:" php artisan test` → `Tests: N passed`
 - [ ] `vendor/bin/phpstan analyse --memory-limit=1G` → `[OK] No errors`
 
+### 6. Comunicación (el repo es PÚBLICO: lo que escribís acá queda indexado para siempre)
+
+- [ ] El título y este cuerpo dicen **qué cambia y cómo se nota desde afuera**. **No** dicen el cómo se
+      explota (la ruta exacta, el id de ejemplo, el paso a paso de reproducción): si hay un vector, va
+      al aviso privado de seguridad → `SECURITY.md` y `docs/COMUNICACION-REPO-PUBLICO.md`.
+- [ ] Sin datos de instalación (IP, puerto, host, rutas de servidor, usuario del server) ni emails de
+      personas — ni en el cuerpo ni en los mensajes de commit.
+- [ ] Si es un fix de seguridad: **el deploy va en la misma ventana que el merge**. El diff es público
+      apenas se mergea, así que la instalación sin arreglar es la ventana de exposición.
+
 ## Cómo lo probé
 
 <!-- El camino REAL, no la pieza: comando / URL / pantalla / update de Telegram inyectado, y qué

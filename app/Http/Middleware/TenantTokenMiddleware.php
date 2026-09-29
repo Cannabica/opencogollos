@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Models\Tenant;
 use App\Models\ApiToken;
+use App\Support\TenantContext;
 use Illuminate\Support\Str;
 
 class TenantTokenMiddleware
@@ -26,6 +27,17 @@ class TenantTokenMiddleware
         }
 
         $tenant = $apiToken->tenant;
+
+        if (! $tenant) {
+            return response()->json(['error' => 'Unauthorized - Token sin grupo'], 401);
+        }
+
+        // Fija el grupo para TODA la request: el `TenantScope` falla cerrado sin contexto, así que
+        // sin esto los endpoints de la API devolvían listas vacías (y un `find($id)` un 404) aunque el
+        // token estuviera validado. Es el mismo patrón que usa el bot en
+        // `ChecksTelegramExpiration::checkTelegramAssociation()`.
+        TenantContext::use((int) $tenant->id);
+
         $request->merge([
             'tenant' => $tenant,
             'apiToken' => $apiToken,

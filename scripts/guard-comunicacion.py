@@ -66,18 +66,27 @@ _spec.loader.exec_module(gf)
 
 # Candidatos para cruzar contra la DENYLIST: palabras, caminos y valores pegados.
 TOKEN = re.compile(r"[A-Za-z0-9_.:@/-]{3,}")
+# Segunda segmentación, SIN los separadores de path/namespace. Hace falta porque `TOKEN` se come
+# un nombre de rama con el valor pegado y una ruta de servidor como UNA sola pieza: con la primera
+# segmentación el valor no llega al hash; con esta, se rescata el valor embebido en un nombre de
+# rama o en una URL. Se prueban las dos y gana cualquiera que matchee la DENYLIST (medido: una rama
+# con el puerto del server pegada al nombre pasaba limpia antes de esto).
+TOKEN_CORTO = re.compile(r"[A-Za-z0-9_.@]{3,}")
 
 # Emails de EJEMPLO (los que la propia documentación usa): no son un dato de nadie.
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]{2,}")
 EMAIL_EJEMPLO = re.compile(r"@(example\.(com|org|net)|test|localhost|invalid)$|^(user|usuario|test|alguien)@",
                            re.IGNORECASE)
+# El alias noreply de GitHub NO es un buzón: es exactamente el reemplazo que este guard recomienda.
+# Tratarlo como dato personal hacía que el propio arreglo recomendado disparara el aviso.
+EMAIL_ALIAS = re.compile(r"@users\.noreply\.github\.com$", re.IGNORECASE)
 
 # Cualquier email de una persona es dato personal: en un repo público no va. (Más amplio que
 # guard-fugas.py, que en ARCHIVOS sólo bloquea los proveedores personales para no romper con
 # la metadata de autor de los paquetes vendorizados — acá no hay metadata de terceros.)
 def es_email_de_persona(texto: str) -> bool:
     for m in EMAIL.finditer(texto):
-        if not EMAIL_EJEMPLO.search(m.group(0)):
+        if not (EMAIL_EJEMPLO.search(m.group(0)) or EMAIL_ALIAS.search(m.group(0))):
             return True
     return False
 
@@ -171,11 +180,13 @@ def revisar_bloqueantes(superficie: str, contenido: str, pos: list[str],
         agregar(f"{superficie}: [email de una persona] {limpiar(contenido)}")
 
     # 4. Los VALORES de la DENYLIST (por hash: el valor no se escribe ni en el código ni en el log).
-    for m in TOKEN.finditer(contenido):
-        token = m.group(0)
-        h = hashlib.sha256(token.encode()).hexdigest()
-        if h in gf.DENYLIST:
-            agregar(f"{superficie}: [valor de la instalación — {gf.DENYLIST[h]}] «oculto»")
+    #    Se prueban las dos segmentaciones: la de path/namespace completos y la de piezas sueltas.
+    for patron in (TOKEN, TOKEN_CORTO):
+        for m in patron.finditer(contenido):
+            token = m.group(0)
+            h = hashlib.sha256(token.encode()).hexdigest()
+            if h in gf.DENYLIST:
+                agregar(f"{superficie}: [valor de la instalación — {gf.DENYLIST[h]}] «oculto»")
 
     # 5. El PAR EXPLOTABLE: mecanismo + vector concreto en el mismo texto.
     mecanismo = MECANISMOS.search(contenido)
@@ -199,12 +210,19 @@ def revisar_avisos(superficie: str, contenido: str, avisos: list[str]) -> None:
             avisos.append(f"{superficie}: [{nombre}]")
 
 
-def commits_del_rango(rango: str | None) -> list[tuple[str, str]]:
-    """[(sha corto, mensaje)] de los commits del rango; sin rango, el último commit."""
+def commits_del_rango(rango: str | None) -> list[tuple[str, str, str]]:
+    """[(sha corto, autor, mensaje)] de los commits del rango; sin rango, el último commit.
+
+    El AUTOR va incluido a propósito: el email personal del mantenedor viaja en la metadata de
+    autoría de 246 commits de `opencogollos` y hasta ahora ninguna superficie lo miraba — ni este
+    guard ni `guard-fugas.py`, que escanean contenido de archivos/mensajes. Se reporta como
+    aviso (ver `main`), no como bloqueante: se corrige en el `git config` del autor, no en el PR.
+    """
+    sep = "\x1e"  # record separator: el mensaje puede tener \x00 pero no \x1e
     if rango:
-        cmd = ["git", "log", "--format=%h%x00%B%x00%x00", rango]
+        cmd = ["git", "log", f"--format=%h%x00%an <%ae>%x00%B{sep}", rango]
     else:
-        cmd = ["git", "log", "-1", "--format=%h%x00%B%x00%x00"]
+        cmd = ["git", "log", "-1", f"--format=%h%x00%an <%ae>%x00%B{sep}"]
     try:
         crudo = subprocess.run(cmd, capture_output=True, text=True, check=True,
                                errors="replace").stdout
@@ -212,10 +230,15 @@ def commits_del_rango(rango: str | None) -> list[tuple[str, str]]:
         print(f"{AMARILLO}no se pudo leer el rango «{rango}»: {exc.stderr.strip()[:200]}{FIN}",
               file=sys.stderr)
         return []
-    partes = [p for p in crudo.split("\x00") if p.strip()]
-    # `git log` separa las entradas con un \n: el sha del 2.º commit en adelante viene con el
-    # salto pegado (se veía como "commit \n7979625" en el reporte).
-    return [(partes[i].strip(), partes[i + 1]) for i in range(0, len(partes) - 1, 2)]
+    salida = []
+    for registro in crudo.split(sep):
+        if not registro.strip():
+            continue
+        campos = registro.split("\x00")
+        if len(campos) < 3:
+            continue
+        salida.append((campos[0].strip(), campos[1].strip(), campos[2]))
+    return salida
 
 
 def main() -> int:
@@ -277,16 +300,35 @@ def main() -> int:
 
     commits = commits_del_rango(rango)
     print(f"{GRIS}commits revisados: {len(commits)}{FIN}")
-    for sha, mensaje in commits:
+    autores_vistos: set[str] = set()
+    for sha, autor, mensaje in commits:
+        # La metadata de autoría viaja en el commit y en un repo público no se puede sacar sin
+        # reescribirlo todo: se AVISA (una vez por autor) y el fix es del entorno del autor.
+        if autor and autor not in autores_vistos:
+            autores_vistos.add(autor)
+            previos: list[str] = []
+            revisar_bloqueantes(f"autor de commit", autor, previos)
+            if previos:
+                avisos.append(
+                    f"autor de commit «{autor}»: la metadata de autoría publica ese dato en CADA "
+                    f"commit. Se corrige en tu entorno, no en el PR: "
+                    f"`git config user.email '<id>+<usuario>@users.noreply.github.com'` "
+                    f"(GitHub → Settings → Emails → Keep my email addresses private)"
+                )
         if "Merge" in mensaje.splitlines()[0] and "[skip ci]" not in mensaje:
             # Los merge commits los escribe GitHub: no los controla el autor.
             continue
         revisar_bloqueantes(f"commit {sha}", mensaje, bloqueantes, avisos, sha_commit=sha)
         revisar_avisos(f"commit {sha}", mensaje, avisos)
 
-    if rama and RAMA_VECTOR.search(rama.split("/")[-1]):
-        avisos.append(f"rama «{rama}»: el nombre anuncia el vector. Ya está publicada (queda en el "
-                      f"remoto): nombrá la próxima por el EFECTO — ver docs/COMUNICACION-REPO-PUBLICO.md")
+    if rama:
+        # El nombre de rama es texto público indexado igual que el título: se le aplican las MISMAS
+        # reglas (un `feat/deploy-<puerto>` publicaba el puerto y sólo se miraba el vector).
+        revisar_bloqueantes(f"rama «{rama}»", rama, bloqueantes)
+        revisar_avisos(f"rama «{rama}»", rama, avisos)
+        if RAMA_VECTOR.search(rama.split("/")[-1]):
+            avisos.append(f"rama «{rama}»: el nombre anuncia el vector. Ya está publicada (queda en el "
+                          f"remoto): nombrá la próxima por el EFECTO — ver docs/COMUNICACION-REPO-PUBLICO.md")
 
     for a in avisos:
         print(f"{AMARILLO}Aviso{FIN} {a}")

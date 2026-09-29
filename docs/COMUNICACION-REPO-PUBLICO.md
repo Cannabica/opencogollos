@@ -102,7 +102,7 @@ GitHub no lo miraba nadie. Ahí es donde se escapó.
 
 | Capa | Qué cubre | Cuándo |
 |---|---|---|
-| `scripts/guard-comunicacion.py` (job `fugas` del CI) | Título, cuerpo del PR y mensajes de commit: valores de la instalación, IPs, emails, y el **par explotable** (mecanismo + vector concreto) | En cada PR |
+| `scripts/guard-comunicacion.py` (job `fugas` del CI) | Título, cuerpo del PR, mensajes de commit, **nombre de la rama** y la **metadata de autoría** del commit: valores de la instalación, IPs, emails, y el **par explotable** (mecanismo + vector concreto). La autoría entra como **aviso** (se corrige en el `git config` del autor, no en el PR) | En cada PR |
 | `.github/pull_request_template.md` | Las preguntas que un gate no puede hacer («¿esto explica el cómo?») | Al abrir el PR |
 | `scripts/guard-fugas.py` (job `fugas`) | El árbol: los archivos que se commitean | En cada PR |
 | `gitleaks` (job `fugas`) | Credenciales en la historia completa | En cada PR |

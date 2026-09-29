@@ -62,6 +62,71 @@ invierte: primero la imagen y la ventana, después el merge.
   `hotfix/idor-bot` ✗. La rama se publica al primer push y **el nombre queda** en el remoto y en los
   refs de PR: es de las cosas que no se pueden des-publicar.
 
+## 3bis. Voz y tono: cómo se lee lo que publicamos
+
+GitHub es la superficie **más lejana al usuario final y la más cercana a otro que lee código**. El
+registro no es el del blog: ahí se acompaña a una persona, acá se describe un cambio a un par. La
+regla del resto de la marca se aplica igual —*cuanto más cerca del usuario final, más sobrio y más
+verdadero*— pero acá **el voseo no va**: no hay a quién hablarle.
+
+**Serio y sincero a la vez se resuelve midiendo y diciendo el error con su número.** Lo serio es el
+dato («260 passed / 861 assertions»); lo sincero es no esconder el propio fallo («el guard de fugas
+se publicaba a sí mismo los valores que protegía»). Lo que se evita es la ceremonia, no la franqueza.
+
+| Sobrio (nuestra voz) | Acartonado (lo que evitamos) |
+|---|---|
+| «0 llamadores, verificado en `app/`, `routes/` y `tests/`» | «se verificó exhaustivamente» |
+| «el bot devolvía datos de otro grupo» | «se ha procedido a la adecuación de…» |
+| voz activa: «borra X», «reemplaza Y» | pasiva: «fue realizada la remoción» |
+| dice el error: «nunca se había corrido completo» | lo esconde: «se optimizó el script» |
+
+### Reglas
+
+1. **Cero identificadores del tablero privado.** `T3.3`, `WS2`, `criterio 5`, `D5` no significan nada
+   fuera del board: parece un memo interno filtrado.
+   `T10.6: endurecer el login de la API` → `fix(api): el login dejaba entrar a tenants inactivos`
+2. **Cero referencias al proceso interno**: «el board», «épica», «sprint», ni rutas `board/epicas/…`.
+   `quedó medido en 2026-09-27-flujo-gitflow (board)` → `medido: compare main...develop = ahead 6 / behind 2`
+3. **La persona se acredita por rol, no por nombre**: «decisión de producto», «reportado por un
+   usuario». Firmar como mantenedor es legítimo; el nombre repetido en decenas de piezas no.
+4. **La comunicación técnica es impersonal**: `se agregó`, `se verificó`. El posesivo de producto
+   («tus datos», «tu indoor») es copy de la landing, no de un PR.
+5. **Efecto sí, vector no** (ver §3): en el título va la consecuencia; la sigla (IDOR, RCE) va en el
+   cuerpo, traducida, y sólo si aporta.
+6. **Emojis**: 0 en títulos; en el cuerpo sólo como veredicto de una lista (⚠ / ❌), uno por bloque,
+   nunca decorativo (🔴 🐛 🚧 ★).
+7. **Primera persona**: sólo en el cuerpo y sólo para respaldar una verificación («se probó en un
+   clone limpio: 48 s»). Nunca en un título, nunca para narrar lo que el diff ya cuenta.
+8. **Todo absoluto lleva número, alcance y fecha**; si no, es opinión. Los medidos («0 bloqueantes»,
+   «236 tests OK») son el activo; los retóricos se cambian por «hasta ahora».
+9. **El cuerpo tiene forma**: qué cambia · cómo se nota desde afuera · qué verificaciones con su salida
+   real · qué deuda queda. Si un riesgo no aplica, se escribe «No aplica».
+10. **Nada de humor ni autoburla en un PR de seguridad.** «La ironía es exacta», «chiste
+    involuntario», «LLEGUÉ en 48 segundos»: es lo único que se lee como no tomárselo en serio.
+
+### Lo que NO se toca (para no acartonar)
+
+El **voseo** de blog/IG/README; los **absolutos medidos** (son la credibilidad); la **primera persona
+honesta** de un commit (es autoría, no diario); los **emojis de estado** en tablas y checklists;
+`bloqueante`/`P0` (es la severidad real del CI); los **CVE** en bumps de dependencias.
+
+### Cómo se hace cumplir
+
+`scripts/guard-comunicacion.py` los reporta como **aviso**, nunca como bloqueo: es registro, no dato,
+y un gate que frena por estilo termina desactivado. Señales que avisa:
+
+| Señal | Ejemplo real |
+|---|---|
+| código del tablero (`T#.#`, `WS#`, `criterio #`, `D#`) | `T10.6`, `criterio 2` |
+| referencia al proceso (`board`, `kanban`, `épica`, `sprint`, `backlog`) | `medido en …-flujo-gitflow (board)` |
+| atribución a una persona **por la forma**, no por el nombre | `decisión de <Nombre>`, `corregido por <Nombre>` |
+| posesivo de producto | `tus datos`, `tu indoor` |
+| sólo en títulos y ramas: primera persona y emoji decorativo | `medí`, `agregué`, `🔴` |
+
+`tarjeta` queda **fuera** del patrón: matchea la tarjeta del dashboard, que es vocabulario del
+producto (falso positivo medido). Y la atribución se detecta **por la forma** (`decisión de
+<Capital>`) y no por el nombre: así no hay un solo nombre escrito en el guard y cubre a cualquiera.
+
 ## 4. GitHub no olvida: qué es reversible y qué no
 
 | Superficie | ¿Se puede limpiar? |
@@ -102,7 +167,7 @@ GitHub no lo miraba nadie. Ahí es donde se escapó.
 
 | Capa | Qué cubre | Cuándo |
 |---|---|---|
-| `scripts/guard-comunicacion.py` (job `fugas` del CI) | Título, cuerpo del PR, mensajes de commit, **nombre de la rama** y la **metadata de autoría** del commit: valores de la instalación, IPs, emails, y el **par explotable** (mecanismo + vector concreto). La autoría entra como **aviso** (se corrige en el `git config` del autor, no en el PR) | En cada PR |
+| `scripts/guard-comunicacion.py` (job `fugas` del CI) | Título, cuerpo del PR, mensajes de commit, **nombre de la rama** y la **metadata de autoría** del commit: valores de la instalación, IPs, emails, y el **par explotable** (mecanismo + vector concreto). La autoría y el **registro** (§3bis) entran como **aviso** | En cada PR |
 | `.github/pull_request_template.md` | Las preguntas que un gate no puede hacer («¿esto explica el cómo?») | Al abrir el PR |
 | `scripts/guard-fugas.py` (job `fugas`) | El árbol: los archivos que se commitean | En cada PR |
 | `gitleaks` (job `fugas`) | Credenciales en la historia completa | En cada PR |

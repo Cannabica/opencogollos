@@ -18,10 +18,16 @@ use Illuminate\Support\Facades\Auth;
  *   1. Contexto explícito (`use()` / `useAll()`) → manda ese.
  *   2. Sin contexto explícito → el usuario logueado (`tenant_id`), como el panel Filament.
  *      Un usuario SIN tenant (superadmin) queda exento: ve todo (es su trabajo).
- *   3. Sin usuario y sin contexto:
- *      - HTTP (un request sin sesión, p.ej. el webhook) → **falla cerrado: no devuelve nada**.
- *      - consola (seeders, artisan, cron) → sin filtro, que es el comportamiento histórico de esos
- *        caminos y lo que necesitan los seeders y el digest del admin.
+ *   3. Sin usuario y sin contexto, **un job de cola** (`Queue::before` lo marca) → **falla cerrado**.
+ *      El worker corre por consola, pero NO es un comando de mantenimiento: un job que no fija su
+ *      grupo (`TenantContext::use($tenantId)`) no ve nada. Si viera todo, un `find($id)` adentro de un
+ *      job leería la fila de cualquier grupo (era el agujero del worker: la rama de consola lo dejaba
+ *      abierto).
+ *   4. Sin usuario, sin contexto y sin job: HTTP (un request sin sesión, p.ej. el webhook o la API)
+ *      → **falla cerrado**. La API con token válido no depende de esto: su middleware fija el contexto
+ *      (`TenantTokenMiddleware`), igual que el bot.
+ *   5. consola de verdad (seeders, artisan, cron) → sin filtro, que es el comportamiento histórico de
+ *      esos caminos y lo que necesitan los seeders y el digest del admin.
  *
  * Corolario operativo: el bot de Telegram (que no tiene sesión) TIENE que fijar el contexto con
  * `use($tenantId)` después de resolver la asociación del chat — lo hace
@@ -38,6 +44,9 @@ final class TenantContext
     private ?int $tenantId = null;
 
     private bool $explicit = false;
+
+    /** Lo pone el worker al empezar cada job (`Queue::before`). Ver `markJob()`. */
+    private bool $job = false;
 
     /** Filtra por este tenant durante el resto del request. */
     public function set(int $tenantId): void
@@ -66,6 +75,22 @@ final class TenantContext
     }
 
     /**
+     * Marca que estamos dentro de un job de cola (lo llama `AppServiceProvider` en `Queue::before`).
+     * Un job sin contexto explícito falla cerrado: el worker no tiene sesión ni usuario.
+     */
+    public function markJob(): void
+    {
+        $this->job = true;
+    }
+
+    /** Fin del job (`Queue::after` / `Queue::failing`): vuelve al estado limpio. */
+    public function unmarkJob(): void
+    {
+        $this->job = false;
+        $this->clear();
+    }
+
+    /**
      * Con qué tenant filtrar.
      *
      * @return int|false|null int = ese tenant; null = sin filtro (contexto de servicio); false = no hay
@@ -84,7 +109,12 @@ final class TenantContext
             return $user->tenant_id === null ? null : (int) $user->tenant_id;
         }
 
-        // Consola: seeders, artisan y cron (el digest del admin) dependen de no filtrar.
+        // Job de cola: cerrado. Va ANTES de la rama de consola porque el worker corre en consola.
+        if ($this->job) {
+            return false;
+        }
+
+        // Consola de verdad: seeders, artisan y cron (el digest del admin) dependen de no filtrar.
         // Los tests quedan afuera a propósito, para que puedan afirmar la falla cerrada.
         if (app()->runningInConsole() && ! app()->runningUnitTests()) {
             return null;

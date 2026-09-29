@@ -150,6 +150,13 @@ jobs:
       - name: Guard de fugas (infraestructura + identidad) — archivos trackeados
         run: python3 scripts/guard-fugas.py
 
+      # Guard de COMUNICACIÓN: las 3 superficies de GitHub que NO son archivos —título y cuerpo del
+      # PR y mensajes de commit— son texto libre, quedan indexados igual y no las miraba ningún gate.
+      # Ahí se escaparon las 3 fugas de septiembre (ver docs/COMUNICACION-REPO-PUBLICO.md §5).
+      # Lee el payload del evento ($GITHUB_EVENT_PATH): sin interpolar el cuerpo del PR en el shell.
+      - name: Guard de comunicación (título/cuerpo del PR + mensajes de commit)
+        run: python3 scripts/guard-comunicacion.py
+
       # gitleaks por BINARIO OFICIAL y no con `gitleaks/gitleaks-action`: esa action exige licencia
       # (GITLEAKS_LICENSE) en repos de ORGANIZACIÓN. El binario es gratis, no depende de una action
       # de terceros y queda pineado por versión Y por sha256 (contrastado con

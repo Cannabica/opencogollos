@@ -17,7 +17,7 @@ Esta política define **qué se puede escribir y dónde**. La regla que la resum
 |---|---|
 | Qué cambia, por qué, cómo lo probé, qué tests cubren | **PR público** (es la evidencia del cambio) |
 | El **efecto** de un fix de seguridad, en términos de comportamiento | **PR público** — «el bot ahora devuelve los datos del grupo del chat y nada más» |
-| El **vector** (la ruta exacta, el payload, el id de ejemplo, el paso a paso de reproducción) | **Aviso privado de seguridad** del repo (o el board / canal interno) |
+| El **vector** (la ruta exacta, el payload, el id de ejemplo, el paso a paso de reproducción) y el **expediente del hallazgo** (cómo se descubrió, el impacto, qué quedó sin cubrir) | **Canal privado del proyecto.** El PR público dice el efecto |
 | Datos de una instalación: IPs, puertos, hosts, rutas de servidor, nombres de usuario, emails | **Ninguno de los dos: no se escriben en un repo** (van a KeePass) |
 | Datos de una persona (usuarios, clientes, el mantenedor) | **Canal privado.** Un repo público no es un lugar para el dato de nadie |
 | Capturas/logs con datos reales de usuarios | **Canal privado** (y anonimizados antes de mostrarlos) |
@@ -151,6 +151,15 @@ dónde faltaba algo, cómo se explota—, y eso es justo lo que un cuerpo largo 
 
 **Regla de tamaño:** si el cuerpo pasa de ~15 líneas, probablemente esté contando algo que va al canal
 privado.
+
+**Y el peor lugar para equivocarse es el mensaje de commit.** No se puede editar: lo que escribas ahí
+queda para siempre, indexado, y viaja en cada `git clone`. Medido: un PR que se limpió a tiempo (el
+cuerpo, por editable) dejó igual **todo el mapa en el mensaje de su commit** —los nombres de clases,
+el camino que quedaba abierto, los tests por nombre, la reproducción—. Al limpiar un PR, revisar
+siempre el mensaje del commit: es la mitad del trabajo y la que no tiene vuelta atrás.
+
+**El expediente del hallazgo va al canal privado del proyecto**, no al repo: el vector, la
+reproducción, el impacto, cómo se descubrió y qué quedó sin cubrir. El PR público dice el efecto.
 
 ## 4. GitHub no olvida: qué es reversible y qué no
 

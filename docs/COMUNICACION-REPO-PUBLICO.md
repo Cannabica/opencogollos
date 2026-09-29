@@ -62,58 +62,81 @@ invierte: primero la imagen y la ventana, después el merge.
   `hotfix/idor-bot` ✗. La rama se publica al primer push y **el nombre queda** en el remoto y en los
   refs de PR: es de las cosas que no se pueden des-publicar.
 
-## 3bis. Voz y tono: cómo se lee lo que publicamos
+## 3bis. La voz: el criterio se publica, el caso no
 
-GitHub es la superficie **más lejana al usuario final y la más cercana a otro que lee código**. El
-registro no es el del blog: ahí se acompaña a una persona, acá se describe un cambio a un par. La
-regla del resto de la marca se aplica igual —*cuanto más cerca del usuario final, más sobrio y más
-verdadero*— pero acá **el voseo no va**: no hay a quién hablarle.
+GitHub es la superficie **más lejana al usuario final y la más cercana a otro que lee código**. Ahí no
+se acompaña a una persona: se le describe un cambio a un par. Por eso el registro es impersonal, y el
+voseo se queda en el blog.
 
-**Serio y sincero a la vez se resuelve midiendo y diciendo el error con su número.** Lo serio es el
-dato («260 passed / 861 assertions»); lo sincero es no esconder el propio fallo («el guard de fugas
-se publicaba a sí mismo los valores que protegía»). Lo que se evita es la ceremonia, no la franqueza.
+**Un texto que se lee con criterio hace cuatro cosas:**
 
-| Sobrio (nuestra voz) | Acartonado (lo que evitamos) |
+- **Enuncia el criterio**, no el arreglo. «Si el proceso no trae su grupo, no lee ni escribe» es una
+  decisión que se puede discutir; «los caminos quedan acotados» sólo reporta.
+- **Dice el estado real**, incluido el propio error, sin disculparse. El que sabe no necesita
+  justificarse.
+- **Da el número.** Cada afirmación viaja con su medición.
+- **Escribe para quien va a mantener el código**, no para el tablero.
+
+**Y tres que hace de más:**
+
+- **Pide permiso.** «Decisión de <Nombre>» donde va un criterio de producto.
+- **Explica el cómo.** La ruta exacta, el id, el paso a paso.
+- **Envuelve en ceremonia.** El checklist de seis secciones, el emoji de ánimo, la mayúscula que grita.
+
+| Nuestra voz | Lo que evitamos |
 |---|---|
 | «0 llamadores, verificado en `app/`, `routes/` y `tests/`» | «se verificó exhaustivamente» |
-| «el bot devolvía datos de otro grupo» | «se ha procedido a la adecuación de…» |
-| voz activa: «borra X», «reemplaza Y» | pasiva: «fue realizada la remoción» |
+| «borra X», «reemplaza Y» | «fue realizada la remoción» |
 | dice el error: «nunca se había corrido completo» | lo esconde: «se optimizó el script» |
+| «cada consulta se acota al grupo del chat» | «con el id de otro grupo devolvía sus fotos» |
 
-### Reglas
+### La regla que ordena todo lo demás
 
-1. **Cero identificadores del tablero privado.** `T3.3`, `WS2`, `criterio 5`, `D5` no significan nada
-   fuera del board: parece un memo interno filtrado.
-   `T10.6: endurecer el login de la API` → `fix(api): el login dejaba entrar a tenants inactivos`
-2. **Cero referencias al proceso interno**: «el board», «épica», «sprint», ni rutas `board/epicas/…`.
-   `quedó medido en 2026-09-27-flujo-gitflow (board)` → `medido: compare main...develop = ahead 6 / behind 2`
-3. **La persona se acredita por rol, no por nombre**: «decisión de producto», «reportado por un
-   usuario». Firmar como mantenedor es legítimo; el nombre repetido en decenas de piezas no.
-4. **La comunicación técnica es impersonal**: `se agregó`, `se verificó`. El posesivo de producto
-   («tus datos», «tu indoor») es copy de la landing, no de un PR.
-5. **Efecto sí, vector no** (ver §3): en el título va la consecuencia; la sigla (IDOR, RCE) va en el
-   cuerpo, traducida, y sólo si aporta.
-6. **Emojis**: 0 en títulos; en el cuerpo sólo como veredicto de una lista (⚠ / ❌), uno por bloque,
-   nunca decorativo (🔴 🐛 🚧 ★).
-7. **Primera persona**: sólo en el cuerpo y sólo para respaldar una verificación («se probó en un
-   clone limpio: 48 s»). Nunca en un título, nunca para narrar lo que el diff ya cuenta.
-8. **Todo absoluto lleva número, alcance y fecha**; si no, es opinión. Los medidos («0 bloqueantes»,
-   «236 tests OK») son el activo; los retóricos se cambian por «hasta ahora».
-9. **El cuerpo tiene forma**: qué cambia · cómo se nota desde afuera · qué verificaciones con su salida
-   real · qué deuda queda. Si un riesgo no aplica, se escribe «No aplica».
-10. **Nada de humor ni autoburla en un PR de seguridad.** «La ironía es exacta», «chiste
-    involuntario», «LLEGUÉ en 48 segundos»: es lo único que se lee como no tomárselo en serio.
+**El criterio se publica; el caso va al canal privado.** «Cada consulta se acota al grupo del chat» es
+publicable; «con el id de otro grupo devolvía sus fotos» no. Es la misma línea del efecto y el vector,
+aplicada a la voz: el diseño es público, el incidente no.
 
-### Lo que NO se toca (para no acartonar)
+Esa distinción resuelve los casos sin necesidad de listar prohibiciones:
+
+- **En el título y el cuerpo va qué cambia y con qué criterio.** No la reproducción, ni el id de
+  ejemplo, ni la ruta exacta, ni la enumeración de dónde fallaba, ni el efecto de un incidente
+  descrito como tal. El expediente del hallazgo (vector, reproducción, impacto, cómo se descubrió, qué
+  quedó sin cubrir) vive en el canal privado.
+- **Tampoco va el mapa de riesgos** —qué modelos no tenían filtro, qué archivo hacía qué—: es,
+  literalmente, la lista de dónde mirar. Ni la deuda interna: decir lo que falta le señala al lector
+  dónde no hay control.
+- **Los códigos del tablero no salen del tablero.** `T3.3`, `WS2`, `criterio 5` no significan nada
+  fuera del board, y quien lee no lo tiene abierto.
+- **La persona se acredita por rol**, no por nombre: «decisión de producto», «reportado por un
+  usuario».
+- **La comunicación técnica es impersonal.** El posesivo de producto («tus datos», «tu indoor») es copy
+  de la landing.
+- **El emoji es un veredicto, no un ánimo.** Ninguno en el título; en el cuerpo, uno por bloque y sólo
+  si clasifica (⚠ / ❌), nunca decorativo (🔴 🐛 🚧 ★).
+- **La primera persona respalda una verificación** («se probó en un clone limpio: 48 s») y nada más.
+- **Todo absoluto lleva número, alcance y fecha.** Sin eso es opinión.
+- **Un PR de seguridad no tiene humor.** Ni autoburla, ni ironía, ni «llegué en 48 segundos».
+
+### Dos límites que conviene tener escritos
+
+**El diff es público.** Nadie esconde el código escribiendo menos en el cuerpo: los nombres de clases,
+los archivos y las migraciones están en el diff igual. Lo que se reduce es la **interpretación** —qué
+importa, dónde faltaba algo, cómo se explota—, y eso es justo lo que un cuerpo largo regala.
+
+**El peor lugar para equivocarse es el mensaje de commit.** No se edita: queda indexado y viaja en cada
+`git clone`. Medido: un PR que se limpió a tiempo dejó igual todo el mapa en el mensaje de su commit.
+Al limpiar un PR, revisar el mensaje es la mitad del trabajo y la única sin vuelta atrás.
+
+### Lo que no se toca (para no acartonar)
 
 El **voseo** de blog/IG/README; los **absolutos medidos** (son la credibilidad); la **primera persona
 honesta** de un commit (es autoría, no diario); los **emojis de estado** en tablas y checklists;
 `bloqueante`/`P0` (es la severidad real del CI); los **CVE** en bumps de dependencias.
 
-### Cómo se hace cumplir
+### Cómo se hace cumplir el registro
 
-`scripts/guard-comunicacion.py` los reporta como **aviso**, nunca como bloqueo: es registro, no dato,
-y un gate que frena por estilo termina desactivado. Señales que avisa:
+`scripts/guard-comunicacion.py` reporta el registro como **aviso**, nunca como bloqueo: es voz, no
+dato, y un gate que frena por estilo termina desactivado. Señales que avisa:
 
 | Señal | Ejemplo real |
 |---|---|
@@ -123,43 +146,13 @@ y un gate que frena por estilo termina desactivado. Señales que avisa:
 | posesivo de producto | `tus datos`, `tu indoor` |
 | sólo en títulos y ramas: primera persona y emoji decorativo | `medí`, `agregué`, `🔴` |
 
-`tarjeta` queda **fuera** del patrón: matchea la tarjeta del dashboard, que es vocabulario del
-producto (falso positivo medido). Y la atribución se detecta **por la forma** (`decisión de
-<Capital>`) y no por el nombre: así no hay un solo nombre escrito en el guard y cubre a cualquiera.
+`tarjeta` queda fuera del patrón (matchea la tarjeta del dashboard, vocabulario del producto), y la
+atribución se detecta por la forma y no por el nombre: así no hay un solo nombre escrito en el guard y
+cubre a cualquiera.
 
-## 3ter. Cuánta información lleva un PR
-
-El diff ya muestra el código. Esta sección es sobre lo que **agregamos encima** del diff: el título,
-el cuerpo y los mensajes de commit. Cada línea de más es superficie.
-
-**Lo máximo que agrega el cuerpo:**
-1. **Qué cambia**, 1-3 líneas, en términos del efecto.
-2. **Verificación**: qué corre y qué devolvió (un número, no la transcripción).
-3. **Notas** para quien instala o mantiene, sólo si las necesita.
-
-**Lo que NO va, aunque sea cierto:**
-- El **vector**: rutas exactas, ids de ejemplo, payloads, el paso a paso.
-- El **mapa de riesgos**: qué modelos no tenían scope, qué archivo hacía qué, dónde faltaba el filtro.
-  Es, literalmente, la lista de dónde mirar.
-- La **deuda interna**: decir lo que todavía no está cubierto le señala al lector dónde no hay control.
-- **Nombres de personas** y decisiones con fecha.
-- Salidas de comandos largas: alcanza el número.
-
-⚠️ **El límite honesto: el diff es público.** Nadie esconde el código (nombres de clases, archivos,
-migraciones) escribiendo menos en el cuerpo. Lo que se reduce es la **interpretación** —qué importa,
-dónde faltaba algo, cómo se explota—, y eso es justo lo que un cuerpo largo regala.
-
-**Regla de tamaño:** si el cuerpo pasa de ~15 líneas, probablemente esté contando algo que va al canal
-privado.
-
-**Y el peor lugar para equivocarse es el mensaje de commit.** No se puede editar: lo que escribas ahí
-queda para siempre, indexado, y viaja en cada `git clone`. Medido: un PR que se limpió a tiempo (el
-cuerpo, por editable) dejó igual **todo el mapa en el mensaje de su commit** —los nombres de clases,
-el camino que quedaba abierto, los tests por nombre, la reproducción—. Al limpiar un PR, revisar
-siempre el mensaje del commit: es la mitad del trabajo y la que no tiene vuelta atrás.
-
-**El expediente del hallazgo va al canal privado del proyecto**, no al repo: el vector, la
-reproducción, el impacto, cómo se descubrió y qué quedó sin cubrir. El PR público dice el efecto.
+Lo que sí **bloquea** es el dato: el par explotable (mecanismo + vector concreto), las IPs, los emails
+y los valores de la instalación. Y cuenta también el vector descrito **sin nombrar la clase**: el autor
+cuidadoso no escribe la sigla, así que exigirla castigaría al que escribe bien.
 
 ## 4. GitHub no olvida: qué es reversible y qué no
 

@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\User;
 use App\Models\TelegramUserTenant;
 use App\Models\Action as ActionModel;
+use App\Support\TenantContext;
 use App\Notifications\ProductApplicationReminder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
@@ -31,6 +32,10 @@ class SendDelayedProductNotification implements ShouldQueue
 
     public function handle(): void
     {
+        // El worker no tiene sesión: el job fija su grupo para que las consultas con `TenantScope`
+        // (el `Action::find` de abajo) queden acotadas a este tenant y no lean la acción de otro.
+        TenantContext::use($this->tenantId);
+
         Log::info('SendDelayedProductNotification handle - Starting', [
             'tenantId' => $this->tenantId
         ]);

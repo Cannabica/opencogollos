@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Support\TenantContext;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
 use Filament\Facades\Filament;
 use Filament\View\PanelsRenderHook;
@@ -30,6 +31,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // El worker de cola NO es "consola" para el contexto de tenant: cada job arranca CERRADO y el
+        // job que necesite datos fija su grupo (`TenantContext::use`). Laravel descarta los `scoped`
+        // al terminar cada job, así que el contexto no pasa de un job al siguiente (y estos listeners
+        // dejan el estado limpio incluso si el job falla).
+        Queue::before(fn () => app(TenantContext::class)->markJob());
+        Queue::after(fn () => app(TenantContext::class)->unmarkJob());
+        Queue::failing(fn () => app(TenantContext::class)->unmarkJob());
+
         Livewire::component('product-notifications-widget', ProductNotificationsWidget::class);
         
         FilamentView::registerRenderHook(

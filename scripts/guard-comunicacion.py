@@ -198,6 +198,70 @@ def revisar_bloqueantes(superficie: str, contenido: str, pos: list[str],
         )
 
 
+# --- REGISTRO: cómo se lee el texto (jerga del tablero, atribución a personas, voseo) --------
+# Todo esto es AVISO y nunca bloqueo: es registro, no dato. Un gate que frena por estilo se
+# desactiva (misma razón que la política de comunicación). Cada patrón lleva al lado su falso
+# positivo conocido, medido contra el repo.
+TONO = [
+    (
+        "código del tablero interno: no significa nada fuera del board",
+        re.compile(r"\bT\d{1,2}\.\d{1,2}\b|\bWS\d\b|criterio \d|\bD[1-5]\b",
+                   re.IGNORECASE),
+    ),
+    (
+        "referencia al proceso interno (board/kanban/épica/sprint)",
+        # «tarjeta» NO va: matchea la tarjeta del dashboard, que es vocabulario del producto (medido).
+        re.compile(r"\bboard\b|\bkanban\b|\bépica\b|\bepica\b|\bsprint\b|backlog",
+                   re.IGNORECASE),
+    ),
+    (
+        "atribución a una persona: en un repo público se acredita por rol, no por nombre",
+        # Se detecta por la FORMA y no por el nombre: así no hay que escribir ningún nombre acá y
+        # cubre a cualquier persona. «Decisión de producto» no matchea (va en minúscula).
+        re.compile(
+            r"[Dd]ecisi[oó]n de [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+"
+            r"|[Pp]edido de [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+"
+            r"|[Rr]eportad[oa] por [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+"
+            r"|aprobad[oa] por [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+"
+            r"|corregid[oa] por [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+"
+        ),
+    ),
+    (
+        "posesivo de producto fuera de lugar: en el repo se describe un cambio",
+        # «tus datos», «tu indoor»: es copy de la landing, no de un PR.
+        re.compile(r"\b(?:tus|tu)\s+(?:datos|cuenta|indoor|plantas|cultivo|registro)\b", re.IGNORECASE),
+    ),
+]
+
+# Estas sólo se avisan en las superficies CORTAS (título y nombre de rama). En el cuerpo, la primera
+# persona que respalda una verificación («se probó en un clone limpio: 48 s») es autoría legítima y
+# el emoji de veredicto en una lista es convención de GitHub.
+TONO_EN_TITULO = [
+    (
+        "primera persona en el título: el título describe, no narra",
+        re.compile(r"\b(?:agregu[eé]|prob[eé]|med[ií]|verifiq[ué]|correg[ií]|saqu[eé]|mov[ií]|"
+                   r"dispar[eé]|arregl[eé]|descubr[ií]|me com[ií])\b", re.IGNORECASE),
+    ),
+    (
+        "emoji decorativo en el título (el veredicto va con negrita o tabla)",
+        re.compile(r"[\U0001F300-\U0001FAFF\u2600-\u27BF\u2705\u274C\u26A0\u2B50]"),
+    ),
+]
+
+
+def revisar_tono(superficie: str, contenido: str, avisos: list[str]) -> None:
+    """Avisos de REGISTRO: cómo se lee, no qué dato se filtró. Nunca bloquea."""
+    if not contenido:
+        return
+    aplicables = list(TONO)
+    if superficie.startswith(("título", "rama")):
+        aplicables += TONO_EN_TITULO
+    for nombre, patron in aplicables:
+        m = patron.search(contenido)
+        if m:
+            avisos.append(f"{superficie}: [registro — {nombre}] dijo «{m.group(0)[:40]}»")
+
+
 def revisar_avisos(superficie: str, contenido: str, avisos: list[str]) -> None:
     if not contenido:
         return
@@ -208,6 +272,7 @@ def revisar_avisos(superficie: str, contenido: str, avisos: list[str]) -> None:
     for nombre, patron in gf.AVISOS:
         if patron.search(contenido):
             avisos.append(f"{superficie}: [{nombre}]")
+    revisar_tono(superficie, contenido, avisos)
 
 
 def commits_del_rango(rango: str | None) -> list[tuple[str, str, str]]:

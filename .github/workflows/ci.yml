@@ -4,7 +4,7 @@
 # (`ci-cd-pipeline.yml` + `staging-deploy.yml`), BORRADOS en T3.3 el 2026-09-27: hoy el CI es este
 # archivo y el release a GHCR vive en `release.yml`. El deploy a produccion NO corre desde aca: se
 # dispara desde el repo de operacion `Cannabica/cannabica-deploy` (`deploy-prod.yml`, T1.5).
-# Acá NO se publica nada ni se deploya: los 3 jobs son de verificación.
+# Acá NO se publica nada ni se deploya: los 4 jobs son de verificación.
 #
 # POR QUÉ HAY PASOS DE NODE: el panel registra su CSS con `Vite::asset(...)` en `TenantPanelProvider::panel()`
 # y eso corre al BOOTEAR la app. Sin `public/build/manifest.json`, no sólo fallan los tests: falla hasta
@@ -15,16 +15,20 @@
 #  —haría innecesario el build en CI—; es un cambio de código de producto y va como tarjeta aparte.)
 #
 # Las 4 actions están PINEADAS POR SHA (el pipeline viejo usa tags e incluso @master: no se copió eso).
-# Los 3 nombres de job (`phpunit`, `phpstan`, `trivy`) son los que van como required status checks en
-# branch protection de develop y main (necesita admin; el paso exacto está en el informe de WS2 §3.2).
+# Los 4 nombres de job (`phpunit`, `phpstan`, `trivy`, `fugas`) son los que van como required status
+# checks en branch protection de develop y main (necesita admin).
+#
+# EL REPO ES PÚBLICO: el job `fugas` (guard-fugas.sh + gitleaks) es el que impide que una credencial o
+# un dato de infraestructura entren y queden indexados para siempre. Corre en el mismo evento que los
+# otros tres (PR a develop/main y push a develop), así que no agrega tiempo al gate: es paralelo.
 
 name: CI
 
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, 'release/**']
   push:
-    branches: [develop]
+    branches: [develop, 'release/**']
 
 # No necesita escribir nada: sólo leer el repo.
 permissions:
@@ -128,3 +132,38 @@ jobs:
           ignore-unfixed: true
           trivyignores: .trivyignore
           format: table
+
+  # El guard de fugas: el repo es PÚBLICO, así que todo lo que entra queda indexado para siempre
+  # (aunque se borre en el commit siguiente, la historia lo conserva). Dos capas complementarias:
+  #   1. `scripts/guard-fugas.sh`  → infraestructura de la instancia + identidad personal
+  #      (IPs, puertos, hosts, rutas del server, usuario/emails). Bloquea; la marca sólo avisa.
+  #   2. `gitleaks`               → secretos (identificadores, tokens, claves) por regla + entropía,
+  #      sobre la HISTORIA COMPLETA. Excepciones aprobadas en `.gitleaks.toml`.
+  fugas:
+    name: fugas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0   # gitleaks escanea la historia: sin esto sólo vería el último commit
+
+      - name: Guard de fugas (infraestructura + identidad) — archivos trackeados
+        run: python3 scripts/guard-fugas.py
+
+      # gitleaks por BINARIO OFICIAL y no con `gitleaks/gitleaks-action`: esa action exige licencia
+      # (GITLEAKS_LICENSE) en repos de ORGANIZACIÓN. El binario es gratis, no depende de una action
+      # de terceros y queda pineado por versión Y por sha256 (contrastado con
+      # gitleaks_8.28.0_checksums.txt; si GitHub sirviera otro archivo, `sha256sum -c` corta antes
+      # de ejecutar nada).
+      - name: gitleaks (secretos, historia completa)
+        env:
+          GL_VERSION: 8.28.0
+          GL_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GL_VERSION}/gitleaks_${GL_VERSION}_linux_x64.tar.gz"
+          echo "${GL_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks detect --source=. --config=.gitleaks.toml --redact --no-banner --exit-code=1
+          echo "gitleaks OK: sin hallazgos (excepciones aprobadas en .gitleaks.toml)"

@@ -75,3 +75,6 @@ __pycache__/
 # hace fallar `pint --test` con "RecursiveDirectoryIterator: Permission denied".
 /.config/
 *.pyc
+
+# Valores de la instancia para el guard local: NUNCA se commitean.
+.instance-values

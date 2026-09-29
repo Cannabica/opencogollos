@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Scopes\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Scopes\CropPlanScope;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CropPlan extends Model
@@ -101,6 +100,8 @@ class CropPlan extends Model
             }
         });
 
-        static::addGlobalScope(new CropPlanScope);
+        // Mismo aislamiento que el resto (antes `CropPlanScope`, que sin sesión NO filtraba nada):
+        // los planes del grupo + los globales (`tenant_id` null) y, sin contexto, falla cerrado.
+        static::addGlobalScope(new TenantScope(allowGlobal: true));
     }
 }

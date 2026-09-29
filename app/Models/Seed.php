@@ -52,7 +52,7 @@ class Seed extends Model
 
     protected static function booted()
     {
-        static::addGlobalScope(new TenantScope);
+        static::addGlobalScope(new TenantScope(allowGlobal: true));
 
         static::deleting(function ($seed) {
             if ($seed->isGlobal() && auth()->check() && auth()->user()->tenant_id !== null) {

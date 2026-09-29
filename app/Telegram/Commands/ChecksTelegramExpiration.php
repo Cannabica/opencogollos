@@ -3,6 +3,7 @@
 namespace App\Telegram\Commands;
 
 use App\Models\TelegramUserTenant;
+use App\Support\TenantContext;
 
 trait ChecksTelegramExpiration
 {
@@ -33,6 +34,11 @@ trait ChecksTelegramExpiration
             ]);
             return null;
         }
+
+        // El webhook NO tiene sesión: fijamos el contexto del tenant de la asociación para que el
+        // `TenantScope` filtre TODAS las consultas del comando (antes, sin usuario, no filtraba nada:
+        // era la puerta de la fuga entre grupos).
+        TenantContext::use((int) $association->tenant_id);
 
         return $association;
     }

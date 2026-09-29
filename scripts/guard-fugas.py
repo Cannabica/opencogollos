@@ -6,11 +6,12 @@ POR QUÉ EXISTE
     siguiente. Este guard corre en cada PR y push (job `fugas` de ci.yml) para que la fuga no
     llegue a `develop` ni a `main`.
 
-    ⚠️ EL PROPIO SCRIPT ES PÚBLICO: por eso acá NO se escriben los valores que se protegen.
-    Los datos de la instancia van como SHA-256 en `DENYLIST` (ver el formato abajo) y el resto se
-    cubre con reglas GENÉRICAS (formas, no valores). La versión anterior de este guard listaba
-    los valores en texto plano y terminó publicando la IP del servidor y el email del mantenedor
-    en un repo público — no repetir.
+    ⚠️ EL PROPIO SCRIPT ES PÚBLICO: acá NO se escriben los valores que se protegen, y tampoco
+    hasheados. Los valores de la instancia se cargan de un archivo que no está en el repo (ver
+    `cargar_denylist`); este archivo se queda con las reglas GENÉRICAS (formas, no valores).
+    Dos versiones anteriores fallaron acá: una listaba los valores en texto plano y otra los
+    guardaba como SHA-256 con su descripción, que es un inventario de la infraestructura y un
+    hash reversible. No repetir ninguna de las dos.
 
 QUÉ CUBRE Y QUÉ NO
     · CREDENCIALES: las escanea `gitleaks` (reglas + entropía), no este script. Ver `.gitleaks.toml`.
@@ -33,23 +34,42 @@ import hashlib
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 # --------------------------------------------------------------------------------------
 # Denylist de valores EXACTOS de la instancia.
-# El script es público: acá van HASHES, nunca los valores. Para agregar uno:
-#     printf '%s' "el-valor" | sha256sum | cut -d' ' -f1
-# y pegá el hash con su descripción. El valor NO se escribe en el repo.
+#
+# NO VIVE EN EL REPO, ni siquiera hasheada. Un SHA-256 sin sal no protege un valor de espacio chico
+# (medido: un puerto de 5 dígitos se revierte en 46.312 intentos / 0,08 s) y el label al lado le dice
+# al atacante qué buscar: los labels que este archivo tenía eran, en conjunto, el inventario de la
+# infraestructura de la instalación.
+#
+# Se carga de afuera, si está:
+#   · local  → `.instance-values` en la raíz del repo (gitignored): una línea por valor,
+#              con el formato `<descripción corta>=<valor>`.
+#   · CI de este repo → no está: se corre con las reglas genéricas y el reporte lo dice.
+#   · CI del repo de operación → lo escribe desde el secret de la instancia antes de correr.
 # --------------------------------------------------------------------------------------
-DENYLIST = {
-    "d2762d487c499cb15b3a6f7ebf1290749b7d51c77399e9cc66d24df76c558cbb": "IP pública del servidor de producción",
-    "73641e3542c78265650cdf56ea7b9d3d1d18e4ca02e8d33ceab6ec9d74eed75a": "email personal del mantenedor",
-    "cbad8276594d4e6bb680906a0fe053dfd96eaf2c9e8cdc0e42f60755efeb77b5": "buzón de administración de la instancia",
-    "dcb4c582090afd2395a8eca7fbbf74ca90874c10994974ac34d594be7d758b0f": "usuario del mantenedor",
-    "c72002e712a3ba6d60125d4b3d0b816758fbdca98f2a892077bd4182e71cf6f5": "host del homelab",
-    "df53c47b5fb44bf4828d22747c366b3afccd81c47343a2a476adbc623bbbd96e": "ruta home del usuario del servidor",
-    "27304a8e1468e52bd2e335e35b20c0394e3495c6d57ac7ca5a22ce1b82875f1a": "puerto de administración del servidor",
-    "def1cf40b3d53af5ce9bffc89a4e779707fe954681360df19026d2dede5779ab": "alias ssh del servidor",
-}
+ARCHIVO_VALORES = Path(".instance-values")
+
+
+def cargar_denylist(ruta: Path = ARCHIVO_VALORES) -> dict[str, str]:
+    """{sha256(valor): descripción}. Vacío si el archivo no está (el repo público no lo tiene)."""
+    if not ruta.exists():
+        return {}
+    vals: dict[str, str] = {}
+    for linea in ruta.read_text(encoding="utf-8").splitlines():
+        linea = linea.strip()
+        if not linea or linea.startswith("#") or "=" not in linea:
+            continue
+        desc, _, valor = linea.partition("=")
+        valor = valor.strip()
+        if valor:
+            vals[hashlib.sha256(valor.encode()).hexdigest()] = desc.strip() or "valor de la instancia"
+    return vals
+
+
+DENYLIST = cargar_denylist()
 
 # --------------------------------------------------------------------------------------
 # Reglas GENÉRICAS: formas sospechosas, sin nombrar nada de ninguna instalación.
@@ -87,8 +107,8 @@ BLOQUEANTES = [
 
 AVISOS = [
     ("marca de la instancia", re.compile(r"cannabica\.(?:ar|app)", re.IGNORECASE)),
-    ("nombre del repo de operación", re.compile(r"cannabica-deploy", re.IGNORECASE)),
-    ("volumen/servicio de la instancia", re.compile(r"public-php")),
+    ("referencia a un repo que no es este", re.compile(r"cannabica-deploy", re.IGNORECASE)),
+    ("nombre de un servicio de la instalación", re.compile(r"public-php")),
 ]
 
 # Tokens candidatos para cruzar contra la DENYLIST: palabras, paths, emails, IPs y puertos.
@@ -174,7 +194,7 @@ def main() -> int:
 
     alcance = f"ref {ref}" if ref else "árbol de trabajo (archivos trackeados)"
     print(f"Guard de fugas — alcance: {alcance}")
-    print("  (los valores de la instancia viven como SHA-256 en DENYLIST: este script es público)")
+    print("  (los valores de la instancia se cargan de `.instance-values`, fuera del repo)")
 
     bloqueantes: list[str] = []
     avisos: list[str] = []
@@ -211,6 +231,9 @@ def main() -> int:
                     bloqueantes.append(f"[dato de la instancia: {DENYLIST[h]}] {ubic}")
 
     print()
+    if not DENYLIST:
+        print("  (denylist de la instancia NO cargada: corre sólo con las reglas genéricas.")
+        print("   El repo público no tiene los valores a propósito — ver scripts/guard-fugas.py)")
     print("== BLOQUEANTE: infraestructura / identidad / datos de la instancia ==")
     if bloqueantes:
         for b in dict.fromkeys(bloqueantes):
@@ -230,8 +253,8 @@ def main() -> int:
     if bloqueantes:
         print(f"RESULTADO: FAIL — {len(set(bloqueantes))} bloqueante(s), {len(set(avisos))} aviso(s).")
         print("  Si el dato es real: sacarlo del archivo (y rotar lo que corresponda).")
-        print("  Si es legítimo y necesario: agregar el HASH del valor a DENYLIST (nunca el valor)")
-        print("  o ajustar una regla genérica, con el motivo escrito al lado.")
+        print("  Si es legítimo y necesario: ajustar una regla genérica, con el motivo escrito al lado,")
+        print("  o sumar el valor a `.instance-values` (local, fuera del repo).")
         return 1
     print(f"RESULTADO: PASS — 0 bloqueantes, {len(set(avisos))} aviso(s).")
     print("  (los avisos no rompen el build; se limpian cuando se toca ese archivo)")

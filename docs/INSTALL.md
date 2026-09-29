@@ -302,8 +302,6 @@ php artisan telegram:webhook:setup --info   # estado del webhook de Telegram
   hace): son la diferencia entre una app rápida y una lenta.
 - Serví **siempre por HTTPS**: la PWA, el webhook de Telegram y las cookies seguras lo necesitan.
 - Apuntá un backup de la base de datos y del `storage/app/public` (fotos) desde el día uno.
-- El stack de producción del mantenedor (Caddy + PHP-FPM + PostgreSQL + monitoreo) vive en un
-  repositorio privado aparte: no forma parte de este repo.
 
 ---
 

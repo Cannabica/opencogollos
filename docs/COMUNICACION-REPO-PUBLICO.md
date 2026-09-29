@@ -182,7 +182,7 @@ superficie.
 |---|---|---|
 | `scripts/guard-comunicacion.py` (job `fugas` del CI) | Título, cuerpo del PR, mensajes de commit, **nombre de la rama** y la **metadata de autoría** del commit: valores de la instalación, IPs, emails, y el **par explotable** (mecanismo + vector concreto). La autoría y el **registro** (§3bis) entran como **aviso** | En cada PR |
 | `.github/pull_request_template.md` | Las preguntas que un gate no puede hacer («¿esto explica el cómo?») | Al abrir el PR |
-| `scripts/guard-fugas.py` (job `fugas`) | El árbol: los archivos que se commitean | En cada PR |
+| `scripts/guard-fugas.py` (job `fugas`) | El árbol: los archivos que se commitean. En el CI de este repo corre con las **reglas genéricas**; los valores de la instancia se cargan de un archivo que **no está en el repo** (local y repo de operación) | En cada PR |
 | `gitleaks` (job `fugas`) | Credenciales en la historia completa | En cada PR |
 | Reporte privado de vulnerabilidades + `SECURITY.md` | El canal para que un tercero reporte sin publicar | Siempre |
 

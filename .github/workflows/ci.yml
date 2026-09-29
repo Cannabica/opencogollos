@@ -1,15 +1,15 @@
 # CI — gate de calidad: tests + análisis estático + escaneo de vulnerabilidades.
 #
-# Contexto (WS2/T2.3): este workflow nace para que el merge tenga GATE. Reemplazo al pipeline viejo
-# (`ci-cd-pipeline.yml` + `staging-deploy.yml`), BORRADOS en T3.3 el 2026-09-27: hoy el CI es este
+# Contexto: este workflow nace para que el merge tenga GATE. Reemplazo al pipeline viejo
+# (`ci-cd-pipeline.yml` + `staging-deploy.yml`), borrados el 2026-09-27: hoy el CI es este
 # archivo y el release a GHCR vive en `release.yml`. El deploy a produccion NO corre desde aca: lo
-# dispara la operacion del mantenedor (`workflow_dispatch`, ver `docs/PIPELINE-Y-GITFLOW.md`).
+# dispara la operacion del mantenedor (`workflow_dispatch`).
 # Acá NO se publica nada ni se deploya: los 4 jobs son de verificación.
 #
 # POR QUÉ HAY PASOS DE NODE: el panel registra su CSS con `Vite::asset(...)` en `TenantPanelProvider::panel()`
 # y eso corre al BOOTEAR la app. Sin `public/build/manifest.json`, no sólo fallan los tests: falla hasta
 # `composer install` (post-autoload-dump → package:discover) y falla el bootstrap de larastan
-# ("ViteManifestNotFoundException ... while loading bootstrap.php"). Evidencia medida en el informe de WS2 §3.2.
+# ("ViteManifestNotFoundException ... while loading bootstrap.php").
 # Por eso ambos jobs construyen los assets primero, igual que el build de la imagen.
 # (Alternativa evaluada y NO aplicada acá: el guard tolerante que `main` ya tiene desde el hotfix v0.20.1
 #  —haría innecesario el build en CI—; es un cambio de código de producto y va como tarjeta aparte.)
@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      # POLÍTICA DE TRIVY (decidida en WS2, ver informe §3.2):
+      # POLÍTICA DE TRIVY:
       #   - escanea el filesystem del repo (lee composer.lock): no necesita construir la imagen
       #     (eso ya lo hace el pipeline viejo con el scan de la imagen, que se queda como está) y así
       #     el job tarda segundos en vez de minutos.

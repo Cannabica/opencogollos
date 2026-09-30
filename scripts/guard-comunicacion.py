@@ -338,6 +338,10 @@ def main() -> int:
         cuerpo = Path(body_file).read_text(encoding="utf-8", errors="replace")
         rama = rama or subprocess.run(["git", "branch", "--show-current"], capture_output=True,
                                       text=True).stdout.strip()
+    elif rango:
+        # Modo «sólo commits»: revisar un rango sin título ni cuerpo. Antes esta combinación salía
+        # sin mirar nada y devolvía un «todo ok» falso.
+        pass
     else:
         # Modo CI: el payload del evento trae todo (título, cuerpo, SHAs). Ni una interpolación
         # de shell con el cuerpo del PR: el JSON se lee del archivo que GitHub deja en disco.

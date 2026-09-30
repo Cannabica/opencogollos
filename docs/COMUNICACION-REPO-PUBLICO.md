@@ -211,9 +211,8 @@ python3 scripts/guard-comunicacion.py --title "…" --body-file /tmp/cuerpo.md -
 
 ## 7. Deuda conocida
 
-- Lo ya publicado en PRs y commits anteriores a esta política (ver el cierre del board): reescribir
-  el **cuerpo** de los PRs es posible y barato; los **mensajes de commit** y los **SHAs** no se
-  arreglan sin reescribir la historia (decisión tomada: no se reescribe).
+- Lo ya publicado en PRs y commits anteriores a esta política: los **cuerpos** de los PRs se editan
+  cuando se corrigen; los **mensajes de commit** y los **SHAs** quedan como están.
 - El job `fugas` —y con él este gate— vive hoy sólo en `develop`/`release/**`. Un PR **a `main`**
   (los hotfix, justo los de seguridad) no lo corre: traer el job a `main` es deuda abierta.
 - La indexación externa (cachés de buscadores, archivos web, scrapers de GitHub) no está medida:

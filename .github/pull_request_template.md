@@ -2,44 +2,26 @@
 
 <!-- 1-3 líneas: qué problema resuelve y cómo se nota desde afuera. -->
 
-## Checklist de los riesgos que YA se nos escaparon una vez
+## Verificación
 
-### 1. Datos de grupo (multi-tenant)
+<!-- Qué corriste y qué devolvió. Ej.: php artisan test → 255 passed / 844 assertions -->
 
-- [ ] **No aplica** (el cambio no toca datos de grupos) ← tildá esto y seguí
-- [ ] Si AGREGA o MODIFICA una consulta sobre `Indoor` / `Plant` / `Action` / `Seed` / `ActionType` /
-      `CropPlan`: cruza por el tenant (`->where('tenant_id', …)`, `->whereHas('indoor', …)`) **o** corre
-      con el contexto fijado a propósito (`TenantContext::use()` / `useAll()`).
-      ⚠️ Sin contexto y sin sesión el scope **no devuelve nada**: si ves contadores en 0 o `first()` null
-      en un camino nuevo, falta fijar el contexto.
-- [ ] Si agrega un MODELO con datos de grupo: le registró el `TenantScope` (o lo sumó a `EXENTOS` en
-      `TenantIsolationGuardTest` con el motivo escrito).
-- [ ] Test en las **dos direcciones**: el grupo no ve lo ajeno **y sigue viendo lo propio**
-      (`tests/Feature/TenantScopeTest.php`, `tests/Feature/Telegram/AislamientoTenantsBotTest.php`).
+## Antes de crear el PR (el repo es PÚBLICO: lo que escribís queda indexado para siempre)
 
-### 2. Caminos SIN sesión (webhook del bot, jobs, cron, artisan)
+- [ ] El título y el cuerpo dicen **qué cambia**, no **cómo se explota**: sin la ruta exacta, sin el id
+      de ejemplo, sin el paso a paso. El **expediente del hallazgo** (el vector, la reproducción, el
+      impacto, cómo se descubrió) va al **canal privado del proyecto**, no a este repo.
+- [ ] El **mensaje de commit** sigue el mismo límite. Y como no se puede editar, es el peor lugar
+      para equivocarse: lo que escribas ahí queda para siempre.
+- [ ] Sin datos de una instalación (IP, puerto, host, rutas del server) ni de personas (nombres,
+      emails), ni acá ni en los mensajes de commit.
+- [ ] Sin deuda interna ni el mapa de lo que falta: eso vive en el canal privado, no en la vitrina.
+- [ ] Si es un fix de seguridad: el deploy va en la **misma ventana** que el merge.
+- [ ] El cuerpo entra en ~15 líneas. Lo que sobra, sobra.
 
-- [ ] Si toca un camino que corre **sin usuario logueado**: verifiqué que **falla cerrado**, no sólo que
-      "no rompe". Un `find($id)` / `where('name', …)` con un dato que viene de afuera (argumento del
-      comando, `callback_data`, texto de un mensaje) es **input del usuario**: se cruza contra el tenant
-      o no se devuelve nada (y se corta con alerta + `return`, sin escribir).
+## Si tocás datos de grupo o un camino sin sesión
 
-### 3. Secretos y datos personales
+<!-- Recordatorio corto. El detalle técnico completo vive en el canal privado. -->
 
-- [ ] No se guardan secretos en claro — ni "al lado del hash" (`metadata`, columnas de texto, caches).
-- [ ] Los logs no imprimen tokens ni datos de contacto completos.
-
-### 4. Instalación / configuración
-
-- [ ] Si agrega o cambia una variable de entorno: `config/*.php` → mapa de `PlatformConfigTest` →
-      `.env.example` → variable del repo de deploy (la instalación falla en silencio, sin esto).
-
-### 5. Gates corridos (pegar la salida REAL, no "ya lo corrí")
-
-- [ ] `DB_CONNECTION=sqlite DB_DATABASE=":memory:" php artisan test` → `Tests: N passed`
-- [ ] `vendor/bin/phpstan analyse --memory-limit=1G` → `[OK] No errors`
-
-## Cómo lo probé
-
-<!-- El camino REAL, no la pieza: comando / URL / pantalla / update de Telegram inyectado, y qué
-     contestó. Si es el bot: "webhook entregado status 200 → saliente: <texto>". -->
+- [ ] El aislamiento entre grupos está cubierto por tests, y los corrí.
+- [ ] Si el camino corre sin usuario logueado: verifiqué que **falla cerrado**, no sólo que no rompe.

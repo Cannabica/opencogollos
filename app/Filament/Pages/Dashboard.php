@@ -7,6 +7,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
+use Filament\Support\Enums\MaxWidth;
 use App\Models\Indoor;
 use App\Models\Plant;
 use App\Filament\Tenant\Widgets\PlantList;
@@ -22,19 +23,39 @@ class Dashboard extends BaseDashboard
     protected static string $view = 'filament.tenant.pages.custom-dashboard';
     protected static ?string $title = 'Dashboard';
 
+    /**
+     * El dashboard es un muro a pantalla completa: no lleva el encabezado
+     * "Dashboard" del layout (el resumen va dentro de la primera tarjeta).
+     */
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable
+    {
+        return '';
+    }
+
+    /**
+     * El dashboard trabaja con un muro de tarjetas: cuantos más px de ancho,
+     * más tarjetas visibles a la vez. El default de Filament (max-w-7xl ≈ 1280px)
+     * dejaba ~700px sin usar en un monitor 16:9. Se amplía solo esta página.
+     */
+    public function getMaxContentWidth(): MaxWidth | string | null
+    {
+        return MaxWidth::Full;
+    }
+
+
     public function filtersForm(Form $form): Form
     {
         return $form
             ->schema([
                 Select::make('indoor')
-                    ->label('Seleccionar Indoor')
+                    ->label('Ver un espacio')
                     ->options(
                         Indoor::where('tenant_id', auth()->user()->tenant_id)
                             ->pluck('name', 'id')
                             ->toArray()
                     )
                     ->searchable()
-                    ->placeholder('Selecciona un Indoor')
+                    ->placeholder('Todos los espacios')
                     ->reactive(),
             ]);
     }

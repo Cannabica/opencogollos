@@ -92,7 +92,9 @@
                         </span>
                     </div>
 
-                    @if ($senal)
+                    {{-- Sólo se marca la excepción: si la planta comparte el estado del lugar,
+                         ya está dicho arriba y repetirlo en cada tarjeta satura la pantalla. --}}
+                    @if ($senal && $senal['estado'] !== $riego['estado'])
                         <span class="riego-badge riego-badge--{{ $senal['estado'] }}">
                             {{ $senal['etiqueta'] }}
                         </span>

@@ -49,14 +49,14 @@
                     @if ($resumen['espacios_sin_riego'] > 0 || $resumen['plantas_sin_riego'] > 0)
                         <div class="muro-metrica muro-metrica--alerta">
                             <strong>{{ $resumen['plantas_sin_riego'] }}</strong>
-                            <span>{{ \Illuminate\Support\Str::plural('planta sin riego', $resumen['plantas_sin_riego']) }}</span>
+                            <span>{{ $resumen['plantas_sin_riego'] === 1 ? 'planta sin riego' : 'plantas sin riego' }}</span>
                         </div>
                     @endif
 
                     @if ($resumen['espacios_atrasados'] > 0)
                         <div class="muro-metrica muro-metrica--alerta">
                             <strong>{{ $resumen['espacios_atrasados'] }}</strong>
-                            <span>{{ \Illuminate\Support\Str::plural('lugar atrasado', $resumen['espacios_atrasados']) }}</span>
+                            <span>{{ $resumen['espacios_atrasados'] === 1 ? 'lugar atrasado' : 'lugares atrasados' }}</span>
                         </div>
                     @endif
                 </div>

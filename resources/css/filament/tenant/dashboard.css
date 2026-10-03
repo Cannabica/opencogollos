@@ -1762,139 +1762,33 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 /* ==========================================================================
-   Dashboard = MURO de tarjetas con desplazamiento HORIZONTAL
-   Las tarjetas NO son todas iguales: el ancho del bloque responde a cuánta
-   información tiene que mostrar (resumen y espacios anchos; plantas angostos).
+   Dashboard de inicio: una sola columna con scroll vertical.
+   Cada LUGAR es un bloque (su tarjeta + sus plantas + sus acciones) y lo que
+   pide atención está a la vista: la señal de riego del lugar y de cada planta.
    ========================================================================== */
 
-/* --- Encabezado del muro + flechas --- */
-.muro-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.dashboard-container {
+    padding: 0.75rem 1rem 1.5rem;
     gap: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-.muro-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-}
-
-.muro-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.muro-hint {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin-right: 0.25rem;
-}
-
-.dark .muro-hint {
-    color: rgba(255, 255, 255, 0.65);
-}
-
-.muro-nav button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 9999px;
-    border: 1px solid rgba(95, 158, 160, 0.5);
-    background-color: #ffffff;
-    color: #2f6f72;
-    transition: all 0.2s ease;
-}
-
-.muro-nav button:hover {
-    background-color: rgba(95, 158, 160, 0.15);
-    transform: translateY(-1px);
-}
-
-.dark .muro-nav button {
-    background-color: rgba(28, 28, 31, 0.8);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #a5cbcd;
-}
-
-/* --- El muro: bloques de ancho variable, uno al lado del otro --- */
-.muro {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.25rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0.25rem 0.25rem 1.25rem;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(95, 158, 160, 0.6) transparent;
-}
-
-.muro::-webkit-scrollbar {
-    height: 10px;
-}
-
-.muro::-webkit-scrollbar-track {
-    background: rgba(95, 158, 160, 0.12);
-    border-radius: 9999px;
-}
-
-.muro::-webkit-scrollbar-thumb {
-    background: rgba(95, 158, 160, 0.55);
-    border-radius: 9999px;
-}
-
-.muro::-webkit-scrollbar-thumb:hover {
-    background: rgba(95, 158, 160, 0.8);
-}
-
-/* --- Bloques: el ancho depende de lo que muestran --- */
-.muro-bloque {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    flex: 0 0 auto;
-    min-width: 0;
-}
-
-.muro-bloque--ancha {
-    width: 34rem;   /* resumen + primeros pasos */
-}
-
-.muro-bloque--media {
-    width: 24rem;   /* espacios y últimas acciones */
-}
-
-.muro-bloque--angosta {
-    width: 17rem;   /* plantas: tarjetas compactas */
 }
 
 /* --- Tarjeta base --- */
-.muro-card {
+.carta {
     display: block;
     background-color: #ffffff;
     border: 1px solid rgba(95, 158, 160, 0.4);
     border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    transition: all 0.2s ease;
 }
 
-.muro-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
-}
-
-.dark .muro-card {
+.dark .carta {
     background-color: rgba(24, 24, 27, 0.75);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
 }
 
-.muro-card-head {
+.carta-cabeza {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -1904,12 +1798,12 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     border-bottom: 1px solid rgba(95, 158, 160, 0.3);
 }
 
-.dark .muro-card-head {
+.dark .carta-cabeza {
     background-color: rgba(39, 39, 42, 0.8);
     border-color: rgba(255, 255, 255, 0.1);
 }
 
-.muro-card-head h3 {
+.carta-cabeza h3 {
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.25;
@@ -1917,74 +1811,27 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     word-break: normal;
 }
 
-.muro-card-body {
+.carta-cuerpo {
     padding: 0.875rem 1.125rem 1rem;
 }
 
-.card-close {
-    color: #6b7280;
+.contador {
     flex: 0 0 auto;
-}
-
-.card-close:hover {
-    color: #374151;
-}
-
-.dark .card-close {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-/* --- Chips --- */
-.muro-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    margin-top: 0.5rem;
-}
-
-.muro-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
     font-size: 0.75rem;
-    line-height: 1.4;
-    padding: 0.125rem 0.5rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
     border-radius: 9999px;
-    background-color: rgba(95, 158, 160, 0.18);
-    color: #2b6265;
-}
-
-.dark .muro-chip {
-    background-color: rgba(95, 158, 160, 0.22);
-    color: #cfe4e5;
-}
-
-.muro-chip--muted {
-    background-color: rgba(107, 114, 128, 0.12);
-    color: #4b5563;
-}
-
-.dark .muro-chip--muted {
-    background-color: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.muro-chip--space {
     background-color: rgba(35, 105, 181, 0.12);
     color: #1A4F88;
 }
 
-.dark .muro-chip--space {
-    background-color: rgba(94, 156, 230, 0.2);
+.dark .contador {
+    background-color: rgba(94, 156, 230, 0.18);
     color: #8EBAEE;
 }
 
-/* --- Tarjeta de resumen: aviso + métricas + filtro, todo integrado --- */
-.muro-card--resumen {
-    border-color: rgba(95, 158, 160, 0.5);
-}
-
-.muro-aviso {
+/* --- Cabecera del panel: aviso + métricas + controles --- */
+.aviso-plataforma {
     display: flex;
     align-items: flex-start;
     gap: 0.625rem;
@@ -1996,21 +1843,21 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     line-height: 1.4;
 }
 
-.muro-aviso a {
+.aviso-plataforma a {
     color: #c2410c;
 }
 
-.dark .muro-aviso {
+.dark .aviso-plataforma {
     background-color: rgba(255, 152, 0, 0.12);
     border-bottom-color: rgba(255, 152, 0, 0.35);
     color: #ffd9a8;
 }
 
-.dark .muro-aviso a {
+.dark .aviso-plataforma a {
     color: #ffb74d;
 }
 
-.muro-resumen-body {
+.resumen-cuerpo {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -2019,290 +1866,118 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     padding: 1rem 1.125rem 1.125rem;
 }
 
-.muro-metricas {
+.metricas {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.75rem;
+    flex-wrap: wrap;
 }
 
-.muro-metrica {
+.metrica {
     display: flex;
     flex-direction: column;
 }
 
-.muro-metrica strong {
+.metrica strong {
     font-size: 1.75rem;
     font-weight: 700;
     line-height: 1;
     color: #2369B5;
 }
 
-.dark .muro-metrica strong {
+.dark .metrica strong {
     color: #8EBAEE;
 }
 
-.muro-metrica span {
+.metrica span {
     font-size: 0.8125rem;
     color: #4b5563;
 }
 
-.dark .muro-metrica span {
+.dark .metrica span {
     color: rgba(255, 255, 255, 0.75);
 }
 
-.muro-filtro {
+.metrica--alerta strong {
+    color: #B91C1C;
+}
+
+.dark .metrica--alerta strong {
+    color: #FCA5A5;
+}
+
+.controles {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filtro-lugar {
     flex: 1 1 18rem;
     min-width: 14rem;
 }
 
-.muro-filtro .fi-fo-field-wrp {
+.filtro-lugar .fi-fo-field-wrp {
     gap: 0.25rem;
 }
 
-.muro-filtro .fi-fo-field-wrp-label {
+.filtro-lugar .fi-fo-field-wrp-label {
     padding-bottom: 0;
+}
+
+.filtro-lugar .fi-fo-field-wrp-label span {
     font-size: 0.75rem;
+    font-weight: 600;
     color: #4b5563;
 }
 
-.dark .muro-filtro .fi-fo-field-wrp-label {
+.dark .filtro-lugar .fi-fo-field-wrp-label span {
     color: rgba(255, 255, 255, 0.75);
 }
 
-.muro-filtro .fi-fo-field-wrp-label span {
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-/* --- Tarjeta de ESPACIO (bloque medio) --- */
-.muro-card--espacio .muro-card-head {
-    background-color: rgba(95, 158, 160, 0.22);
-}
-
-.muro-count {
-    flex: 0 0 auto;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.15rem 0.5rem;
-    border-radius: 9999px;
-    background-color: rgba(35, 105, 181, 0.12);
-    color: #1A4F88;
-}
-
-.dark .muro-count {
-    background-color: rgba(94, 156, 230, 0.18);
-    color: #8EBAEE;
-}
-
-.muro-states {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-}
-
-/* --- Tarjeta de PLANTA (bloque angosto) --- */
-.muro-card--planta .muro-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-}
-
-.muro-plant-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.5rem;
-    flex-wrap: wrap; /* el badge baja en vez de aplastar el nombre */
-}
-
-.muro-plant-top h4 {
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1.3;
-    overflow-wrap: anywhere;
-}
-
-/* La tarjeta angosta nunca debe truncar el estado de la planta */
-.muro-card--planta .muro-plant-top h4 {
-    flex: 1 1 8rem;
-    min-width: 0;
-    font-size: 0.9375rem;
-    overflow-wrap: break-word;
-    word-break: normal;
-    hyphens: none;
-}
-
-.muro-card--planta .state-badge {
-    flex: 0 0 auto;
-    white-space: nowrap;
-}
-
-.muro-plant-seed {
-    font-size: 0.8125rem;
-    color: #4b5563;
-    line-height: 1.35;
-}
-
-.dark .muro-plant-seed {
-    color: rgba(255, 255, 255, 0.75);
-}
-
-.plant-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    font-size: 0.8125rem;
-    color: #4b5563;
-}
-
-.plant-meta span {
+.boton-principal {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-}
-
-.dark .plant-meta {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* --- Tarjeta de ACCIONES --- */
-.muro-card--acciones .muro-card-body {
-    padding: 0.75rem 0.875rem 0.875rem;
-}
-
-.action-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-}
-
-.muro-card--acciones .action-item {
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    border-bottom: none;
-}
-
-/* --- Tarjeta de primeros pasos --- */
-.muro-card--onboarding .muro-shortcuts {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.625rem;
-    padding: 0.875rem 1.125rem 1.125rem;
-}
-
-.muro-shortcut {
-    display: flex;
-    flex-direction: column;
-    border-radius: 0.75rem;
-    overflow: hidden;
-    border: 1px solid rgba(95, 158, 160, 0.35);
-    background-color: #ffffff;
-    transition: all 0.2s ease;
-}
-
-.muro-shortcut:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-}
-
-.dark .muro-shortcut {
-    background-color: rgba(28, 28, 31, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.muro-shortcut img {
-    width: 100%;
-    height: 56px;
-    object-fit: cover;
-}
-
-.muro-shortcut-body {
-    padding: 0.5rem 0.625rem 0.625rem;
-}
-
-.muro-shortcut-body h4 {
-    font-size: 0.8125rem;
-    font-weight: 700;
-    line-height: 1.25;
-}
-
-.muro-shortcut-body p {
-    font-size: 0.6875rem;
-    line-height: 1.3;
-    color: #4b5563;
-}
-
-.dark .muro-shortcut-body p {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.muro-sub {
-    font-size: 0.8125rem;
-    color: #4b5563;
-    margin-top: 0.25rem;
-}
-
-.dark .muro-sub {
-    color: rgba(255, 255, 255, 0.75);
-}
-
-/* --- Estado vacío --- */
-.muro-card--empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-    color: #4b5563;
-}
-
-.dark .muro-card--empty {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.muro-card--empty h3 {
-    font-size: 1.125rem;
-    font-weight: 700;
-}
-
-.muro-card--empty p {
-    font-size: 0.875rem;
-    max-width: 30ch;
-}
-
-.muro-cta {
-    margin-top: 0.5rem;
+    gap: 0.35rem;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     background-color: #2369B5;
     color: #ffffff;
     font-weight: 600;
     font-size: 0.875rem;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
 }
 
-.muro-cta:hover {
+.boton-principal:hover {
     background-color: #1A4F88;
 }
 
-/* --- Full layout: esta página no usa el padding del panel ni scrollea la
-       página entera; el muro ocupa el alto disponible y cada bloque scrollea
-       en vertical solo si su contenido no entra. --- */
-.fi-main:has(.dashboard-container) {
-    padding: 0 !important;
-    max-width: none !important;
+.nota-comunidad {
+    padding: 0 1.125rem 1rem;
+    font-size: 0.8125rem;
+    color: #4b5563;
 }
 
-.dashboard-container {
-    padding: 0.75rem 1rem 0.25rem;
-    gap: 0.5rem;
+.dark .nota-comunidad {
+    color: rgba(255, 255, 255, 0.75);
 }
 
-.muro {
-    align-items: flex-start;
+/* --- Lista de lugares: uno debajo del otro --- */
+.lista-lugares {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-/* Cada bloque se arma con el espacio, sus plantas y sus acciones */
+.bloque-lugar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+/* --- Tarjetas de planta --- */
 .plantas-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
@@ -2310,42 +1985,105 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     align-content: start;
 }
 
-.muro-bloque::-webkit-scrollbar {
-    width: 8px;
+.carta--planta .carta-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
 }
 
-.muro-bloque::-webkit-scrollbar-thumb {
-    background: rgba(95, 158, 160, 0.45);
+.planta-cabeza {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* el badge baja en vez de aplastar el nombre */
+}
+
+.planta-cabeza h4 {
+    flex: 1 1 8rem;
+    min-width: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
+}
+
+.planta-cabeza .state-badge {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.planta-semilla {
+    font-size: 0.8125rem;
+    color: #4b5563;
+    line-height: 1.35;
+}
+
+.dark .planta-semilla {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.planta-datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: #4b5563;
+}
+
+.planta-datos span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.dark .planta-datos {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* --- Chips (lámparas, medidas) --- */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    padding: 0.125rem 0.5rem;
     border-radius: 9999px;
+    background-color: rgba(95, 158, 160, 0.18);
+    color: #2b6265;
 }
 
-/* --- Pantallas chicas: los bloques se apilan (sin scroll anidado) --- */
-@media (max-width: 1100px) {
-    .muro {
-        flex-direction: column;
-        align-items: stretch;
-        overflow-x: visible;
-    }
-
-    .muro-bloque--ancha,
-    .muro-bloque--media,
-    .muro-bloque--angosta {
-        width: 100%;
-    }
-
-    .muro-bloque--angosta {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-    }
-
-    .muro-card--onboarding .muro-shortcuts {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+.dark .chip {
+    background-color: rgba(95, 158, 160, 0.22);
+    color: #cfe4e5;
 }
 
-/* ==========================================================================
-   SEÑALES DE TRABAJO Y VISTAS (lista por defecto, mural alternativa)
-   ========================================================================== */
+.chip--apagado {
+    background-color: rgba(107, 114, 128, 0.12);
+    color: #4b5563;
+}
+
+.dark .chip--apagado {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.estados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+}
 
 /* --- Señal de riego: lo que pide atención hoy --- */
 .riego-badge {
@@ -2411,110 +2149,47 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     color: rgba(255, 255, 255, 0.75);
 }
 
-/* --- Controles de la cabecera del panel --- */
-.muro-controles {
+/* --- Últimas acciones --- */
+.action-list {
     display: flex;
-    align-items: flex-end;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.375rem;
 }
 
-.vista-toggle {
-    display: inline-flex;
-    border: 1px solid rgba(35, 105, 181, 0.3);
-    border-radius: 0.6rem;
-    overflow: hidden;
+.carta--acciones .action-item {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border-bottom: none;
 }
 
-.vista-toggle button {
-    padding: 0.45rem 0.85rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: #1A4F88;
-    background-color: #ffffff;
-    transition: background-color 0.2s ease;
-}
-
-.vista-toggle button:hover {
-    background-color: rgba(35, 105, 181, 0.1);
-}
-
-.vista-toggle button.is-active {
-    background-color: #2369B5;
-    color: #ffffff;
-}
-
-.dark .vista-toggle {
-    border-color: rgba(142, 186, 238, 0.35);
-}
-
-.dark .vista-toggle button {
-    background-color: rgba(28, 28, 31, 0.8);
-    color: #8EBAEE;
-}
-
-.dark .vista-toggle button.is-active {
-    background-color: #2369B5;
-    color: #ffffff;
-}
-
-.muro-metrica--alerta strong {
-    color: #B91C1C;
-}
-
-.dark .muro-metrica--alerta strong {
-    color: #FCA5A5;
-}
-
-.muro-cta {
-    display: inline-flex;
+/* --- Estado vacío --- */
+.carta--vacia {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: #4b5563;
 }
 
-/* Los botones del panel no deben partir su texto */
-.muro-cta,
-.vista-toggle button {
-    white-space: nowrap;
+.dark .carta--vacia {
+    color: rgba(255, 255, 255, 0.8);
 }
 
-[x-cloak] {
-    display: none !important;
+.carta--vacia h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
 }
 
-/* --- Bloque de espacio (compartido por las dos vistas) --- */
-.space-block {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-width: 0;
+.carta--vacia p {
+    font-size: 0.875rem;
+    max-width: 34ch;
 }
 
-/* Vista LISTA (por defecto): los espacios uno debajo del otro, ancho completo */
-.vista-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.vista-lista .space-block {
-    width: 100%;
-}
-
-/* Vista MURAL: bloques de ancho variable que se desplazan de costado */
-.vista-mural .space-block {
-    flex: 0 0 auto;
-    width: clamp(22rem, 30vw, 26rem);
-}
-
-.vista-mural .space-block--chico {
-    width: clamp(18rem, 24vw, 21rem);
-}
-
-/* Foco visible (accesibilidad) */
-.muro-nav button:focus-visible,
-.vista-toggle button:focus-visible,
-.muro-cta:focus-visible,
+/* --- Foco visible (accesibilidad) --- */
+.boton-principal:focus-visible,
 .floating-button:focus-visible {
     outline: 2px solid #2369B5;
     outline-offset: 2px;
@@ -2522,40 +2197,21 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 
 /* Quien pidió menos movimiento, no recibe animaciones */
 @media (prefers-reduced-motion: reduce) {
-    .muro-card,
-    .muro-shortcut,
-    .muro-nav button,
-    .vista-toggle button,
+    .carta,
     .floating-button {
         transition: none;
     }
 }
 
-/* --- Pantallas chicas: todo apilado, sin scroll horizontal --- */
-@media (max-width: 1100px) {
-    .vista-mural .muro {
-        flex-direction: column;
-        align-items: stretch;
-        overflow-x: visible;
-    }
-
-    .vista-mural .space-block,
-    .vista-mural .space-block--chico {
+/* --- Pantallas chicas --- */
+@media (max-width: 640px) {
+    .filtro-lugar,
+    .controles,
+    .boton-principal {
         width: 100%;
     }
 
-    .vista-mural .muro-head {
-        display: none;
+    .filtro-lugar {
+        min-width: 100%;
     }
-}
-
-/* --- Invitación a la comunidad (parametrizada por la instalación) --- */
-.muro-comunidad {
-    padding: 0 1.125rem 1rem;
-    font-size: 0.8125rem;
-    color: #4b5563;
-}
-
-.dark .muro-comunidad {
-    color: rgba(255, 255, 255, 0.75);
 }

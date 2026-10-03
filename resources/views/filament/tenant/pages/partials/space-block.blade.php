@@ -7,16 +7,16 @@
     $acciones = $space['acciones'];
 @endphp
 
-<div class="space-block space-block--{{ $modo }}{{ $plantas->count() <= 2 ? ' space-block--chico' : '' }}">
-    {{-- El espacio, con su señal de riego a la vista --}}
-    <div class="muro-card muro-card--espacio">
-        <div class="muro-card-head">
+<div class="bloque-lugar">
+    {{-- El lugar, con su señal de riego a la vista --}}
+    <div class="carta carta--lugar">
+        <div class="carta-cabeza">
             <h3>{{ $indoor->name }}</h3>
-            <span class="muro-count">{{ $plantas->count() }}
+            <span class="contador">{{ $plantas->count() }}
                 {{ \Illuminate\Support\Str::plural('planta', $plantas->count()) }}</span>
         </div>
-        <div class="muro-card-body">
-            <div class="muro-chips">
+        <div class="carta-cuerpo">
+            <div class="chips">
                 <span class="riego-badge riego-badge--{{ $riego['estado'] }}">
                     <x-icon name="heroicon-o-beaker" class="w-3.5 h-3.5" />
                     {{ $riego['etiqueta'] }}
@@ -29,49 +29,49 @@
                 @endif
             </div>
 
-            <div class="muro-states">
+            <div class="estados">
                 @forelse ($estados as $estado => $grupo)
                     <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $estado)) }}">
                         {{ str_replace(['Etapa de ', 'Etapa '], '', $estado) }}: {{ $grupo->count() }}
                     </span>
                 @empty
-                    <span class="muro-chip muro-chip--muted">Sin plantas cargadas</span>
+                    <span class="chip chip--apagado">Sin plantas cargadas</span>
                 @endforelse
             </div>
 
-            <div class="muro-chips">
+            <div class="chips">
                 @if (!empty($indoor->lamps) && is_array($indoor->lamps))
                     @foreach ($indoor->lamps as $lamp)
-                        <span class="muro-chip">
+                        <span class="chip">
                             <x-icon name="heroicon-o-light-bulb" class="w-3.5 h-3.5" />
                             {{ $lamp['power'] }}W {{ $lamp['technology'] ?? '' }}
                         </span>
                     @endforeach
                 @else
-                    <span class="muro-chip muro-chip--muted">Sin lámparas cargadas</span>
+                    <span class="chip chip--apagado">Sin lámparas cargadas</span>
                 @endif
-                <span class="muro-chip muro-chip--muted">
+                <span class="chip chip--apagado">
                     {{ $indoor->width ?? '—' }} × {{ $indoor->large ?? '—' }} cm
                 </span>
             </div>
         </div>
     </div>
 
-    {{-- Una tarjeta por planta, cada una con su último riego --}}
+    {{-- Una tarjeta por planta, con su último riego cuando se sale de lo esperado --}}
     <div class="plantas-grid">
         @foreach ($plantas as $plant)
             @php $senal = $senales[$plant->id] ?? null; @endphp
 
-            <div class="muro-card muro-card--planta">
-                <div class="muro-card-body">
-                    <div class="muro-plant-top">
+            <div class="carta carta--planta">
+                <div class="carta-cuerpo">
+                    <div class="planta-cabeza">
                         <h4>{{ $plant->name }}</h4>
                         <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $plant->state)) }}">
                             {{ str_replace(['Etapa de ', 'Etapa '], '', $plant->state) }}
                         </span>
                     </div>
 
-                    <p class="muro-plant-seed">
+                    <p class="planta-semilla">
                         @if ($plant->seedType)
                             {{ $plant->seedType->name }} ({{ $plant->seedType->seed_type }})
                         @else
@@ -79,7 +79,7 @@
                         @endif
                     </p>
 
-                    <div class="plant-meta">
+                    <div class="planta-datos">
                         @if ($plant->germination_date)
                             <span>
                                 <x-icon name="heroicon-o-clock" class="w-3.5 h-3.5" />
@@ -104,12 +104,12 @@
         @endforeach
     </div>
 
-    {{-- Lo último que pasó en el espacio --}}
-    <div class="muro-card muro-card--acciones">
-        <div class="muro-card-head">
+    {{-- Lo último que pasó en el lugar --}}
+    <div class="carta carta--acciones">
+        <div class="carta-cabeza">
             <h3>Últimas acciones</h3>
         </div>
-        <div class="muro-card-body">
+        <div class="carta-cuerpo">
             @if ($acciones->isNotEmpty())
                 <div class="action-list">
                     @foreach ($acciones as $action)

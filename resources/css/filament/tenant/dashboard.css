@@ -325,13 +325,13 @@ input[type="radio"]:checked + label.fi-btn {
 }
 
 .state-badge-plantula {
-    background-color: rgba(2, 132, 199, 0.10);
-    color: #0369A1;
+    background-color: rgba(101, 205, 175, 0.20);
+    color: #3F8169;
 }
 
 .dark .state-badge-plantula {
-    background-color: rgba(56, 189, 248, 0.14);
-    color: #7DD3FC;
+    background-color: rgba(101, 205, 175, 0.24);
+    color: #A3E1CA;
 }
 
 .state-badge-vegetativa {
@@ -1913,7 +1913,8 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.25;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 .muro-card-body {
@@ -2110,6 +2111,7 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.5rem;
+    flex-wrap: wrap; /* el badge baja en vez de aplastar el nombre */
 }
 
 .muro-plant-top h4 {
@@ -2121,9 +2123,12 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 
 /* La tarjeta angosta nunca debe truncar el estado de la planta */
 .muro-card--planta .muro-plant-top h4 {
-    flex: 1 1 auto;
+    flex: 1 1 8rem;
     min-width: 0;
     font-size: 0.9375rem;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
 }
 
 .muro-card--planta .state-badge {
@@ -2298,9 +2303,9 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 /* Cada bloque se arma con el espacio, sus plantas y sus acciones */
-.muro-plantas-grid {
+.plantas-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
     gap: 1rem;
     align-content: start;
 }
@@ -2336,4 +2341,221 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     .muro-card--onboarding .muro-shortcuts {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
+
+/* ==========================================================================
+   SEÑALES DE TRABAJO Y VISTAS (lista por defecto, mural alternativa)
+   ========================================================================== */
+
+/* --- Señal de riego: lo que pide atención hoy --- */
+.riego-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    align-self: flex-start;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+}
+
+.riego-badge--sin_riego {
+    background-color: rgba(239, 68, 68, 0.14);
+    color: #B91C1C;
+}
+
+.dark .riego-badge--sin_riego {
+    background-color: rgba(248, 113, 113, 0.18);
+    color: #FCA5A5;
+}
+
+.riego-badge--atrasado {
+    background-color: rgba(239, 68, 68, 0.10);
+    color: #B91C1C;
+}
+
+.dark .riego-badge--atrasado {
+    background-color: rgba(248, 113, 113, 0.14);
+    color: #FCA5A5;
+}
+
+.riego-badge--hoy {
+    background-color: rgba(35, 105, 181, 0.14);
+    color: #1A4F88;
+}
+
+.dark .riego-badge--hoy {
+    background-color: rgba(94, 156, 230, 0.20);
+    color: #8EBAEE;
+}
+
+.riego-badge--al_dia {
+    background-color: rgba(101, 205, 175, 0.20);
+    color: #3F8169;
+}
+
+.dark .riego-badge--al_dia {
+    background-color: rgba(101, 205, 175, 0.24);
+    color: #A3E1CA;
+}
+
+/* Sin frecuencia configurada no se puede afirmar que esté al día: neutro */
+.riego-badge--sin_frecuencia {
+    background-color: rgba(107, 114, 128, 0.16);
+    color: #4b5563;
+}
+
+.dark .riego-badge--sin_frecuencia {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* --- Controles de la cabecera del panel --- */
+.muro-controles {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.vista-toggle {
+    display: inline-flex;
+    border: 1px solid rgba(35, 105, 181, 0.3);
+    border-radius: 0.6rem;
+    overflow: hidden;
+}
+
+.vista-toggle button {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #1A4F88;
+    background-color: #ffffff;
+    transition: background-color 0.2s ease;
+}
+
+.vista-toggle button:hover {
+    background-color: rgba(35, 105, 181, 0.1);
+}
+
+.vista-toggle button.is-active {
+    background-color: #2369B5;
+    color: #ffffff;
+}
+
+.dark .vista-toggle {
+    border-color: rgba(142, 186, 238, 0.35);
+}
+
+.dark .vista-toggle button {
+    background-color: rgba(28, 28, 31, 0.8);
+    color: #8EBAEE;
+}
+
+.dark .vista-toggle button.is-active {
+    background-color: #2369B5;
+    color: #ffffff;
+}
+
+.muro-metrica--alerta strong {
+    color: #B91C1C;
+}
+
+.dark .muro-metrica--alerta strong {
+    color: #FCA5A5;
+}
+
+.muro-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Los botones del panel no deben partir su texto */
+.muro-cta,
+.vista-toggle button {
+    white-space: nowrap;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* --- Bloque de espacio (compartido por las dos vistas) --- */
+.space-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+/* Vista LISTA (por defecto): los espacios uno debajo del otro, ancho completo */
+.vista-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.vista-lista .space-block {
+    width: 100%;
+}
+
+/* Vista MURAL: bloques de ancho variable que se desplazan de costado */
+.vista-mural .space-block {
+    flex: 0 0 auto;
+    width: clamp(22rem, 30vw, 26rem);
+}
+
+.vista-mural .space-block--chico {
+    width: clamp(18rem, 24vw, 21rem);
+}
+
+/* Foco visible (accesibilidad) */
+.muro-nav button:focus-visible,
+.vista-toggle button:focus-visible,
+.muro-cta:focus-visible,
+.floating-button:focus-visible {
+    outline: 2px solid #2369B5;
+    outline-offset: 2px;
+}
+
+/* Quien pidió menos movimiento, no recibe animaciones */
+@media (prefers-reduced-motion: reduce) {
+    .muro-card,
+    .muro-shortcut,
+    .muro-nav button,
+    .vista-toggle button,
+    .floating-button {
+        transition: none;
+    }
+}
+
+/* --- Pantallas chicas: todo apilado, sin scroll horizontal --- */
+@media (max-width: 1100px) {
+    .vista-mural .muro {
+        flex-direction: column;
+        align-items: stretch;
+        overflow-x: visible;
+    }
+
+    .vista-mural .space-block,
+    .vista-mural .space-block--chico {
+        width: 100%;
+    }
+
+    .vista-mural .muro-head {
+        display: none;
+    }
+}
+
+/* --- Invitación a la comunidad (parametrizada por la instalación) --- */
+.muro-comunidad {
+    padding: 0 1.125rem 1rem;
+    font-size: 0.8125rem;
+    color: #4b5563;
+}
+
+.dark .muro-comunidad {
+    color: rgba(255, 255, 255, 0.75);
 }

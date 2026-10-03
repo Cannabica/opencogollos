@@ -1,289 +1,158 @@
 <x-filament::page>
-    <div class="dashboard-container" x-data>
+    <div class="dashboard-container"
+        x-data="{
+            vista: 'lista',
+            init() {
+                const guardada = localStorage.getItem('oi_dashboard_vista');
+                if (guardada === 'lista' || guardada === 'mural') this.vista = guardada;
+            },
+            cambiarVista(nueva) {
+                this.vista = nueva;
+                localStorage.setItem('oi_dashboard_vista', nueva);
+            },
+            hayScroll: false,
+            sinAnimacion() {
+                return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+            },
+        }">
 
         @php
-            $indoors = $this->getIndoors();
-            $totalPlants = $indoors->sum(fn ($i) => $i->plants->count());
-            $plantasConEspacio = $indoors->flatMap(
-                fn ($indoor) => $this->getPlants($indoor->id)->map(fn ($plant) => ['plant' => $plant, 'indoor' => $indoor])
-            );
+            $spaces = $this->getSpaces();
+            $resumen = $this->getWorkSummary($spaces);
         @endphp
 
-        <div class="muro-head">
-            <span class="muro-hint">Desplazate a la derecha para ver más</span>
-            <div class="muro-nav">
-                <button type="button" title="Desplazar a la izquierda"
-                    @click="$refs.muro.scrollBy({ left: -680, behavior: 'smooth' })">
-                    <x-icon name="heroicon-o-chevron-left" class="w-5 h-5" />
-                </button>
-                <button type="button" title="Desplazar a la derecha"
-                    @click="$refs.muro.scrollBy({ left: 680, behavior: 'smooth' })">
-                    <x-icon name="heroicon-o-chevron-right" class="w-5 h-5" />
-                </button>
+        {{-- Cabecera: estado de la plataforma + lo que pide atención hoy + controles --}}
+        <div class="muro-card muro-card--resumen">
+            <div class="muro-aviso">
+                <x-icon name="heroicon-o-exclamation-triangle" class="w-6 h-6 flex-shrink-0" />
+                <p>
+                    <span class="font-bold">¡Plataforma en desarrollo!</span>
+                    Esta es una versión <span class="font-bold">alfa</span> y puede presentar inestabilidades.
+                    @if (filled(config('platform.community.feedback_url')))
+                        Si encontras algún error,
+                        <a href="{{ config('platform.community.feedback_url') }}" target="_blank" class="underline">mandalo acá</a>.
+                    @endif
+                </p>
             </div>
-        </div>
 
-        {{-- MURO: bloques de ancho distinto, desplazamiento horizontal.
-             La rueda del mouse mueve el muro de costado mientras quede
-             contenido a los lados; en las puntas vuelve a la página. --}}
-        <div class="muro" x-ref="muro"
-            x-init="$nextTick(() => {
-                const el = $refs.muro;
-                el.addEventListener('wheel', (e) => {
-                    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-
-                    /* Si el bloque bajo el cursor todavía tiene contenido vertical
-                       para mostrar, la rueda lo scrollea a él. */
-                    let nodo = e.target;
-                    while (nodo && nodo !== el) {
-                        if (nodo.classList && nodo.classList.contains('muro-bloque')) {
-                            const maxY = nodo.scrollHeight - nodo.clientHeight;
-                            const puedeY = e.deltaY > 0 ? nodo.scrollTop < maxY - 1 : nodo.scrollTop > 1;
-                            if (maxY > 0 && puedeY) return;
-                        }
-                        nodo = nodo.parentElement;
-                    }
-
-                    const max = el.scrollWidth - el.clientWidth;
-                    if (max <= 0) return;
-                    const abajo = e.deltaY > 0;
-                    const puede = abajo ? el.scrollLeft < max - 1 : el.scrollLeft > 1;
-                    if (puede) {
-                        e.preventDefault();
-                        el.scrollLeft += e.deltaY;
-                    }
-                }, { passive: false });
-            })">
-
-            {{-- ── Bloque ancho: estado de la plataforma + tu cultivo + primeros pasos ── --}}
-            <div class="muro-bloque muro-bloque--ancha">
-
-                <div class="muro-card muro-card--resumen">
-                    <div class="muro-aviso">
-                        <x-icon name="heroicon-o-exclamation-triangle" class="w-6 h-6 flex-shrink-0" />
-                        <p>
-                            <span class="font-bold">¡Plataforma en Desarrollo!</span>
-                            Esta es una versión <span class="font-bold">ALFA</span> y puede presentar inestabilidades.
-                            @if (filled(config('platform.community.feedback_url')))
-                                Si encontras algún error,
-                                <a href="{{ config('platform.community.feedback_url') }}" target="_blank" class="underline">mandalo acá</a>.
-                            @endif
-                        </p>
+            <div class="muro-resumen-body">
+                <div class="muro-metricas">
+                    <div class="muro-metrica">
+                        <strong>{{ $resumen['espacios'] }}</strong>
+                        <span>{{ \Illuminate\Support\Str::plural('espacio', $resumen['espacios']) }}</span>
+                    </div>
+                    <div class="muro-metrica">
+                        <strong>{{ $resumen['plantas'] }}</strong>
+                        <span>{{ \Illuminate\Support\Str::plural('planta', $resumen['plantas']) }}</span>
                     </div>
 
-                    <div class="muro-resumen-body">
-                        <div class="muro-metricas">
-                            <div class="muro-metrica">
-                                <strong>{{ $indoors->count() }}</strong>
-                                <span>{{ \Illuminate\Support\Str::plural('espacio', $indoors->count()) }}</span>
-                            </div>
-                            <div class="muro-metrica">
-                                <strong>{{ $totalPlants }}</strong>
-                                <span>{{ \Illuminate\Support\Str::plural('planta', $totalPlants) }}</span>
-                            </div>
+                    @if ($resumen['espacios_sin_riego'] > 0 || $resumen['plantas_sin_riego'] > 0)
+                        <div class="muro-metrica muro-metrica--alerta">
+                            <strong>{{ $resumen['plantas_sin_riego'] }}</strong>
+                            <span>{{ \Illuminate\Support\Str::plural('planta sin riego', $resumen['plantas_sin_riego']) }}</span>
                         </div>
+                    @endif
 
-                        <div class="muro-filtro">
-                            {{ $this->filtersForm }}
+                    @if ($resumen['espacios_atrasados'] > 0)
+                        <div class="muro-metrica muro-metrica--alerta">
+                            <strong>{{ $resumen['espacios_atrasados'] }}</strong>
+                            <span>{{ \Illuminate\Support\Str::plural('espacio atrasado', $resumen['espacios_atrasados']) }}</span>
                         </div>
-                    </div>
+                    @endif
                 </div>
 
-                <div x-data="{ show: true }" x-show="show" class="muro-card muro-card--onboarding">
-                    @php
-                        $siteUrl = config('platform.site_url');
-                        $discordUrl = config('platform.community.discord_url');
-                        $brandName = config('platform.brand_name') ?: (filled($siteUrl) ? parse_url($siteUrl, PHP_URL_HOST) : null);
-                    @endphp
-
-                    <div class="muro-card-head">
-                        <div>
-                            <h3>¡Bienvenido!</h3>
-                            @if (filled($siteUrl) || filled($discordUrl))
-                                <p class="muro-sub">
-                                    Este es un proyecto comunitario
-                                    @if (filled($discordUrl))
-                                        · te invito a sumarte al server de discord
-                                    @endif
-                                    @if (filled($siteUrl))
-                                        · <a href="{{ $siteUrl }}" class="underline">{{ $brandName }}</a>
-                                    @endif
-                                </p>
-                            @endif
-                        </div>
-                        <button @click="show = false" class="card-close" title="Cerrar">
-                            <x-icon name="heroicon-o-x-mark" class="w-5 h-5" />
-                        </button>
+                <div class="muro-controles">
+                    <div class="muro-filtro">
+                        {{ $this->filtersForm }}
                     </div>
 
-                    <div class="muro-shortcuts">
-                        <a href="/tenant/tutorials/telegram-bot" class="muro-shortcut">
-                            <img src="/images/tutorials/telegram-bot.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Configurar Bot Telegram</h4>
-                                <p>Recibí notificaciones y alertas en tiempo real.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/indoors/create" class="muro-shortcut">
-                            <img src="/images/tutorial01.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Configurar tu indoor</h4>
-                                <p>Cargá dimensiones, potencia de luces, ventiladores, etc.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/seeds" class="muro-shortcut">
-                            <img src="/images/tutorial02.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Revisá nuestras semillas</h4>
-                                <p>Listado precargado, filtrá por tipo y ratios CBD/THC.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/seeds/create" class="muro-shortcut">
-                            <img src="/images/tutorial03.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Cargar tus semillas</h4>
-                                <p>Registrá tipo, floración y ratios CBD/THC.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/plants/create" class="muro-shortcut">
-                            <img src="/images/tutorial04.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Registrar tus plantas</h4>
-                                <p>Usá tus semillas, agregá fechas, macetas y sustratos.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/actions/create" class="muro-shortcut">
-                            <img src="/images/tutorial05.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Primer cuidado de plantas</h4>
-                                <p>Registrá riegos, podas o aplicaciones de productos.</p>
-                            </div>
-                        </a>
+                    <div class="vista-toggle" role="group" aria-label="Cómo ver tus espacios">
+                        <button type="button" :class="vista === 'lista' && 'is-active'"
+                            @click="cambiarVista('lista')">Lista</button>
+                        <button type="button" :class="vista === 'mural' && 'is-active'"
+                            @click="cambiarVista('mural')">Mural</button>
                     </div>
+
+                    <a href="{{ \App\Filament\Tenant\Resources\ActionsResource::getUrl('create') }}"
+                        class="muro-cta">
+                        <x-icon name="heroicon-o-plus" class="w-4 h-4" />
+                        Registrar acción
+                    </a>
                 </div>
             </div>
 
-            @if ($indoors->isEmpty())
-                {{-- ── Primer espacio todavía vacío ── --}}
-                <div class="muro-bloque muro-bloque--media">
-                    <div class="muro-card muro-card--empty">
-                        <x-icon name="heroicon-o-home-modern" class="w-12 h-12" />
-                        <h3>Todavía no cargaste ningún espacio</h3>
-                        <p>El espacio es el lugar donde crecen tus plantas: una carpa, una habitación o el patio.</p>
-                        <a href="/tenant/indoors/create" class="muro-cta">Crear mi primer espacio</a>
-                    </div>
-                </div>
-            @else
-                {{-- ── Un bloque por espacio: el espacio, sus plantas y sus acciones, juntos ── --}}
-                @foreach ($indoors as $indoor)
-                    @php
-                        $plantas = $this->getPlants($indoor->id);
-                        $estados = $plantas->groupBy('state');
-                        $actions = $this->getLastActionsForIndoor($indoor->id);
-                    @endphp
+            {{-- Invitación a la comunidad/marca: sólo si la instalación la configuró --}}
+            @php
+                $siteUrl = config('platform.site_url');
+                $discordUrl = config('platform.community.discord_url');
+                $brandName = config('platform.brand_name') ?: (filled($siteUrl) ? parse_url($siteUrl, PHP_URL_HOST) : null);
+            @endphp
 
-                    {{-- El ancho del bloque responde a cuánto tiene que mostrar:
-                         los espacios con pocas plantas van en columna angosta. --}}
-                    <div class="muro-bloque {{ $plantas->count() <= 2 ? 'muro-bloque--angosta' : 'muro-bloque--media' }}">
-                        <div class="muro-card muro-card--espacio">
-                            <div class="muro-card-head">
-                                <h3>{{ $indoor->name }}</h3>
-                                <span class="muro-count">{{ $plantas->count() }}
-                                    {{ \Illuminate\Support\Str::plural('planta', $plantas->count()) }}</span>
-                            </div>
-                            <div class="muro-card-body">
-                                <div class="muro-states">
-                                    @forelse ($estados as $estado => $grupo)
-                                        <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $estado)) }}">
-                                            {{ str_replace(['Etapa de ', 'Etapa '], '', $estado) }}: {{ $grupo->count() }}
-                                        </span>
-                                    @empty
-                                        <span class="muro-chip muro-chip--muted">Sin plantas cargadas</span>
-                                    @endforelse
-                                </div>
-
-                                <div class="muro-chips">
-                                    @if (!empty($indoor->lamps) && is_array($indoor->lamps))
-                                        @foreach ($indoor->lamps as $lamp)
-                                            <span class="muro-chip">
-                                                <x-icon name="heroicon-o-light-bulb" class="w-3.5 h-3.5" />
-                                                {{ $lamp['power'] }}W {{ $lamp['technology'] ?? '' }}
-                                            </span>
-                                        @endforeach
-                                    @else
-                                        <span class="muro-chip muro-chip--muted">Sin lámparas cargadas</span>
-                                    @endif
-                                    <span class="muro-chip muro-chip--muted">
-                                        {{ $indoor->width ?? '—' }} × {{ $indoor->large ?? '—' }} cm
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="muro-plantas-grid">
-                            @foreach ($plantas as $plant)
-                                <div class="muro-card muro-card--planta">
-                                    <div class="muro-card-body">
-                                        <div class="muro-plant-top">
-                                            <h4>{{ $plant->name }}</h4>
-                                            <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $plant->state)) }}">
-                                                {{ str_replace(['Etapa de ', 'Etapa '], '', $plant->state) }}
-                                            </span>
-                                        </div>
-
-                                        <p class="muro-plant-seed">
-                                            @if ($plant->seedType)
-                                                {{ $plant->seedType->name }} ({{ $plant->seedType->seed_type }})
-                                            @else
-                                                Sin semilla cargada
-                                            @endif
-                                        </p>
-
-                                        <div class="plant-meta">
-                                            @if ($plant->germination_date)
-                                                <span>
-                                                    <x-icon name="heroicon-o-clock" class="w-3.5 h-3.5" />
-                                                    {{ now()->diffInDays($plant->germination_date) }} días
-                                                </span>
-                                            @endif
-                                            <span>
-                                                <x-icon name="heroicon-o-beaker" class="w-3.5 h-3.5" />
-                                                {{ 'Maceta ' . $plant->flowerpot ?? 'N/A' }}: {{ $plant->capacity ?? '00' }}L
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <div class="muro-card muro-card--acciones">
-                            <div class="muro-card-head">
-                                <h3>Últimas acciones</h3>
-                            </div>
-                            <div class="muro-card-body">
-                                @if ($actions->isNotEmpty())
-                                    <div class="action-list">
-                                        @foreach ($actions as $action)
-                                            <div class="action-item">
-                                                <span class="action-date">
-                                                    {{ \Carbon\Carbon::parse($action->action_date)->format('d/m/y') }}
-                                                </span>
-                                                <div>
-                                                    <span class="font-medium">{{ $action->action_type->name ?? 'Acción desconocida' }}</span>
-                                                    <p class="text-sm text-gray-500">{{ $action->getDetalleAccionAttribute() ?? 'Sin detalles' }}</p>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="text-sm text-gray-500">No hay acciones recientes.</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
+            @if (filled($siteUrl) || filled($discordUrl))
+                <p class="muro-comunidad">
+                    Este es un proyecto comunitario
+                    @if (filled($discordUrl))
+                        · te invito a sumarte al servidor de Discord
+                    @endif
+                    @if (filled($siteUrl))
+                        · <a href="{{ $siteUrl }}" class="underline">{{ $brandName }}</a>
+                    @endif
+                </p>
             @endif
         </div>
+
+        @if ($spaces === [])
+            <div class="muro-card muro-card--empty">
+                <x-icon name="heroicon-o-home-modern" class="w-12 h-12" />
+                <h3>Todavía no cargaste ningún espacio</h3>
+                <p>El espacio es el lugar donde crecen tus plantas: una carpa, una habitación o el patio.</p>
+                <a href="/tenant/indoors/create" class="muro-cta">Crear mi primer espacio</a>
+            </div>
+        @else
+            {{-- Vista por defecto: los espacios uno debajo del otro (lectura vertical) --}}
+            <div class="vista-lista" x-show="vista === 'lista'">
+                @foreach ($spaces as $space)
+                    @include('filament.tenant.pages.partials.space-block', ['space' => $space, 'modo' => 'lista'])
+                @endforeach
+            </div>
+
+            {{-- Vista alternativa: el muro que se desplaza de costado --}}
+            <div class="vista-mural" x-show="vista === 'mural'" x-cloak>
+                <div class="muro-head">
+                    <span class="muro-hint">Desplazate a la derecha para ver más espacios</span>
+                    <div class="muro-nav">
+                        <button type="button" title="Desplazar a la izquierda"
+                            @click="$refs.muro.scrollBy({ left: -680, behavior: sinAnimacion() })">
+                            <x-icon name="heroicon-o-chevron-left" class="w-5 h-5" />
+                        </button>
+                        <button type="button" title="Desplazar a la derecha"
+                            @click="$refs.muro.scrollBy({ left: 680, behavior: sinAnimacion() })">
+                            <x-icon name="heroicon-o-chevron-right" class="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+                <div class="muro" x-ref="muro"
+                    x-init="$nextTick(() => {
+                        const el = $refs.muro;
+                        el.addEventListener('wheel', (e) => {
+                            if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+                            const max = el.scrollWidth - el.clientWidth;
+                            if (max <= 0) return;
+                            const abajo = e.deltaY > 0;
+                            const puede = abajo ? el.scrollLeft < max - 1 : el.scrollLeft > 1;
+                            if (puede) {
+                                e.preventDefault();
+                                el.scrollLeft += e.deltaY;
+                            }
+                        }, { passive: false });
+                    })">
+                    @foreach ($spaces as $space)
+                        @include('filament.tenant.pages.partials.space-block', ['space' => $space, 'modo' => 'mural'])
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         {{-- Acción rápida: repetir el último riego --}}
         @php

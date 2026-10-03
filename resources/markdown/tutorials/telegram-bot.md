@@ -1,6 +1,6 @@
 # Configurar cuenta en el bot de Telegram
 
-El bot de Telegram de {{ plataforma }} es tu asistente personal para la gestión del cultivo directamente desde tu celular. Una vez vinculado, te permite monitorear y administrar tu espacio en tiempo real sin necesidad de ingresar a la plataforma web. Podrás consultar el detalle de tus indoors, tus plantas, semillas y el historial de acciones realizadas. Además, cuenta con funciones interactivas que te permiten, por ejemplo, repetir ágilmente el último riego y asociar fotos o álbumes de imágenes a tus cultivos con solo enviarlas al chat.
+El bot de Telegram de {{ plataforma }} es tu asistente personal para la gestión del cultivo directamente desde tu celular. Una vez vinculado, te permite monitorear y administrar tu lugar en tiempo real sin necesidad de ingresar a la plataforma web. Podrás consultar el detalle de tus indoors, tus plantas, semillas y el historial de acciones realizadas. Además, cuenta con funciones interactivas que te permiten, por ejemplo, repetir ágilmente el último riego y asociar fotos o álbumes de imágenes a tus cultivos con solo enviarlas al chat.
 
 ## 1. Obtener el token de autenticación
 

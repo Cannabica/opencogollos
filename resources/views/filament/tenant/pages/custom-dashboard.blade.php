@@ -39,7 +39,7 @@
                 <div class="muro-metricas">
                     <div class="muro-metrica">
                         <strong>{{ $resumen['espacios'] }}</strong>
-                        <span>{{ \Illuminate\Support\Str::plural('espacio', $resumen['espacios']) }}</span>
+                        <span>{{ \Illuminate\Support\Str::plural('lugar', $resumen['espacios']) }}</span>
                     </div>
                     <div class="muro-metrica">
                         <strong>{{ $resumen['plantas'] }}</strong>
@@ -56,7 +56,7 @@
                     @if ($resumen['espacios_atrasados'] > 0)
                         <div class="muro-metrica muro-metrica--alerta">
                             <strong>{{ $resumen['espacios_atrasados'] }}</strong>
-                            <span>{{ \Illuminate\Support\Str::plural('espacio atrasado', $resumen['espacios_atrasados']) }}</span>
+                            <span>{{ \Illuminate\Support\Str::plural('lugar atrasado', $resumen['espacios_atrasados']) }}</span>
                         </div>
                     @endif
                 </div>
@@ -66,7 +66,7 @@
                         {{ $this->filtersForm }}
                     </div>
 
-                    <div class="vista-toggle" role="group" aria-label="Cómo ver tus espacios">
+                    <div class="vista-toggle" role="group" aria-label="Cómo ver tus lugares">
                         <button type="button" :class="vista === 'lista' && 'is-active'"
                             @click="cambiarVista('lista')">Lista</button>
                         <button type="button" :class="vista === 'mural' && 'is-active'"
@@ -104,9 +104,9 @@
         @if ($spaces === [])
             <div class="muro-card muro-card--empty">
                 <x-icon name="heroicon-o-home-modern" class="w-12 h-12" />
-                <h3>Todavía no cargaste ningún espacio</h3>
-                <p>El espacio es el lugar donde crecen tus plantas: una carpa, una habitación o el patio.</p>
-                <a href="/tenant/indoors/create" class="muro-cta">Crear mi primer espacio</a>
+                <h3>Todavía no cargaste ningún lugar</h3>
+                <p>El lugar donde crecen tus plantas puede ser una carpa, una habitación o el patio.</p>
+                <a href="/tenant/indoors/create" class="muro-cta">Crear mi primer lugar</a>
             </div>
         @else
             {{-- Vista por defecto: los espacios uno debajo del otro (lectura vertical) --}}
@@ -119,7 +119,7 @@
             {{-- Vista alternativa: el muro que se desplaza de costado --}}
             <div class="vista-mural" x-show="vista === 'mural'" x-cloak>
                 <div class="muro-head">
-                    <span class="muro-hint">Desplazate a la derecha para ver más espacios</span>
+                    <span class="muro-hint">Desplazate a la derecha para ver más lugares</span>
                     <div class="muro-nav">
                         <button type="button" title="Desplazar a la izquierda"
                             @click="$refs.muro.scrollBy({ left: -680, behavior: sinAnimacion() })">

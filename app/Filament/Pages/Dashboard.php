@@ -122,14 +122,14 @@ class Dashboard extends BaseDashboard
         return $form
             ->schema([
                 Select::make('indoor')
-                    ->label('Espacio')
+                    ->label('Lugar')
                     ->options(
                         Indoor::where('tenant_id', auth()->user()->tenant_id)
                             ->pluck('name', 'id')
                             ->toArray()
                     )
                     ->searchable()
-                    ->placeholder('Todos los espacios')
+                    ->placeholder('Todos los lugares')
                     ->reactive(),
             ]);
     }

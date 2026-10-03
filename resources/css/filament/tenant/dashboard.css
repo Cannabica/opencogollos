@@ -1963,17 +1963,22 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     color: rgba(255, 255, 255, 0.75);
 }
 
-/* --- Lista de lugares: uno debajo del otro --- */
-.lista-lugares {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+/* --- Los lugares, en columnas de tarjetas que se acomodan al ancho ---
+   Se usa columnas CSS (y no flex) para que los bloques de distinta altura se
+   acomoden uno debajo del otro sin dejar huecos, sin desplazamiento de costado:
+   el ancho disponible define cuántas columnas entran y el scroll es vertical. */
+.grilla-lugares {
+    column-width: 26rem;
+    column-gap: 1.25rem;
 }
 
 .bloque-lugar {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    break-inside: avoid;
     min-width: 0;
 }
 

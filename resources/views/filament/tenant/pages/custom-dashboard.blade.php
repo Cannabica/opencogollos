@@ -87,7 +87,7 @@
                 <a href="/tenant/indoors/create" class="boton-principal">Crear mi primer lugar</a>
             </div>
         @else
-            <div class="lista-lugares">
+            <div class="grilla-lugares">
                 @foreach ($spaces as $space)
                     @include('filament.tenant.pages.partials.space-block', ['space' => $space])
                 @endforeach

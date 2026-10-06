@@ -169,18 +169,22 @@ class IrrigationSignalsTest extends TestCase
         $this->assertSame(IrrigationSignals::ATRASADO, $conFrecuencia['estado']);
         $this->assertSame('Riego atrasado: 3 días sin regar', $conFrecuencia['etiqueta']);
 
-        $sinFrecuencia = IrrigationSignals::state($hace3, null);
+        // Sin frecuencia cargada, el rango normal documentado (2-4 días en vege, 3-5 en flora)
+        // manda: recién a partir de 5 días se deja de mostrar en verde.
+        $sinFrecuencia = IrrigationSignals::state(Carbon::now()->subDays(5)->startOfDay(), null);
         $this->assertSame(IrrigationSignals::SIN_FRECUENCIA, $sinFrecuencia['estado']);
-        $this->assertSame('Sin riego hace 3 días', $sinFrecuencia['etiqueta']);
+        $this->assertSame('Sin riego hace 5 días', $sinFrecuencia['etiqueta']);
     }
 
     public function test_sin_frecuencia_configurada_los_primeros_dias_quedan_en_verde(): void
     {
-        $hace2 = Carbon::now()->subDays(2)->startOfDay();
-        $senal = IrrigationSignals::state($hace2, null);
+        $hace4 = IrrigationSignals::state(Carbon::now()->subDays(4)->startOfDay(), null);
+        $this->assertSame(IrrigationSignals::AL_DIA, $hace4['estado']);
+        $this->assertSame('Último riego hace 4 días', $hace4['etiqueta']);
 
-        $this->assertSame(IrrigationSignals::AL_DIA, $senal['estado']);
-        $this->assertSame('Último riego hace 2 días', $senal['etiqueta']);
+        $hace2 = IrrigationSignals::state(Carbon::now()->subDays(2)->startOfDay(), null);
+        $this->assertSame(IrrigationSignals::AL_DIA, $hace2['estado']);
+        $this->assertSame('Último riego hace 2 días', $hace2['etiqueta']);
     }
 
     public function test_el_riego_de_hoy_y_de_ayer_se_informan_con_su_etiqueta(): void

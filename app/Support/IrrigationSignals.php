@@ -37,8 +37,14 @@ class IrrigationSignals
     /** Cantidad de días a partir de la cual se considera atrasado (con frecuencia diaria). */
     private const DIAS_ATRASO = 2;
 
-    /** Días a partir de los cuales, sin frecuencia configurada, se deja de mostrar en verde. */
-    private const DIAS_SIN_FRECUENCIA = 3;
+    /**
+     * Días a partir de los cuales, sin frecuencia configurada, se deja de mostrar en verde.
+     *
+     * El tope sale de la práctica documentada del proyecto (wiki `cultivo/riego`): en indoor
+     * controlado se riega cada 2–4 días en vegetación y cada 3–5 en flora. Con 5 días se cubre
+     * el rango más laxo: antes de eso no corresponde marcar nada como fuera de lo normal.
+     */
+    private const DIAS_SIN_FRECUENCIA = 5;
 
     /**
      * Último riego por planta del tenant: [plant_id => Carbon].

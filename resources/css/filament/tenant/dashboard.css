@@ -1772,11 +1772,7 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     gap: 1rem;
 }
 
-/* La cabecera deja salir el desplegable (con overflow hidden el listado se recortaba) */
-.carta--resumen {
-    overflow: visible;
-}
-
+/* Las esquinas de la franja de aviso siguen el radio de la tarjeta */
 .carta--resumen .aviso-plataforma {
     border-radius: 1rem 1rem 0 0;
 }
@@ -2440,4 +2436,22 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     .filtro-lugar {
         min-width: 100%;
     }
+}
+
+/* ==========================================================================
+   Va al final a propósito: la cabecera del panel tiene que dejar salir el listado
+   del selector y quedar por ENCIMA de los bloques de lugar. Sin esto el listado se
+   dibuja detrás de las tarjetas de abajo y no se puede leer ni elegir.
+   (`overflow: hidden` de .carta lo recortaba, y sin z-index los bloques siguientes
+   lo tapaban.)
+   ========================================================================== */
+.carta--resumen {
+    overflow: visible;
+    position: relative;
+    z-index: 20;
+}
+
+.filtro-lugar .choices__list--dropdown,
+.filtro-lugar .choices__list[aria-expanded] {
+    z-index: 60;
 }

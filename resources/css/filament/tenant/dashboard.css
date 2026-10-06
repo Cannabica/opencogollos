@@ -1912,13 +1912,16 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     flex-wrap: wrap;
 }
 
+/* --- Filtro por lugar --- */
 .filtro-lugar {
-    flex: 1 1 18rem;
+    flex: 0 1 20rem;
     min-width: 14rem;
+    max-width: 22rem;
 }
 
 .filtro-lugar .fi-fo-field-wrp {
     gap: 0.25rem;
+    min-width: 0;
 }
 
 .filtro-lugar .fi-fo-field-wrp-label {
@@ -1926,13 +1929,141 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 }
 
 .filtro-lugar .fi-fo-field-wrp-label span {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #4b5563;
 }
 
 .dark .filtro-lugar .fi-fo-field-wrp-label span {
     color: rgba(255, 255, 255, 0.75);
+}
+
+/* El control visible (Choices.js): que se lea como un desplegable del panel y no como
+   un hueco sin forma. El texto del lugar elegido va en una línea, cortado con puntos
+   suspensivos si es largo. */
+.filtro-lugar .choices {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* La cadena de wrappers de Filament es `display: grid` con una columna `auto`, así que la
+   columna se mide por el contenido (62 px) aunque el contenedor tenga 320: hay que forzar el
+   track para que el desplegable ocupe el ancho. */
+.filtro-lugar div,
+.filtro-lugar .choices {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.filtro-lugar .fi-fo-field-wrp {
+    display: block;
+}
+
+/* Ninguna pieza interna debe achicar al control */
+.filtro-lugar [class*='fi-'] {
+    min-width: 0;
+}
+
+.filtro-lugar .choices__inner {
+    display: flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    background-color: #ffffff;
+    border: 1px solid rgba(95, 158, 160, 0.45);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.filtro-lugar .choices__inner:hover {
+    border-color: rgba(35, 105, 181, 0.45);
+}
+
+.filtro-lugar .choices.is-focused .choices__inner,
+.filtro-lugar .choices.is-open .choices__inner {
+    border-color: #2369B5;
+    box-shadow: 0 0 0 2px rgba(35, 105, 181, 0.18);
+}
+
+.dark .filtro-lugar .choices__inner {
+    background-color: rgba(39, 39, 42, 0.9);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+.filtro-lugar .choices__list--single {
+    width: 100%;
+    padding: 0;
+}
+
+.filtro-lugar .choices__list--single .choices__item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+}
+
+.filtro-lugar .choices__list--dropdown,
+.filtro-lugar .choices__list[aria-expanded] {
+    border: 1px solid rgba(95, 158, 160, 0.45);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    margin-top: 0.25rem;
+    z-index: 30;
+}
+
+.filtro-lugar .choices__list--dropdown .choices__item--selectable {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.dark .filtro-lugar .choices__list--dropdown {
+    background-color: #18181b;
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Flecha del desplegable: alineada a la derecha y visible */
+.filtro-lugar .choices[data-type*='select-one']::after {
+    border-color: #4b5563 transparent transparent;
+    right: 0.875rem;
+}
+
+.dark .filtro-lugar .choices[data-type*='select-one']::after {
+    border-color: rgba(255, 255, 255, 0.7) transparent transparent;
+}
+
+/* Un solo lugar: no hay nada que elegir, se muestra el nombre */
+.filtro-estatico {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    background-color: rgba(95, 158, 160, 0.1);
+    min-width: 12rem;
+}
+
+.filtro-estatico span {
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+.filtro-estatico strong {
+    font-size: 0.9375rem;
+}
+
+.dark .filtro-estatico {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .filtro-estatico span {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .boton-principal {

@@ -16,8 +16,7 @@
                     href="{{ \App\Filament\Tenant\Resources\IndoorResource::getUrl('view', ['record' => $indoor]) }}"
                     title="Ver {{ $indoor->name }}">{{ $indoor->name }}</a>
             </h3>
-            <span class="contador">{{ $plantas->count() }}
-                {{ \Illuminate\Support\Str::plural('planta', $plantas->count()) }}</span>
+            <span class="contador">{{ $plantas->count() }} {{ \Illuminate\Support\Str::plural('planta', $plantas->count()) }}</span>
         </div>
         <div class="carta-cuerpo">
             <div class="chips">

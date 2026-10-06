@@ -47,9 +47,17 @@
                 </div>
 
                 <div class="controles">
-                    <div class="filtro-lugar">
-                        {{ $this->filtersForm }}
-                    </div>
+                    @if ($this->getTotalIndoors() <= 1)
+                        {{-- Con un solo lugar no hay nada que elegir: se muestra el nombre --}}
+                        <div class="filtro-estatico">
+                            <span>Lugar</span>
+                            <strong>{{ $spaces[0]['indoor']->name ?? '—' }}</strong>
+                        </div>
+                    @else
+                        <div class="filtro-lugar">
+                            {{ $this->filtersForm }}
+                        </div>
+                    @endif
 
                     <a href="{{ \App\Filament\Tenant\Resources\ActionsResource::getUrl('create') }}"
                         class="boton-principal">

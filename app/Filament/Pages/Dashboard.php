@@ -122,16 +122,38 @@ class Dashboard extends BaseDashboard
         return $form
             ->schema([
                 Select::make('indoor')
-                    ->label('Lugar')
+                    ->label('Filtrar por lugar')
                     ->options(
                         Indoor::where('tenant_id', auth()->user()->tenant_id)
-                            ->pluck('name', 'id')
+                            ->withCount('plants')
+                            ->get()
+                            ->mapWithKeys(function (Indoor $indoor) {
+                                $cuantas = $indoor->plants_count;
+
+                                return [$indoor->id => $cuantas
+                                    ? $indoor->name . ' · ' . $cuantas . ($cuantas === 1 ? ' planta' : ' plantas')
+                                    : $indoor->name . ' · sin plantas'];
+                            })
                             ->toArray()
                     )
                     ->searchable()
                     ->placeholder('Todos los lugares')
-                    ->reactive(),
+                    ->live(),
             ]);
+    }
+
+    /**
+     * Cuántos lugares tiene el grupo (sin contar el filtro): decide si el selector
+     * se muestra o si alcanza con el nombre del único lugar.
+     */
+    public function getTotalIndoors(): int
+    {
+        return Indoor::query()
+            ->when(
+                auth()->check() && auth()->user()->tenant_id,
+                fn (Builder $query) => $query->where('tenant_id', auth()->user()->tenant_id)
+            )
+            ->count();
     }
 
     public function getWidgets(): array

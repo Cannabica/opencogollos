@@ -325,13 +325,13 @@ input[type="radio"]:checked + label.fi-btn {
 }
 
 .state-badge-plantula {
-    background-color: rgba(2, 132, 199, 0.10);
-    color: #0369A1;
+    background-color: rgba(101, 205, 175, 0.20);
+    color: #3F8169;
 }
 
 .dark .state-badge-plantula {
-    background-color: rgba(56, 189, 248, 0.14);
-    color: #7DD3FC;
+    background-color: rgba(101, 205, 175, 0.24);
+    color: #A3E1CA;
 }
 
 .state-badge-vegetativa {
@@ -525,7 +525,10 @@ input[type="radio"]:checked + label.fi-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    z-index: 50;
+    /* Por encima de los bloques del dashboard, pero por DEBAJO de la barra superior
+       del panel (z-20): su desplegable de usuario y el panel de notificaciones viven
+       dentro de esa barra y con 50 el botón los tapaba. Medido en el dashboard. */
+    z-index: 10;
 }
 
 .floating-button:hover {
@@ -724,7 +727,7 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 
 .dark .text-gray-500,
 .dark .text-gray-600 {
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
 }
 
 .dark h2,
@@ -1759,4 +1762,869 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
 
 .dark .pildora.pildora-lg {
     background-color: rgba(255, 255, 255, 0.03); /* Subtle background for large text */
+}
+
+/* ==========================================================================
+   Dashboard de inicio: una sola columna con scroll vertical.
+   Cada LUGAR es un bloque (su tarjeta + sus plantas + sus acciones) y lo que
+   pide atención está a la vista: la señal de riego del lugar y de cada planta.
+   ========================================================================== */
+
+.dashboard-container {
+    padding: 0.75rem 1rem 5.5rem; /* el pie libre es para el boton flotante */
+    gap: 1rem;
+}
+
+/* Las esquinas de la franja de aviso siguen el radio de la tarjeta */
+.carta--resumen .aviso-plataforma {
+    border-radius: 1rem 1rem 0 0;
+}
+
+/* --- Tarjeta base --- */
+.carta {
+    display: block;
+    background-color: #ffffff;
+    border: 1px solid rgba(95, 158, 160, 0.4);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.dark .carta {
+    background-color: rgba(24, 24, 27, 0.75);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+.carta-cabeza {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1.125rem;
+    background-color: rgba(95, 158, 160, 0.15);
+    border-bottom: 1px solid rgba(95, 158, 160, 0.3);
+}
+
+.dark .carta-cabeza {
+    background-color: rgba(39, 39, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.carta-cabeza h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+.carta-cuerpo {
+    padding: 0.875rem 1.125rem 1rem;
+}
+
+.contador {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    background-color: rgba(35, 105, 181, 0.12);
+    color: #1A4F88;
+}
+
+.dark .contador {
+    background-color: rgba(94, 156, 230, 0.18);
+    color: #8EBAEE;
+}
+
+/* --- Cabecera del panel: aviso + métricas + controles --- */
+.aviso-plataforma {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.75rem 1.125rem;
+    background-color: #fff3e0;
+    border-bottom: 1px solid #ff9800;
+    color: #9a3412;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+.aviso-plataforma a {
+    color: #c2410c;
+}
+
+.dark .aviso-plataforma {
+    background-color: rgba(255, 152, 0, 0.12);
+    border-bottom-color: rgba(255, 152, 0, 0.35);
+    color: #ffd9a8;
+}
+
+.dark .aviso-plataforma a {
+    color: #ffb74d;
+}
+
+.resumen-cuerpo {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.125rem 1.125rem;
+}
+
+.metricas {
+    display: flex;
+    gap: 1.75rem;
+    flex-wrap: wrap;
+}
+
+.metrica {
+    display: flex;
+    flex-direction: column;
+}
+
+.metrica strong {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #2369B5;
+}
+
+.dark .metrica strong {
+    color: #8EBAEE;
+}
+
+.metrica span {
+    font-size: 0.8125rem;
+    color: #4b5563;
+}
+
+.dark .metrica span {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.metrica--alerta strong {
+    color: #B91C1C;
+}
+
+.dark .metrica--alerta strong {
+    color: #FCA5A5;
+}
+
+.controles {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* --- Filtro por lugar --- */
+.filtro-lugar {
+    flex: 0 1 20rem;
+    min-width: 14rem;
+    max-width: 22rem;
+}
+
+.filtro-lugar .fi-fo-field-wrp {
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.filtro-lugar .fi-fo-field-wrp-label {
+    padding-bottom: 0;
+}
+
+.filtro-lugar .fi-fo-field-wrp-label span {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.dark .filtro-lugar .fi-fo-field-wrp-label span {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* El control visible (Choices.js): que se lea como un desplegable del panel y no como
+   un hueco sin forma. El texto del lugar elegido va en una línea, cortado con puntos
+   suspensivos si es largo. */
+.filtro-lugar .choices {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* La cadena de wrappers de Filament es `display: grid` con una columna `auto`, así que la
+   columna se mide por el contenido (62 px) aunque el contenedor tenga 320: hay que forzar el
+   track para que el desplegable ocupe el ancho. */
+.filtro-lugar div,
+.filtro-lugar .choices {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.filtro-lugar .fi-fo-field-wrp {
+    display: block;
+}
+
+/* Ninguna pieza interna debe achicar al control */
+.filtro-lugar [class*='fi-'] {
+    min-width: 0;
+}
+
+.filtro-lugar .choices__inner {
+    display: flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    background-color: #ffffff;
+    border: 1px solid rgba(95, 158, 160, 0.45);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.filtro-lugar .choices__inner:hover {
+    border-color: rgba(35, 105, 181, 0.45);
+}
+
+.filtro-lugar .choices.is-focused .choices__inner,
+.filtro-lugar .choices.is-open .choices__inner {
+    border-color: #2369B5;
+    box-shadow: 0 0 0 2px rgba(35, 105, 181, 0.18);
+}
+
+.dark .filtro-lugar .choices__inner {
+    background-color: rgba(39, 39, 42, 0.9);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+}
+
+.filtro-lugar .choices__list--single {
+    width: 100%;
+    padding: 0;
+}
+
+.filtro-lugar .choices__list--single .choices__item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+}
+
+.filtro-lugar .choices__list--dropdown,
+.filtro-lugar .choices__list[aria-expanded] {
+    border: 1px solid rgba(95, 158, 160, 0.45);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    margin-top: 0.25rem;
+    z-index: 30;
+}
+
+.filtro-lugar .choices__list--dropdown .choices__item--selectable {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.dark .filtro-lugar .choices__list--dropdown {
+    background-color: #18181b;
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Flecha del desplegable: alineada a la derecha y visible */
+.filtro-lugar .choices[data-type*='select-one']::after {
+    border-color: #4b5563 transparent transparent;
+    right: 0.875rem;
+}
+
+.dark .filtro-lugar .choices[data-type*='select-one']::after {
+    border-color: rgba(255, 255, 255, 0.7) transparent transparent;
+}
+
+/* Un solo lugar: no hay nada que elegir, se muestra el nombre */
+.filtro-estatico {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    background-color: rgba(95, 158, 160, 0.1);
+    min-width: 12rem;
+}
+
+.filtro-estatico span {
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+.filtro-estatico strong {
+    font-size: 0.9375rem;
+}
+
+.dark .filtro-estatico {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .filtro-estatico span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.boton-principal {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background-color: #2369B5;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+}
+
+.boton-principal:hover {
+    background-color: #1A4F88;
+}
+
+.nota-comunidad {
+    padding: 0 1.125rem 1rem;
+    font-size: 0.8125rem;
+    color: #4b5563;
+}
+
+.dark .nota-comunidad {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* --- Los lugares, en columnas tipo Pinterest ---
+   Base sin JavaScript: una grilla que ordena los bloques de izquierda a derecha y los alinea
+   por fila. Con JavaScript (ver la vista) pasa a masonry: cada bloque va a la columna más corta,
+   así el orden visual se mantiene (1, 2, 3 en la primera fila) y no quedan huecos entre bloques
+   de distinta altura. Lo que NO se usa es `columns`: llena por columna y desordena la lectura. */
+.grilla-lugares {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* --- Cada lugar es UN bloque: una sola tarjeta con secciones adentro ---
+   El marco (borde, fondo, sombra, radio) vive en `.bloque-lugar`; las tarjetas internas
+   pierden el suyo y se separan con líneas, así el lugar se lee como una unidad y no como
+   tres tarjetas sueltas (lugar / plantas / acciones). */
+.bloque-lugar {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    background-color: #ffffff;
+    border: 1px solid rgba(95, 158, 160, 0.4);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.dark .bloque-lugar {
+    background-color: rgba(24, 24, 27, 0.75);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Las piezas de adentro no llevan marco propio */
+.bloque-lugar .carta {
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Separadores entre las secciones del bloque */
+.bloque-lugar .carta--lugar {
+    border-bottom: 1px solid rgba(95, 158, 160, 0.3);
+}
+
+.bloque-lugar .carta--acciones {
+    border-top: 1px solid rgba(95, 158, 160, 0.3);
+}
+
+.dark .bloque-lugar .carta--lugar {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .bloque-lugar .carta--acciones {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Enlaces de detalle: cada elemento lleva a su ficha --- */
+.enlace-detalle {
+    color: inherit;
+    text-decoration: none;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease;
+}
+
+.enlace-detalle:hover {
+    color: #2369B5;
+    text-decoration: underline;
+}
+
+.dark .enlace-detalle:hover {
+    color: #8EBAEE;
+}
+
+.enlace-detalle:focus-visible {
+    outline: 2px solid #2369B5;
+    outline-offset: 2px;
+}
+
+/* La genética es un dato secundario: se subraya sólo al pasar el mouse */
+.enlace-detalle--tenue {
+    text-decoration-color: rgba(35, 105, 181, 0.5);
+}
+
+/* --- Las plantas son tarjetas internas: fondo apenas distinto, sin borde ni sombra --- */
+.bloque-lugar .plantas-grid {
+    padding: 0.875rem 1.125rem 1.125rem;
+}
+
+.bloque-lugar .carta--planta {
+    background-color: rgba(95, 158, 160, 0.08);
+    border-radius: 0.75rem;
+}
+
+.dark .bloque-lugar .carta--planta {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* --- Tarjetas de planta --- */
+.plantas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1rem;
+    align-content: start;
+}
+
+.carta--planta .carta-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.planta-cabeza {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* el badge baja en vez de aplastar el nombre */
+}
+
+.planta-cabeza h4 {
+    flex: 1 1 8rem;
+    min-width: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
+}
+
+.planta-cabeza .state-badge {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.planta-semilla {
+    font-size: 0.8125rem;
+    color: #4b5563;
+    line-height: 1.35;
+}
+
+.dark .planta-semilla {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.planta-datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: #4b5563;
+}
+
+.planta-datos span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.dark .planta-datos {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* --- Chips (lámparas, medidas) --- */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background-color: rgba(95, 158, 160, 0.18);
+    color: #2b6265;
+}
+
+.dark .chip {
+    background-color: rgba(95, 158, 160, 0.22);
+    color: #cfe4e5;
+}
+
+.chip--apagado {
+    background-color: rgba(107, 114, 128, 0.12);
+    color: #4b5563;
+}
+
+.dark .chip--apagado {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.estados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+}
+
+/* --- Señal de riego: lo que pide atención hoy --- */
+.riego-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    align-self: flex-start;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+}
+
+.riego-badge--sin_riego {
+    background-color: rgba(239, 68, 68, 0.14);
+    color: #B91C1C;
+}
+
+.dark .riego-badge--sin_riego {
+    background-color: rgba(248, 113, 113, 0.18);
+    color: #FCA5A5;
+}
+
+.riego-badge--atrasado {
+    background-color: rgba(239, 68, 68, 0.10);
+    color: #B91C1C;
+}
+
+.dark .riego-badge--atrasado {
+    background-color: rgba(248, 113, 113, 0.14);
+    color: #FCA5A5;
+}
+
+.riego-badge--hoy {
+    background-color: rgba(35, 105, 181, 0.14);
+    color: #1A4F88;
+}
+
+.dark .riego-badge--hoy {
+    background-color: rgba(94, 156, 230, 0.20);
+    color: #8EBAEE;
+}
+
+.riego-badge--al_dia {
+    background-color: rgba(101, 205, 175, 0.20);
+    color: #3F8169;
+}
+
+.dark .riego-badge--al_dia {
+    background-color: rgba(101, 205, 175, 0.24);
+    color: #A3E1CA;
+}
+
+/* Sin frecuencia configurada no se puede afirmar que esté al día: neutro */
+.riego-badge--sin_frecuencia {
+    background-color: rgba(107, 114, 128, 0.16);
+    color: #4b5563;
+}
+
+.dark .riego-badge--sin_frecuencia {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* --- Últimas acciones --- */
+.action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.carta--acciones .action-item {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border-bottom: none;
+}
+
+/* --- Estado vacío --- */
+.carta--vacia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: #4b5563;
+}
+
+.dark .carta--vacia {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.carta--vacia h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.carta--vacia p {
+    font-size: 0.875rem;
+    max-width: 34ch;
+}
+
+/* --- Foco visible (accesibilidad) --- */
+.boton-principal:focus-visible,
+.floating-button:focus-visible {
+    outline: 2px solid #2369B5;
+    outline-offset: 2px;
+}
+
+/* Quien pidió menos movimiento, no recibe animaciones */
+@media (prefers-reduced-motion: reduce) {
+    .carta,
+    .floating-button {
+        transition: none;
+    }
+}
+
+/* --- Pantallas chicas --- */
+@media (max-width: 640px) {
+    .filtro-lugar,
+    .controles,
+    .boton-principal {
+        width: 100%;
+    }
+
+    .filtro-lugar {
+        min-width: 100%;
+    }
+
+    /* A ≤640px `.dashboard-container` es `display: contents` (ver el media query de
+       arriba), así que su `padding-bottom` —el que le deja el pie libre al botón
+       flotante— no se dibuja y el botón tapa el cierre del último bloque. Medido en
+       360x800: "No hay acciones recientes." quedaba 12px abajo del botón. El aire se
+       le da al último elemento que sí tiene caja. */
+    .dashboard-container > .grilla-lugares,
+    .dashboard-container > .carta--vacia {
+        margin-bottom: 4.5rem;
+    }
+}
+
+/* ==========================================================================
+   Va al final a propósito: la cabecera del panel tiene que dejar salir el listado
+   del selector y quedar por ENCIMA de los bloques de lugar. Sin esto el listado se
+   dibuja detrás de las tarjetas de abajo y no se puede leer ni elegir.
+   (`overflow: hidden` de .carta lo recortaba, y sin z-index los bloques siguientes
+   lo tapaban.)
+
+   ⚠️ El valor tiene que quedar por DEBAJO de la barra superior del panel (z-20):
+   los desplegables y el modal de notificaciones viven dentro de ella, así que con
+   z-index >= 20 esta tarjeta los tapa (pasaba con 20: empate, y gana el que va
+   después en el DOM, que es el contenido). Medido en el dashboard.
+   ========================================================================== */
+.carta--resumen {
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+}
+
+.filtro-lugar .choices__list--dropdown,
+.filtro-lugar .choices__list[aria-expanded] {
+    z-index: 60;
+}
+
+/* ==========================================================================
+   Aire de arriba: el panel deja su propio padding y un encabezado vacío.
+   Medido: 96 px antes de la cabecera. Acá no hacen falta.
+   ========================================================================== */
+.fi-main:has(.dashboard-container) {
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+.fi-page:has(.dashboard-container) > header {
+    display: none;
+}
+
+.fi-page:has(.dashboard-container) > section {
+    padding-top: 0;
+    gap-y: 1rem;
+}
+
+/* Cabecera más compacta (los controles ya no se envuelven en dos líneas) */
+.resumen-cuerpo {
+    gap: 1rem;
+    padding: 0.75rem 1.125rem;
+}
+
+.metricas {
+    gap: 1.25rem;
+}
+
+.metrica strong {
+    font-size: 1.5rem;
+}
+
+.controles {
+    justify-content: flex-end;
+    flex: 1 1 auto;
+}
+
+/* ==========================================================================
+   Primeros pasos: tira compacta de accesos, descartable y recordada
+   ========================================================================== */
+.primeros-pasos-caja {
+    padding-bottom: 0.75rem;
+}
+
+.primeros-pasos-cabeza {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 1.125rem;
+    border-bottom: 1px solid rgba(95, 158, 160, 0.25);
+}
+
+.primeros-pasos-cabeza h3 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+}
+
+.primeros-pasos-cabeza button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    color: #4b5563;
+}
+
+.primeros-pasos-cabeza button:hover {
+    background-color: rgba(95, 158, 160, 0.15);
+}
+
+.dark .primeros-pasos-cabeza {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .primeros-pasos-cabeza button {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.primeros-pasos-tira {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.5rem;
+    padding: 0.75rem 1.125rem 0;
+}
+
+.paso {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid transparent;
+    border-radius: 0.625rem;
+    background-color: rgba(95, 158, 160, 0.08);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.paso:hover {
+    background-color: rgba(35, 105, 181, 0.08);
+    border-color: rgba(35, 105, 181, 0.35);
+}
+
+.paso:focus-visible {
+    outline: 2px solid #2369B5;
+    outline-offset: 2px;
+}
+
+.paso img {
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+}
+
+.paso h4 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.paso p {
+    font-size: 0.75rem;
+    line-height: 1.25;
+    color: #4b5563;
+}
+
+.dark .paso {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .paso p {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.primeros-pasos-abrir {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid rgba(95, 158, 160, 0.45);
+    border-radius: 0.5rem;
+    background-color: transparent;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #1A4F88;
+}
+
+.dark .primeros-pasos-abrir {
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #8EBAEE;
 }

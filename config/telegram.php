@@ -126,6 +126,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Test manual del 403 cross-tenant (/test403 del bot)
+    |--------------------------------------------------------------------------
+    |
+    | El comando /test403 verifica que la API rechace (403) el acceso a las plantas de OTRO
+    | tenant. Necesita el token de ese otro tenant y la URL base de la API.
+    |
+    | Los dos valores son de una instalación concreta y ESTE REPO ES PÚBLICO: van por entorno,
+    | nunca en el código (hasta 2026-09 estaban hardcodeados adentro del comando y el token
+    | quedó visible en la historia pública). Sin token configurado el comando avisa y no llama.
+    |
+    */
+    'test403_token' => env('TELEGRAM_TEST403_TOKEN'),
+    'test403_api_base' => env('TELEGRAM_TEST403_API_BASE', env('APP_URL')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Asynchronous Requests [Optional]
     |--------------------------------------------------------------------------
     |
@@ -160,8 +176,8 @@ return [
     |
     | Default: https://api.telegram.org/bot
     |
-    | OpenIndoor: se expone por env para poder apuntar TODOS los bots al
-    | emulador HTTP local del devkit (repo aparte: Cannabica/opencogollos-devkit)
+    | OpenCogollos: se expone por env para poder apuntar TODOS los bots al
+    | emulador HTTP local del devkit de desarrollo (se entrega aparte)
     | y probar sin tocar los servidores de Telegram. Vacío = API real (producción
     | intacta). También lo usan los tests sin red (config('telegram.base_bot_url')).
     | Formato: base_bot_url . TOKEN . '/' . metodo (TelegramClient::prepareRequest),

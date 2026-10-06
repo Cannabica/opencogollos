@@ -1,11 +1,11 @@
 # Release — en push a main: tag semver desde composer.json + imagen en GHCR.
 #
-# Contexto (WS2/T2.4): es el ÚNICO release desde que T3.3 borró el pipeline viejo (`ci-cd-pipeline.yml`
-# + `staging-deploy.yml`, 2026-09-27). Antes convivían y esa convivencia se midió (informe de WS2 §3.3);
+# Contexto: es el ÚNICO release desde que se borró el pipeline viejo (`ci-cd-pipeline.yml`
+# + `staging-deploy.yml`, 2026-09-27). Antes convivían y esa convivencia se midió;
 # ya no aplica ni el build duplicado ni el registry de Docker Hub (`cannabica/cannabica-php`), que era
 # de una cuenta personal y quedó fuera del camino de la apertura.
 #   - Evento: push a `main`; fuente de la versión: `composer.json` (mismo tag `vX.Y.Z`).
-#   - Registry: `ghcr.io/cannabica/opencogollos` (el canónico de T0.2), con el `GITHUB_TOKEN` — cero secrets.
+#   - Registry: `ghcr.io/cannabica/opencogollos`, con el `GITHUB_TOKEN` — cero secrets.
 #   - El deploy NO está acá: sale del repo de operación (`deploy-prod.yml`, T1.5).
 #
 # Guarda: si el tag ya existe apuntando a OTRO commit, este workflow
@@ -100,5 +100,5 @@ jobs:
             echo ""
             echo "- Versión leída de \`composer.json\`: \`${{ steps.version.outputs.version }}\`"
             echo "- Imagen: \`${{ env.IMAGE }}:${{ steps.version.outputs.tag }}\` (+ \`latest\`)"
-            echo "- El deploy a prod NO sale de este repo: se dispara desde \`cannabica-deploy\` (\`deploy-prod.yml\`, \`workflow_dispatch\` con la versión)."
+            echo "- El deploy a prod NO sale de este repo: lo dispara la operación del mantenedor (\`workflow_dispatch\` con la versión)."
           } >> "$GITHUB_STEP_SUMMARY"

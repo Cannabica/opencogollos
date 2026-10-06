@@ -1,7 +1,7 @@
 {
   "name": "cannabica/opencogollos",
   "type": "project",
-  "version": "0.21.3",
+  "version": "0.22.0",
   "description": "Registro, trazabilidad y compliance de cultivos (indoor y exterior): plantas, acciones de cuidado, tareas y bot de Telegram.",
   "keywords": [
     "laravel",

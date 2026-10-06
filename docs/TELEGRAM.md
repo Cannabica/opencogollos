@@ -106,6 +106,9 @@ Además de los comandos, dos flujos que no son `/comandos`:
 - **Mandar una foto** al chat → se registra como una **observación** con esa foto.
 - **Botones inline** (callback) en los listados → abren el detalle de plantas/acciones.
 
+> **Sin red:** los tests que verifican el payload saliente del bot viven en este repo
+> (`tests/Support/FakeTelegramHttpClient.php` + los tests de Telegram): no necesitan internet ni Docker.
+
 Variables opcionales que afectan al bot:
 
 ```dotenv
@@ -170,40 +173,7 @@ php artisan telegram:webhook:setup --bot=admin
 
 ---
 
-## 7. Probar los bots sin tocar Telegram (devkit local)
-
-Para desarrollar el bot no hace falta internet, ni un bot real, ni abrir el chat desde el celular. El
-**devkit local** vive en un repo aparte (`Cannabica/opencogollos-devkit`, hermano de
-`cannabica-deploy`) para no meter herramientas de desarrollo dentro de este repo. Trae:
-
-- un **emulador HTTP del Bot API** que emula el subconjunto que usa la app, entrega los updates al
-  webhook y **registra los mensajes salientes** para poder verificarlos;
-- un **front TLS con CA propia**, porque el SDK rechaza URLs de webhook que no sean https (así el
-  `telegram:webhook:setup` real se puede usar en local).
-
-```bash
-git clone https://github.com/Cannabica/opencogollos-devkit.git
-cd opencogollos-devkit
-make up                                    # emulador (8082) + front TLS (8443)
-make ca                                    # CA interna, para el webhook https
-make app APP=/ruta/a/OpenIndoor            # levanta la app contra el devkit
-make smoke SMOKE_TLS=1 SMOKE_TEXT=/estado  # E2E: inyecta un update y muestra la respuesta
-```
-
-Se enchufa apuntando `TELEGRAM_BASE_BOT_URL` al emulador (vacío = API real, producción no cambia):
-
-```dotenv
-TELEGRAM_BASE_BOT_URL=http://127.0.0.1:8082/bot
-```
-
-Guía completa (plano de control, HTTPS, pitfalls): `opencogollos-devkit/telegram-bot-emulator/README.md`.
-
-> Los tests de payload saliente sin red (`tests/Support/FakeTelegramHttpClient.php` + los tests de
-> Telegram) viven **acá**, en la suite de la app: no dependen del devkit ni de Docker.
-
----
-
-## 8. Troubleshooting
+## 7. Troubleshooting
 
 | Síntoma | Causa habitual |
 |---|---|

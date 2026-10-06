@@ -224,10 +224,9 @@ Tabla completa, ejemplo neutro vs. con marca y cómo aplicar los cambios:
 
 | Documento | Contenido |
 |---|---|
-| [`docs/INSTALL.md`](docs/INSTALL.md) | Instalación paso a paso (Docker y nativa), variables de entorno, admin inicial, mails, troubleshooting |
-| [`docs/TELEGRAM.md`](docs/TELEGRAM.md) | Crear tu bot con BotFather, webhook, comandos, bot de admin |
-| [`docs/BRANDING.md`](docs/BRANDING.md) | Las 9 claves `PLATFORM_*`, `APP_NAME` y el remitente de los mails |
-| [`scripts/verificacion-integral.sh`](scripts/verificacion-integral.sh) | Verificación integral del repo (clone fresco → README → app arriba, grep de fugas, checks de CI/deploy). Herramienta del mantenedor |
+| [`docs/INSTALL.md`](docs/INSTALL.md) | Docker o nativo, paso a paso: requisitos, variables de entorno, tus primeros usuarios y troubleshooting |
+| [`docs/BRANDING.md`](docs/BRANDING.md) | Cómo hacer tuya la instalación: `APP_NAME` y las 9 claves `PLATFORM_*`. Vacías, la app funciona igual, en neutro |
+| [`docs/TELEGRAM.md`](docs/TELEGRAM.md) | Tu bot con BotFather: token, webhook, comandos y cómo se autentica cada usuario |
 
 ## Comandos útiles
 
@@ -251,9 +250,9 @@ OpenCogollos es software libre bajo **AGPL-3.0-only**, mantenido por **Cannabica
   propio Discord, se configura con `PLATFORM_DISCORD_URL`; vacío, la app no muestra el link.)
 - **Contribuciones:** rama desde `develop` → cambios con tests → pull request. El CI corre la
   suite y el análisis estático en cada PR; se mergea con CI verde.
-- **Antes de abrir el repo al público:** `scripts/verificacion-integral.sh` corre el checklist de
-  verificación (clone fresco, fugas de infraestructura/marca en el historial y en el árbol, app
-  levantada sin ninguna marca configurada).
+- **Verificación del repo:** `scripts/verificacion-integral.sh` corre el checklist (clone fresco,
+  fugas de infraestructura o de marca en el historial y en el árbol, app levantada sin ninguna marca
+  configurada).
 - **Qué implica la AGPL:** si corrés una versión modificada de OpenCogollos como servicio en red,
   tenés que ofrecer a tus usuarios el código fuente de esa versión modificada.
 

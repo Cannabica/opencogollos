@@ -1,15 +1,15 @@
 # CI — gate de calidad: tests + análisis estático + escaneo de vulnerabilidades.
 #
-# Contexto (WS2/T2.3): este workflow nace para que el merge tenga GATE. Reemplazo al pipeline viejo
-# (`ci-cd-pipeline.yml` + `staging-deploy.yml`), BORRADOS en T3.3 el 2026-09-27: hoy el CI es este
-# archivo y el release a GHCR vive en `release.yml`. El deploy a produccion NO corre desde aca: se
-# dispara desde el repo de operacion `Cannabica/cannabica-deploy` (`deploy-prod.yml`, T1.5).
+# Contexto: este workflow nace para que el merge tenga GATE. Reemplazo al pipeline viejo
+# (`ci-cd-pipeline.yml` + `staging-deploy.yml`), borrados el 2026-09-27: hoy el CI es este
+# archivo y el release a GHCR vive en `release.yml`. El deploy a produccion NO corre desde aca: lo
+# dispara la operacion del mantenedor (`workflow_dispatch`).
 # Acá NO se publica nada ni se deploya: los 4 jobs son de verificación.
 #
 # POR QUÉ HAY PASOS DE NODE: el panel registra su CSS con `Vite::asset(...)` en `TenantPanelProvider::panel()`
 # y eso corre al BOOTEAR la app. Sin `public/build/manifest.json`, no sólo fallan los tests: falla hasta
 # `composer install` (post-autoload-dump → package:discover) y falla el bootstrap de larastan
-# ("ViteManifestNotFoundException ... while loading bootstrap.php"). Evidencia medida en el informe de WS2 §3.2.
+# ("ViteManifestNotFoundException ... while loading bootstrap.php").
 # Por eso ambos jobs construyen los assets primero, igual que el build de la imagen.
 # (Alternativa evaluada y NO aplicada acá: el guard tolerante que `main` ya tiene desde el hotfix v0.20.1
 #  —haría innecesario el build en CI—; es un cambio de código de producto y va como tarjeta aparte.)
@@ -73,7 +73,7 @@ jobs:
         run: composer dump-autoload
       - name: APP_KEY
         run: php artisan key:generate
-      # La suite corre con sqlite :memory: (phpunit.xml, T2.2): NO necesita servicio de base.
+      # La suite corre con sqlite :memory: (phpunit.xml): NO necesita servicio de base.
       - name: Tests
         run: php artisan test --testdox
 
@@ -103,7 +103,7 @@ jobs:
         run: npm run build
       - name: "Scripts de composer (package:discover, ya con el manifest)"
         run: composer dump-autoload
-      # `composer phpstan` = nivel 5 con larastan + baseline (T2.1): lo que NO está en el baseline,
+      # `composer phpstan` = nivel 5 con larastan + baseline: lo que NO está en el baseline,
       # rompe el gate. Los 4 hallazgos estructurales que PHPStan no deja baselinear están documentados
       # en phpstan.neon (exclusiones con comentario y ticket).
       - name: Análisis estático
@@ -114,14 +114,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      # POLÍTICA DE TRIVY (decidida en WS2, ver informe §3.2):
+      # POLÍTICA DE TRIVY:
       #   - escanea el filesystem del repo (lee composer.lock): no necesita construir la imagen
       #     (eso ya lo hace el pipeline viejo con el scan de la imagen, que se queda como está) y así
       #     el job tarda segundos en vez de minutos.
       #   - rompe con CRITICAL/HIGH QUE TENGAN FIX (`ignore-unfixed`), para no bloquear por CVEs de
       #     base image sin parche disponible.
       #   - la única excepción aceptada está en `.trivyignore` (advisory de Laravel 10 sin fix en la
-      #     rama: la deuda es la migración de T5.5). Un advisory nuevo → el job falla.
+      #     rama). Un advisory nuevo → el job falla.
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
@@ -149,6 +149,13 @@ jobs:
 
       - name: Guard de fugas (infraestructura + identidad) — archivos trackeados
         run: python3 scripts/guard-fugas.py
+
+      # Guard de COMUNICACIÓN: las 3 superficies de GitHub que NO son archivos —título y cuerpo del
+      # PR y mensajes de commit— son texto libre, quedan indexados igual y no las miraba ningún gate.
+      # Ahí se escaparon las 3 fugas de septiembre (ver docs/COMUNICACION-REPO-PUBLICO.md §5).
+      # Lee el payload del evento ($GITHUB_EVENT_PATH): sin interpolar el cuerpo del PR en el shell.
+      - name: Guard de comunicación (título/cuerpo del PR + mensajes de commit)
+        run: python3 scripts/guard-comunicacion.py
 
       # gitleaks por BINARIO OFICIAL y no con `gitleaks/gitleaks-action`: esa action exige licencia
       # (GITLEAKS_LICENSE) en repos de ORGANIZACIÓN. El binario es gratis, no depende de una action

@@ -1768,7 +1768,7 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
    ========================================================================== */
 
 .dashboard-container {
-    padding: 0.75rem 1rem 1.5rem;
+    padding: 0.75rem 1rem 5.5rem; /* el pie libre es para el boton flotante */
     gap: 1rem;
 }
 

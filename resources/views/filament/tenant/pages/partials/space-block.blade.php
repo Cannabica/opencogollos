@@ -11,7 +11,11 @@
     {{-- El lugar, con su señal de riego a la vista --}}
     <div class="carta carta--lugar">
         <div class="carta-cabeza">
-            <h3>{{ $indoor->name }}</h3>
+            <h3>
+                <a class="enlace-detalle"
+                    href="{{ \App\Filament\Tenant\Resources\IndoorResource::getUrl('view', ['record' => $indoor]) }}"
+                    title="Ver {{ $indoor->name }}">{{ $indoor->name }}</a>
+            </h3>
             <span class="contador">{{ $plantas->count() }}
                 {{ \Illuminate\Support\Str::plural('planta', $plantas->count()) }}</span>
         </div>
@@ -65,7 +69,11 @@
             <div class="carta carta--planta">
                 <div class="carta-cuerpo">
                     <div class="planta-cabeza">
-                        <h4>{{ $plant->name }}</h4>
+                        <h4>
+                            <a class="enlace-detalle"
+                                href="{{ \App\Filament\Tenant\Resources\PlantsResource::getUrl('edit', ['record' => $plant]) }}"
+                                title="Ver {{ $plant->name }}">{{ $plant->name }}</a>
+                        </h4>
                         <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $plant->state)) }}">
                             {{ str_replace(['Etapa de ', 'Etapa '], '', $plant->state) }}
                         </span>
@@ -73,7 +81,9 @@
 
                     <p class="planta-semilla">
                         @if ($plant->seedType)
-                            {{ $plant->seedType->name }} ({{ $plant->seedType->seed_type }})
+                            <a class="enlace-detalle enlace-detalle--tenue"
+                                href="{{ \App\Filament\Tenant\Resources\SeedResource::getUrl('view', ['record' => $plant->seedType]) }}"
+                                title="Ver la semilla {{ $plant->seedType->name }}">{{ $plant->seedType->name }}</a> ({{ $plant->seedType->seed_type }})
                         @else
                             Sin semilla cargada
                         @endif
@@ -118,7 +128,9 @@
                                 {{ \Carbon\Carbon::parse($action->action_date)->format('d/m/y') }}
                             </span>
                             <div>
-                                <span class="font-medium">{{ $action->action_type->name ?? 'Acción desconocida' }}</span>
+                                <a class="enlace-detalle"
+                                    href="{{ \App\Filament\Tenant\Resources\ActionsResource::getUrl('edit', ['record' => $action]) }}"
+                                    title="Ver la acción">{{ $action->action_type->name ?? 'Acción desconocida' }}</a>
                                 <p class="text-sm text-gray-500">{{ $action->getDetalleAccionAttribute() ?? 'Sin detalles' }}</p>
                             </div>
                         </div>

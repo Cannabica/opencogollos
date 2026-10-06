@@ -2022,7 +2022,34 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     border-top-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Las plantas son tarjetas internas: fondo apenas distinto, sin borde ni sombra */
+/* --- Enlaces de detalle: cada elemento lleva a su ficha --- */
+.enlace-detalle {
+    color: inherit;
+    text-decoration: none;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease;
+}
+
+.enlace-detalle:hover {
+    color: #2369B5;
+    text-decoration: underline;
+}
+
+.dark .enlace-detalle:hover {
+    color: #8EBAEE;
+}
+
+.enlace-detalle:focus-visible {
+    outline: 2px solid #2369B5;
+    outline-offset: 2px;
+}
+
+/* La genética es un dato secundario: se subraya sólo al pasar el mouse */
+.enlace-detalle--tenue {
+    text-decoration-color: rgba(35, 105, 181, 0.5);
+}
+
+/* --- Las plantas son tarjetas internas: fondo apenas distinto, sin borde ni sombra --- */
 .bloque-lugar .plantas-grid {
     padding: 0.875rem 1.125rem 1.125rem;
 }

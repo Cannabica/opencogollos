@@ -1772,6 +1772,15 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     gap: 1rem;
 }
 
+/* La cabecera deja salir el desplegable (con overflow hidden el listado se recortaba) */
+.carta--resumen {
+    overflow: visible;
+}
+
+.carta--resumen .aviso-plataforma {
+    border-radius: 1rem 1rem 0 0;
+}
+
 /* --- Tarjeta base --- */
 .carta {
     display: block;

@@ -1963,23 +1963,24 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     color: rgba(255, 255, 255, 0.75);
 }
 
-/* --- Los lugares, en columnas de tarjetas que se acomodan al ancho ---
-   Se usa columnas CSS (y no flex) para que los bloques de distinta altura se
-   acomoden uno debajo del otro sin dejar huecos, sin desplazamiento de costado:
-   el ancho disponible define cuántas columnas entran y el scroll es vertical. */
+/* --- Los lugares, en columnas tipo Pinterest ---
+   Base sin JavaScript: una grilla que ordena los bloques de izquierda a derecha y los alinea
+   por fila. Con JavaScript (ver la vista) pasa a masonry: cada bloque va a la columna más corta,
+   así el orden visual se mantiene (1, 2, 3 en la primera fila) y no quedan huecos entre bloques
+   de distinta altura. Lo que NO se usa es `columns`: llena por columna y desordena la lectura. */
 .grilla-lugares {
-    column-width: 26rem;
-    column-gap: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+    gap: 1.5rem;
+    align-items: start;
 }
 
 .bloque-lugar {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    width: 100%;
-    margin-bottom: 1.5rem;
-    break-inside: avoid;
     min-width: 0;
+    margin-bottom: 0;
 }
 
 /* --- Tarjetas de planta --- */

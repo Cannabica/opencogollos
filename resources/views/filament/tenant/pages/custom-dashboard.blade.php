@@ -87,7 +87,60 @@
                 <a href="/tenant/indoors/create" class="boton-principal">Crear mi primer lugar</a>
             </div>
         @else
-            <div class="grilla-lugares">
+            <div class="grilla-lugares"
+                x-data="{
+                    acomodar() {
+                        const cont = this.$el;
+                        const bloques = [...cont.children].filter(b => b.classList.contains('bloque-lugar'));
+                        if (!bloques.length) return;
+                        const gap = 24;
+                        const ancho = cont.clientWidth;
+                        if (!ancho) return;
+
+                        // 1 a 3 columnas de al menos ~21rem, y nunca más columnas que bloques
+                        // (con un solo lugar, el bloque usa todo el ancho disponible)
+                        const cols = Math.max(1, Math.min(3, bloques.length, Math.floor((ancho + gap) / (336 + gap))));
+                        const colW = (ancho - gap * (cols - 1)) / cols;
+
+                        // primer paso: ancho final a todos y medir la altura real con ese ancho
+                        cont.style.height = 'auto';
+                        bloques.forEach(b => {
+                            b.style.position = 'relative';
+                            b.style.left = '0';
+                            b.style.top = '0';
+                            b.style.width = colW + 'px';
+                        });
+                        const alturas = bloques.map(b => b.offsetHeight);
+
+                        // segundo paso: cada bloque a la columna más corta (masonry)
+                        const alturaCol = new Array(cols).fill(0);
+                        bloques.forEach((b, k) => {
+                            let i = 0;
+                            for (let j = 1; j < cols; j++) {
+                                if (alturaCol[j] < alturaCol[i]) i = j;
+                            }
+                            b.style.position = 'absolute';
+                            b.style.left = (i * (colW + gap)) + 'px';
+                            b.style.top = alturaCol[i] + 'px';
+                            alturaCol[i] += alturas[k] + gap;
+                        });
+
+                        cont.style.position = 'relative';
+                        cont.style.height = (Math.max(...alturaCol) - gap) + 'px';
+                    },
+                    init() {
+                        this.acomodar();
+                        this.$nextTick(() => this.acomodar());
+                        if (window.ResizeObserver) {
+                            const ro = new ResizeObserver(() => this.acomodar());
+                            [...this.$el.children].forEach(b => ro.observe(b));
+                            this.$el._ro = ro;
+                        }
+                        window.addEventListener('resize', () => this.acomodar());
+                        document.addEventListener('livewire:navigated', () => this.acomodar());
+                    },
+                }"
+                x-init="init()">
                 @foreach ($spaces as $space)
                     @include('filament.tenant.pages.partials.space-block', ['space' => $space])
                 @endforeach

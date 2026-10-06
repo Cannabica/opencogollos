@@ -87,6 +87,72 @@
             @endif
         </div>
 
+        {{-- Primeros pasos: guía corta y descartable (se recuerda si la cerraste) --}}
+        <div class="primeros-pasos" x-data="{
+                abierto: localStorage.getItem('oi_primeros_pasos') !== 'cerrado',
+                cerrar() { this.abierto = false; localStorage.setItem('oi_primeros_pasos', 'cerrado'); },
+                abrir() { this.abierto = true; localStorage.setItem('oi_primeros_pasos', 'abierto'); },
+            }">
+            <div class="carta primeros-pasos-caja" x-show="abierto" x-cloak>
+                <div class="primeros-pasos-cabeza">
+                    <h3>Primeros pasos</h3>
+                    <button type="button" @click="cerrar()" title="Ocultar los primeros pasos">
+                        <x-icon name="heroicon-o-x-mark" class="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div class="primeros-pasos-tira">
+                    <a href="/tenant/tutorials/telegram-bot" class="paso">
+                        <img src="/images/tutorials/telegram-bot.png" alt="">
+                        <div>
+                            <h4>Configurar el bot de Telegram</h4>
+                            <p>Recibí avisos y alertas en el celular.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/indoors/create" class="paso">
+                        <img src="/images/tutorial01.png" alt="">
+                        <div>
+                            <h4>Configurar tu lugar</h4>
+                            <p>Dimensiones, luces y ventilación.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/seeds" class="paso">
+                        <img src="/images/tutorial02.png" alt="">
+                        <div>
+                            <h4>Revisá las semillas</h4>
+                            <p>Listado precargado, por tipo y CBD/THC.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/seeds/create" class="paso">
+                        <img src="/images/tutorial03.png" alt="">
+                        <div>
+                            <h4>Cargar tus semillas</h4>
+                            <p>Tipo, floración y proporciones.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/plants/create" class="paso">
+                        <img src="/images/tutorial04.png" alt="">
+                        <div>
+                            <h4>Registrar tus plantas</h4>
+                            <p>Fechas, macetas y sustratos.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/actions/create" class="paso">
+                        <img src="/images/tutorial05.png" alt="">
+                        <div>
+                            <h4>Primer cuidado</h4>
+                            <p>Riegos, podas y aplicaciones.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <button type="button" class="primeros-pasos-abrir" x-show="!abierto" x-cloak @click="abrir()">
+                <x-icon name="heroicon-o-academic-cap" class="w-4 h-4" />
+                Ver los primeros pasos
+            </button>
+        </div>
+
         @if ($spaces === [])
             <div class="carta carta--vacia">
                 <x-icon name="heroicon-o-home-modern" class="w-12 h-12" />

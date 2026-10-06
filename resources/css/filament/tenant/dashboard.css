@@ -525,7 +525,10 @@ input[type="radio"]:checked + label.fi-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    z-index: 50;
+    /* Por encima de los bloques del dashboard, pero por DEBAJO de la barra superior
+       del panel (z-20): su desplegable de usuario y el panel de notificaciones viven
+       dentro de esa barra y con 50 el botón los tapaba. Medido en el dashboard. */
+    z-index: 10;
 }
 
 .floating-button:hover {
@@ -2444,11 +2447,16 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
    dibuja detrás de las tarjetas de abajo y no se puede leer ni elegir.
    (`overflow: hidden` de .carta lo recortaba, y sin z-index los bloques siguientes
    lo tapaban.)
+
+   ⚠️ El valor tiene que quedar por DEBAJO de la barra superior del panel (z-20):
+   los desplegables y el modal de notificaciones viven dentro de ella, así que con
+   z-index >= 20 esta tarjeta los tapa (pasaba con 20: empate, y gana el que va
+   después en el DOM, que es el contenido). Medido en el dashboard.
    ========================================================================== */
 .carta--resumen {
     overflow: visible;
     position: relative;
-    z-index: 20;
+    z-index: 1;
 }
 
 .filtro-lugar .choices__list--dropdown,

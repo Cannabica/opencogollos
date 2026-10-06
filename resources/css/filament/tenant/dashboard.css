@@ -2439,6 +2439,16 @@ input[type="checkbox"].fi-checkbox-input:checked::after {
     .filtro-lugar {
         min-width: 100%;
     }
+
+    /* A ≤640px `.dashboard-container` es `display: contents` (ver el media query de
+       arriba), así que su `padding-bottom` —el que le deja el pie libre al botón
+       flotante— no se dibuja y el botón tapa el cierre del último bloque. Medido en
+       360x800: "No hay acciones recientes." quedaba 12px abajo del botón. El aire se
+       le da al último elemento que sí tiene caja. */
+    .dashboard-container > .grilla-lugares,
+    .dashboard-container > .carta--vacia {
+        margin-bottom: 4.5rem;
+    }
 }
 
 /* ==========================================================================

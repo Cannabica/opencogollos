@@ -1,289 +1,225 @@
 <x-filament::page>
-    <div class="dashboard-container" x-data>
+    <div class="dashboard-container">
 
         @php
-            $indoors = $this->getIndoors();
-            $totalPlants = $indoors->sum(fn ($i) => $i->plants->count());
-            $plantasConEspacio = $indoors->flatMap(
-                fn ($indoor) => $this->getPlants($indoor->id)->map(fn ($plant) => ['plant' => $plant, 'indoor' => $indoor])
-            );
+            $spaces = $this->getSpaces();
+            $resumen = $this->getWorkSummary($spaces);
         @endphp
 
-        <div class="muro-head">
-            <span class="muro-hint">Desplazate a la derecha para ver más</span>
-            <div class="muro-nav">
-                <button type="button" title="Desplazar a la izquierda"
-                    @click="$refs.muro.scrollBy({ left: -680, behavior: 'smooth' })">
-                    <x-icon name="heroicon-o-chevron-left" class="w-5 h-5" />
-                </button>
-                <button type="button" title="Desplazar a la derecha"
-                    @click="$refs.muro.scrollBy({ left: 680, behavior: 'smooth' })">
-                    <x-icon name="heroicon-o-chevron-right" class="w-5 h-5" />
-                </button>
+        {{-- Cabecera: estado de la plataforma + lo que pide atención hoy + controles --}}
+        <div class="carta carta--resumen">
+            <div class="aviso-plataforma">
+                <x-icon name="heroicon-o-exclamation-triangle" class="w-6 h-6 flex-shrink-0" />
+                <p>
+                    <span class="font-bold">¡Plataforma en desarrollo!</span>
+                    Esta es una versión <span class="font-bold">alfa</span> y puede presentar inestabilidades.
+                    @if (filled(config('platform.community.feedback_url')))
+                        Si encontras algún error,
+                        <a href="{{ config('platform.community.feedback_url') }}" target="_blank" class="underline">mandalo acá</a>.
+                    @endif
+                </p>
             </div>
-        </div>
 
-        {{-- MURO: bloques de ancho distinto, desplazamiento horizontal.
-             La rueda del mouse mueve el muro de costado mientras quede
-             contenido a los lados; en las puntas vuelve a la página. --}}
-        <div class="muro" x-ref="muro"
-            x-init="$nextTick(() => {
-                const el = $refs.muro;
-                el.addEventListener('wheel', (e) => {
-                    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-
-                    /* Si el bloque bajo el cursor todavía tiene contenido vertical
-                       para mostrar, la rueda lo scrollea a él. */
-                    let nodo = e.target;
-                    while (nodo && nodo !== el) {
-                        if (nodo.classList && nodo.classList.contains('muro-bloque')) {
-                            const maxY = nodo.scrollHeight - nodo.clientHeight;
-                            const puedeY = e.deltaY > 0 ? nodo.scrollTop < maxY - 1 : nodo.scrollTop > 1;
-                            if (maxY > 0 && puedeY) return;
-                        }
-                        nodo = nodo.parentElement;
-                    }
-
-                    const max = el.scrollWidth - el.clientWidth;
-                    if (max <= 0) return;
-                    const abajo = e.deltaY > 0;
-                    const puede = abajo ? el.scrollLeft < max - 1 : el.scrollLeft > 1;
-                    if (puede) {
-                        e.preventDefault();
-                        el.scrollLeft += e.deltaY;
-                    }
-                }, { passive: false });
-            })">
-
-            {{-- ── Bloque ancho: estado de la plataforma + tu cultivo + primeros pasos ── --}}
-            <div class="muro-bloque muro-bloque--ancha">
-
-                <div class="muro-card muro-card--resumen">
-                    <div class="muro-aviso">
-                        <x-icon name="heroicon-o-exclamation-triangle" class="w-6 h-6 flex-shrink-0" />
-                        <p>
-                            <span class="font-bold">¡Plataforma en Desarrollo!</span>
-                            Esta es una versión <span class="font-bold">ALFA</span> y puede presentar inestabilidades.
-                            @if (filled(config('platform.community.feedback_url')))
-                                Si encontras algún error,
-                                <a href="{{ config('platform.community.feedback_url') }}" target="_blank" class="underline">mandalo acá</a>.
-                            @endif
-                        </p>
+            <div class="resumen-cuerpo">
+                <div class="metricas">
+                    <div class="metrica">
+                        <strong>{{ $resumen['espacios'] }}</strong>
+                        <span>{{ $resumen['espacios'] === 1 ? 'lugar' : 'lugares' }}</span>
+                    </div>
+                    <div class="metrica">
+                        <strong>{{ $resumen['plantas'] }}</strong>
+                        <span>{{ \Illuminate\Support\Str::plural('planta', $resumen['plantas']) }}</span>
                     </div>
 
-                    <div class="muro-resumen-body">
-                        <div class="muro-metricas">
-                            <div class="muro-metrica">
-                                <strong>{{ $indoors->count() }}</strong>
-                                <span>{{ \Illuminate\Support\Str::plural('espacio', $indoors->count()) }}</span>
-                            </div>
-                            <div class="muro-metrica">
-                                <strong>{{ $totalPlants }}</strong>
-                                <span>{{ \Illuminate\Support\Str::plural('planta', $totalPlants) }}</span>
-                            </div>
+                    @if ($resumen['plantas_sin_riego'] > 0)
+                        <div class="metrica metrica--alerta">
+                            <strong>{{ $resumen['plantas_sin_riego'] }}</strong>
+                            <span>{{ $resumen['plantas_sin_riego'] === 1 ? 'planta sin riego' : 'plantas sin riego' }}</span>
                         </div>
+                    @endif
 
-                        <div class="muro-filtro">
+                    @if ($resumen['espacios_atrasados'] > 0)
+                        <div class="metrica metrica--alerta">
+                            <strong>{{ $resumen['espacios_atrasados'] }}</strong>
+                            <span>{{ $resumen['espacios_atrasados'] === 1 ? 'lugar atrasado' : 'lugares atrasados' }}</span>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="controles">
+                    @if ($this->getTotalIndoors() <= 1)
+                        {{-- Con un solo lugar no hay nada que elegir: se muestra el nombre --}}
+                        <div class="filtro-estatico">
+                            <span>Lugar</span>
+                            <strong>{{ $spaces[0]['indoor']->name ?? '—' }}</strong>
+                        </div>
+                    @else
+                        <div class="filtro-lugar">
                             {{ $this->filtersForm }}
                         </div>
-                    </div>
-                </div>
+                    @endif
 
-                <div x-data="{ show: true }" x-show="show" class="muro-card muro-card--onboarding">
-                    @php
-                        $siteUrl = config('platform.site_url');
-                        $discordUrl = config('platform.community.discord_url');
-                        $brandName = config('platform.brand_name') ?: (filled($siteUrl) ? parse_url($siteUrl, PHP_URL_HOST) : null);
-                    @endphp
-
-                    <div class="muro-card-head">
-                        <div>
-                            <h3>¡Bienvenido!</h3>
-                            @if (filled($siteUrl) || filled($discordUrl))
-                                <p class="muro-sub">
-                                    Este es un proyecto comunitario
-                                    @if (filled($discordUrl))
-                                        · te invito a sumarte al server de discord
-                                    @endif
-                                    @if (filled($siteUrl))
-                                        · <a href="{{ $siteUrl }}" class="underline">{{ $brandName }}</a>
-                                    @endif
-                                </p>
-                            @endif
-                        </div>
-                        <button @click="show = false" class="card-close" title="Cerrar">
-                            <x-icon name="heroicon-o-x-mark" class="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <div class="muro-shortcuts">
-                        <a href="/tenant/tutorials/telegram-bot" class="muro-shortcut">
-                            <img src="/images/tutorials/telegram-bot.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Configurar Bot Telegram</h4>
-                                <p>Recibí notificaciones y alertas en tiempo real.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/indoors/create" class="muro-shortcut">
-                            <img src="/images/tutorial01.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Configurar tu indoor</h4>
-                                <p>Cargá dimensiones, potencia de luces, ventiladores, etc.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/seeds" class="muro-shortcut">
-                            <img src="/images/tutorial02.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Revisá nuestras semillas</h4>
-                                <p>Listado precargado, filtrá por tipo y ratios CBD/THC.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/seeds/create" class="muro-shortcut">
-                            <img src="/images/tutorial03.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Cargar tus semillas</h4>
-                                <p>Registrá tipo, floración y ratios CBD/THC.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/plants/create" class="muro-shortcut">
-                            <img src="/images/tutorial04.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Registrar tus plantas</h4>
-                                <p>Usá tus semillas, agregá fechas, macetas y sustratos.</p>
-                            </div>
-                        </a>
-                        <a href="/tenant/actions/create" class="muro-shortcut">
-                            <img src="/images/tutorial05.png" alt="">
-                            <div class="muro-shortcut-body">
-                                <h4>Primer cuidado de plantas</h4>
-                                <p>Registrá riegos, podas o aplicaciones de productos.</p>
-                            </div>
-                        </a>
-                    </div>
+                    <a href="{{ \App\Filament\Tenant\Resources\ActionsResource::getUrl('create') }}"
+                        class="boton-principal">
+                        <x-icon name="heroicon-o-plus" class="w-4 h-4" />
+                        Registrar acción
+                    </a>
                 </div>
             </div>
 
-            @if ($indoors->isEmpty())
-                {{-- ── Primer espacio todavía vacío ── --}}
-                <div class="muro-bloque muro-bloque--media">
-                    <div class="muro-card muro-card--empty">
-                        <x-icon name="heroicon-o-home-modern" class="w-12 h-12" />
-                        <h3>Todavía no cargaste ningún espacio</h3>
-                        <p>El espacio es el lugar donde crecen tus plantas: una carpa, una habitación o el patio.</p>
-                        <a href="/tenant/indoors/create" class="muro-cta">Crear mi primer espacio</a>
-                    </div>
-                </div>
-            @else
-                {{-- ── Un bloque por espacio: el espacio, sus plantas y sus acciones, juntos ── --}}
-                @foreach ($indoors as $indoor)
-                    @php
-                        $plantas = $this->getPlants($indoor->id);
-                        $estados = $plantas->groupBy('state');
-                        $actions = $this->getLastActionsForIndoor($indoor->id);
-                    @endphp
+            {{-- Invitación a la comunidad/marca: sólo si la instalación la configuró --}}
+            @php
+                $siteUrl = config('platform.site_url');
+                $discordUrl = config('platform.community.discord_url');
+                $brandName = config('platform.brand_name') ?: (filled($siteUrl) ? parse_url($siteUrl, PHP_URL_HOST) : null);
+            @endphp
 
-                    {{-- El ancho del bloque responde a cuánto tiene que mostrar:
-                         los espacios con pocas plantas van en columna angosta. --}}
-                    <div class="muro-bloque {{ $plantas->count() <= 2 ? 'muro-bloque--angosta' : 'muro-bloque--media' }}">
-                        <div class="muro-card muro-card--espacio">
-                            <div class="muro-card-head">
-                                <h3>{{ $indoor->name }}</h3>
-                                <span class="muro-count">{{ $plantas->count() }}
-                                    {{ \Illuminate\Support\Str::plural('planta', $plantas->count()) }}</span>
-                            </div>
-                            <div class="muro-card-body">
-                                <div class="muro-states">
-                                    @forelse ($estados as $estado => $grupo)
-                                        <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $estado)) }}">
-                                            {{ str_replace(['Etapa de ', 'Etapa '], '', $estado) }}: {{ $grupo->count() }}
-                                        </span>
-                                    @empty
-                                        <span class="muro-chip muro-chip--muted">Sin plantas cargadas</span>
-                                    @endforelse
-                                </div>
-
-                                <div class="muro-chips">
-                                    @if (!empty($indoor->lamps) && is_array($indoor->lamps))
-                                        @foreach ($indoor->lamps as $lamp)
-                                            <span class="muro-chip">
-                                                <x-icon name="heroicon-o-light-bulb" class="w-3.5 h-3.5" />
-                                                {{ $lamp['power'] }}W {{ $lamp['technology'] ?? '' }}
-                                            </span>
-                                        @endforeach
-                                    @else
-                                        <span class="muro-chip muro-chip--muted">Sin lámparas cargadas</span>
-                                    @endif
-                                    <span class="muro-chip muro-chip--muted">
-                                        {{ $indoor->width ?? '—' }} × {{ $indoor->large ?? '—' }} cm
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="muro-plantas-grid">
-                            @foreach ($plantas as $plant)
-                                <div class="muro-card muro-card--planta">
-                                    <div class="muro-card-body">
-                                        <div class="muro-plant-top">
-                                            <h4>{{ $plant->name }}</h4>
-                                            <span class="state-badge state-badge-{{ strtolower(str_replace(['Etapa de ', 'Etapa '], '', $plant->state)) }}">
-                                                {{ str_replace(['Etapa de ', 'Etapa '], '', $plant->state) }}
-                                            </span>
-                                        </div>
-
-                                        <p class="muro-plant-seed">
-                                            @if ($plant->seedType)
-                                                {{ $plant->seedType->name }} ({{ $plant->seedType->seed_type }})
-                                            @else
-                                                Sin semilla cargada
-                                            @endif
-                                        </p>
-
-                                        <div class="plant-meta">
-                                            @if ($plant->germination_date)
-                                                <span>
-                                                    <x-icon name="heroicon-o-clock" class="w-3.5 h-3.5" />
-                                                    {{ now()->diffInDays($plant->germination_date) }} días
-                                                </span>
-                                            @endif
-                                            <span>
-                                                <x-icon name="heroicon-o-beaker" class="w-3.5 h-3.5" />
-                                                {{ 'Maceta ' . $plant->flowerpot ?? 'N/A' }}: {{ $plant->capacity ?? '00' }}L
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <div class="muro-card muro-card--acciones">
-                            <div class="muro-card-head">
-                                <h3>Últimas acciones</h3>
-                            </div>
-                            <div class="muro-card-body">
-                                @if ($actions->isNotEmpty())
-                                    <div class="action-list">
-                                        @foreach ($actions as $action)
-                                            <div class="action-item">
-                                                <span class="action-date">
-                                                    {{ \Carbon\Carbon::parse($action->action_date)->format('d/m/y') }}
-                                                </span>
-                                                <div>
-                                                    <span class="font-medium">{{ $action->action_type->name ?? 'Acción desconocida' }}</span>
-                                                    <p class="text-sm text-gray-500">{{ $action->getDetalleAccionAttribute() ?? 'Sin detalles' }}</p>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="text-sm text-gray-500">No hay acciones recientes.</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
+            @if (filled($siteUrl) || filled($discordUrl))
+                <p class="nota-comunidad">
+                    Este es un proyecto comunitario
+                    @if (filled($discordUrl))
+                        · te invito a sumarte al servidor de Discord
+                    @endif
+                    @if (filled($siteUrl))
+                        · <a href="{{ $siteUrl }}" class="underline">{{ $brandName }}</a>
+                    @endif
+                </p>
             @endif
         </div>
+
+        {{-- Primeros pasos: guía corta y descartable (se recuerda si la cerraste) --}}
+        <div class="primeros-pasos" x-data="{
+                abierto: localStorage.getItem('oi_primeros_pasos') !== 'cerrado',
+                cerrar() { this.abierto = false; localStorage.setItem('oi_primeros_pasos', 'cerrado'); },
+                abrir() { this.abierto = true; localStorage.setItem('oi_primeros_pasos', 'abierto'); },
+            }">
+            <div class="carta primeros-pasos-caja" x-show="abierto" x-cloak>
+                <div class="primeros-pasos-cabeza">
+                    <h3>Primeros pasos</h3>
+                    <button type="button" @click="cerrar()" title="Ocultar los primeros pasos">
+                        <x-icon name="heroicon-o-x-mark" class="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div class="primeros-pasos-tira">
+                    <a href="/tenant/tutorials/telegram-bot" class="paso">
+                        <img src="/images/tutorials/telegram-bot.png" alt="">
+                        <div>
+                            <h4>Configurar el bot de Telegram</h4>
+                            <p>Recibí avisos y alertas en el celular.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/indoors/create" class="paso">
+                        <img src="/images/tutorial01.png" alt="">
+                        <div>
+                            <h4>Configurar tu lugar</h4>
+                            <p>Dimensiones, luces y ventilación.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/seeds" class="paso">
+                        <img src="/images/tutorial02.png" alt="">
+                        <div>
+                            <h4>Revisá las semillas</h4>
+                            <p>Listado precargado, por tipo y CBD/THC.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/seeds/create" class="paso">
+                        <img src="/images/tutorial03.png" alt="">
+                        <div>
+                            <h4>Cargar tus semillas</h4>
+                            <p>Tipo, floración y proporciones.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/plants/create" class="paso">
+                        <img src="/images/tutorial04.png" alt="">
+                        <div>
+                            <h4>Registrar tus plantas</h4>
+                            <p>Fechas, macetas y sustratos.</p>
+                        </div>
+                    </a>
+                    <a href="/tenant/actions/create" class="paso">
+                        <img src="/images/tutorial05.png" alt="">
+                        <div>
+                            <h4>Primer cuidado</h4>
+                            <p>Riegos, podas y aplicaciones.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <button type="button" class="primeros-pasos-abrir" x-show="!abierto" x-cloak @click="abrir()">
+                <x-icon name="heroicon-o-academic-cap" class="w-4 h-4" />
+                Ver los primeros pasos
+            </button>
+        </div>
+
+        @if ($spaces === [])
+            <div class="carta carta--vacia">
+                <x-icon name="heroicon-o-home-modern" class="w-12 h-12" />
+                <h3>Todavía no cargaste ningún lugar</h3>
+                <p>El lugar donde crecen tus plantas puede ser una carpa, una habitación o el patio.</p>
+                <a href="/tenant/indoors/create" class="boton-principal">Crear mi primer lugar</a>
+            </div>
+        @else
+            <div class="grilla-lugares"
+                x-data="{
+                    acomodar() {
+                        const cont = this.$el;
+                        const bloques = [...cont.children].filter(b => b.classList.contains('bloque-lugar'));
+                        if (!bloques.length) return;
+                        const gap = 24;
+                        const ancho = cont.clientWidth;
+                        if (!ancho) return;
+
+                        // 1 a 3 columnas de al menos ~21rem, y nunca más columnas que bloques
+                        // (con un solo lugar, el bloque usa todo el ancho disponible)
+                        const cols = Math.max(1, Math.min(3, bloques.length, Math.floor((ancho + gap) / (336 + gap))));
+                        const colW = (ancho - gap * (cols - 1)) / cols;
+
+                        // primer paso: ancho final a todos y medir la altura real con ese ancho
+                        cont.style.height = 'auto';
+                        bloques.forEach(b => {
+                            b.style.position = 'relative';
+                            b.style.left = '0';
+                            b.style.top = '0';
+                            b.style.width = colW + 'px';
+                        });
+                        const alturas = bloques.map(b => b.offsetHeight);
+
+                        // segundo paso: cada bloque a la columna más corta (masonry)
+                        const alturaCol = new Array(cols).fill(0);
+                        bloques.forEach((b, k) => {
+                            let i = 0;
+                            for (let j = 1; j < cols; j++) {
+                                if (alturaCol[j] < alturaCol[i]) i = j;
+                            }
+                            b.style.position = 'absolute';
+                            b.style.left = (i * (colW + gap)) + 'px';
+                            b.style.top = alturaCol[i] + 'px';
+                            alturaCol[i] += alturas[k] + gap;
+                        });
+
+                        cont.style.position = 'relative';
+                        cont.style.height = (Math.max(...alturaCol) - gap) + 'px';
+                    },
+                    init() {
+                        this.acomodar();
+                        this.$nextTick(() => this.acomodar());
+                        if (window.ResizeObserver) {
+                            const ro = new ResizeObserver(() => this.acomodar());
+                            [...this.$el.children].forEach(b => ro.observe(b));
+                            this.$el._ro = ro;
+                        }
+                        window.addEventListener('resize', () => this.acomodar());
+                        document.addEventListener('livewire:navigated', () => this.acomodar());
+                    },
+                }"
+                x-init="init()">
+                @foreach ($spaces as $space)
+                    @include('filament.tenant.pages.partials.space-block', ['space' => $space])
+                @endforeach
+            </div>
+        @endif
 
         {{-- Acción rápida: repetir el último riego --}}
         @php

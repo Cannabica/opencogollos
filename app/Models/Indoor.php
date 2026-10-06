@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Lugar (carpa, habitación, patio) donde crecen las plantas.
+ *
+ * @property int|null $plants_count Cantidad de plantas; sólo existe cuando la consulta trae
+ *                                  `withCount('plants')` (lo usa el selector de lugar del dashboard).
+ */
 class Indoor extends Model
 {
     use HasFactory;
